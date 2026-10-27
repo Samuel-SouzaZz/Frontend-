@@ -1,7 +1,7 @@
 import { useMemo, useState, type FormEvent } from "react";
 import { usePortal } from "./PortalContext";
 import { useToast } from "./ToastContext";
-import { colaboradorNome, formatMoney, statusLabel } from "../models/selectors";
+import { colaboradorNome, formatMoney, statusLabel, toLocalDateString } from "../models/selectors";
 import { usePagination } from "../hooks/usePagination";
 
 export type PortalData = ReturnType<typeof usePortal>["data"];
@@ -131,7 +131,7 @@ const eventList = {
       .map((uso) => uso.colaborador_id),
   ).size;
 
-  const today = new Date().toLocaleDateString("sv-SE");
+  const today = toLocalDateString();
 
  const filter = (setter: (value: string) => void, value: string) => {
   setter(value);

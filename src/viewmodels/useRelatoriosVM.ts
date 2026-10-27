@@ -10,10 +10,10 @@ import {
   conveniadoDaUtilizacaoIndexed,
   formatDate,
   statusLabel,
+  toLocalDateString,
 } from "../models/selectors";
 
 export const REPORT_PAGE_SIZE = 8;
-const dateOnly = (date: Date) => date.toLocaleDateString("sv-SE");
 
 function csvCell(value: unknown) {
   const text = String(value ?? "");
@@ -35,9 +35,9 @@ export function useRelatoriosVM() {
   const { notify } = useToast();
   const now = new Date();
   const [inicio, setInicio] = useState(() =>
-    dateOnly(new Date(now.getFullYear(), now.getMonth(), 1)),
+    toLocalDateString(new Date(now.getFullYear(), now.getMonth(), 1)),
   );
-  const [fim, setFim] = useState(() => dateOnly(now));
+  const [fim, setFim] = useState(() => toLocalDateString(now));
   const [tab, setTab] = useState("utilizacoes");
   const report = useMemo(() => buildReport(data, inicio, fim), [data, inicio, fim]);
   const benefitPagination = usePagination(report.benefits.length, REPORT_PAGE_SIZE);
