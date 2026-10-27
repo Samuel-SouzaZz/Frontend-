@@ -1,4 +1,5 @@
 import type { PortalData, Utilizacao } from "./types";
+import { parseDate } from "./formatters";
 
 export const PERFIL_ADMINISTRADOR = "FCV_ADMINISTRADOR";
 
@@ -49,8 +50,7 @@ export function validateEstorno(
  * @param now Ponto de referência temporal
  */
 export function withinPeriod(value: string, days: number, now = new Date()): boolean {
-  const normalized = value.length === 10 ? `${value}T12:00:00` : value.replace(" ", "T");
-  const date = new Date(normalized);
+  const date = parseDate(value);
   if (Number.isNaN(date.getTime()) || date > now) return false;
   if (days === 0) return true;
 
