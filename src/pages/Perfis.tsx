@@ -42,7 +42,6 @@ export default function Perfis() {
     user,
     data,
     loading,
-    admin,
     PAGE_SIZE,
     tab,
     changeTab,
@@ -87,22 +86,6 @@ export default function Perfis() {
     formError,
     submitting,
   } = usePerfisVM();
-
-  if (!admin)
-    return (
-      <>
-        <PageHeader
-          title="Perfis e usuários"
-          description="Configuração de acesso à plataforma FCV."
-        />
-        <section className="panel">
-          <EmptyState
-            title="Acesso exclusivo do administrador FCV"
-            description="O operador gerencia os cadastros, campanhas e utilizações. A criação e edição de usuários e perfis são atribuições do administrador."
-          />
-        </section>
-      </>
-    );
 
   return (
     <>

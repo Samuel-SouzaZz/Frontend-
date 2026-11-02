@@ -3,7 +3,7 @@ import { useAuth } from "./AuthContext";
 import { usePortal } from "./PortalContext";
 import { useToast } from "./ToastContext";
 import { isAdministrador } from "../models/selectors";
-import { SENHA_MINIMA } from "../models/rules";
+import { PERFIL_ADMINISTRADOR, SENHA_MINIMA } from "../models/rules";
 import type { Escopo, Perfil, Usuario } from "../models/types";
 import { usePagination } from "../hooks/usePagination";
 
@@ -56,7 +56,7 @@ const blankUser = (): UserForm => ({
 });
 
 export const protectedProfile = (profile: Perfil) =>
-  profile.id === 1 || profile.nome === "FCV_ADMINISTRADOR";
+  profile.nome === PERFIL_ADMINISTRADOR;
 
 export const permissionLabel = (permission: string) =>
   permissions.find((item) => item.value === permission)?.label ??
