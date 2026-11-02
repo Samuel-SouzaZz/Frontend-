@@ -52,7 +52,6 @@ export default function Campanhas() {
     setCampaignPage,
     setEventPage,
     periodoInvalido,
-    filter,
     rows,
     campaigns,
     events,
@@ -174,13 +173,13 @@ export default function Campanhas() {
         <div className="filters campaign-filter-row">
           <SearchField
             value={search}
-            onChange={(value) => filter(setSearch, value)}
+            onChange={(value) => setSearch(value)}
             placeholder="Buscar campanha, descrição ou patrocinador"
           />
           <Field label="Tipo">
             <select
               value={tipo}
-              onChange={(event) => filter(setTipo, event.target.value)}
+              onChange={(event) => setTipo(event.target.value)}
             >
               <option value="">Todos os tipos</option>
               {Object.entries(TIPOS).map(([value, label]) => (
@@ -193,7 +192,7 @@ export default function Campanhas() {
           <Field label="Status">
             <select
               value={status}
-              onChange={(event) => filter(setStatus, event.target.value)}
+              onChange={(event) => setStatus(event.target.value)}
             >
               <option value="">Todos os status</option>
               {["PLANEJADA", "ATIVA", "ENCERRADA", "CANCELADA"].map((value) => (
@@ -209,7 +208,7 @@ export default function Campanhas() {
             <input
               type="date"
               value={inicio}
-              onChange={(event) => filter(setInicio, event.target.value)}
+              onChange={(event) => setInicio(event.target.value)}
             />
           </Field>
           <Field
@@ -224,7 +223,7 @@ export default function Campanhas() {
               type="date"
               min={inicio || undefined}
               value={fim}
-              onChange={(event) => filter(setFim, event.target.value)}
+              onChange={(event) => setFim(event.target.value)}
             />
           </Field>
           <p className="filter-hint">

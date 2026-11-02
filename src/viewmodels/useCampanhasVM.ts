@@ -92,8 +92,9 @@ export function useCampanhasVM() {
     .filter((item) => item.tipo.startsWith("EVENTO"))
     .sort((a, b) => b.data_inicio.localeCompare(a.data_inicio));
 
-const campaignPagination = usePagination(campaigns.length, PAGE_SIZE);
-const eventPagination = usePagination(events.length, PAGE_SIZE);
+const filterKey = JSON.stringify([search, tipo, status, inicio, fim]);
+const campaignPagination = usePagination(campaigns.length, PAGE_SIZE, filterKey);
+const eventPagination = usePagination(events.length, PAGE_SIZE, filterKey);
 
 const campaignList = {
   current: campaignPagination.page,
@@ -132,12 +133,6 @@ const eventList = {
   ).size;
 
   const today = toLocalDateString();
-
- const filter = (setter: (value: string) => void, value: string) => {
-  setter(value);
-  campaignPagination.reset();
-  eventPagination.reset();
-};
 
   // ── Ações ──
   function abrirForm(item?: Campanha) {
@@ -318,7 +313,6 @@ const eventList = {
     eventPage: eventPagination.page,
     setEventPage: eventPagination.setPage,
     periodoInvalido,
-    filter,
 
     // dados derivados
     rows,

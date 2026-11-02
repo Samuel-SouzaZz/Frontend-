@@ -129,7 +129,11 @@ export function usePerfisVM() {
   const total =
   tab === "perfis" ? filteredProfiles.length : filteredUsers.length;
 
-  const { page: currentPage, setPage, start } = usePagination(total, PAGE_SIZE);
+  const { page: currentPage, setPage, start } = usePagination(
+    total,
+    PAGE_SIZE,
+    JSON.stringify([tab, search, status, scope]),
+  );
 
   const availableProfiles = data.perfis.filter(
     (profile) =>

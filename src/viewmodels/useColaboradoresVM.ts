@@ -95,7 +95,11 @@ export function useColaboradoresVM() {
     setPage,
     start,
     end,
-  } = usePagination(filtered.length, PAGE_SIZE);
+  } = usePagination(
+    filtered.length,
+    PAGE_SIZE,
+    JSON.stringify([search, status, setor]),
+  );
 
   const visibleRows = useMemo(
     () => filtered.slice(start, end),

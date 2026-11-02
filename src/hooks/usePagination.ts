@@ -1,12 +1,18 @@
-import { useState } from 'react';
+import { useCallback, useState } from "react";
 
-export function usePagination(total: number, pageSize: number) {
-  const [page, setPage] = useState(1);
+export function usePagination(total: number, pageSize: number, resetKey = "") {
+  const [state, setState] = useState({ page: 1, key: resetKey });
+  if (state.key !== resetKey) setState({ page: 1, key: resetKey });
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
-  const current = Math.min(page, totalPages);
-
+  const requested = state.key === resetKey ? state.page : 1;
+  const current = Math.min(Math.max(requested, 1), totalPages);
   const start = (current - 1) * pageSize;
   const end = Math.min(start + pageSize, total);
+
+  const setPage = useCallback(
+    (page: number) => setState({ page, key: resetKey }),
+    [resetKey],
+  );
 
   return {
     page: current,

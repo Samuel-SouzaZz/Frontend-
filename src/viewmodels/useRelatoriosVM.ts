@@ -40,22 +40,22 @@ export function useRelatoriosVM() {
   const [fim, setFim] = useState(() => toLocalDateString(now));
   const [tab, setTab] = useState("utilizacoes");
   const report = useMemo(() => buildReport(data, inicio, fim), [data, inicio, fim]);
-  const benefitPagination = usePagination(report.benefits.length, REPORT_PAGE_SIZE);
-  const partnerPagination = usePagination(report.partners.length, REPORT_PAGE_SIZE);
-  const periodPagination = usePagination(report.periods.length, REPORT_PAGE_SIZE);
-  const campaignPagination = usePagination(report.campaigns.length, REPORT_PAGE_SIZE);
-
-  const setPage = (value: number) => {
-    benefitPagination.setPage(value);
-    partnerPagination.setPage(value);
-    periodPagination.setPage(value);
-    campaignPagination.setPage(value);
+  const filterKey = JSON.stringify([inicio, fim, tab]);
+  const benefitPagination = usePagination(report.benefits.length, REPORT_PAGE_SIZE, filterKey);
+  const partnerPagination = usePagination(report.partners.length, REPORT_PAGE_SIZE, filterKey);
+  const periodPagination = usePagination(report.periods.length, REPORT_PAGE_SIZE, filterKey);
+  const campaignPagination = usePagination(report.campaigns.length, REPORT_PAGE_SIZE, filterKey);
+  const paginationByTab: Record<string, ReturnType<typeof usePagination> | undefined> = {
+    adesao: campaignPagination,
+    beneficios: benefitPagination,
+    periodo: periodPagination,
+    conveniados: partnerPagination,
   };
+  const activePagination = paginationByTab[tab];
 
-  const changeTab = (value: string) => {
-    setTab(value);
-    setPage(1);
-  };
+  const setPage = (value: number) => activePagination?.setPage(value);
+
+  const changeTab = (value: string) => setTab(value);
 
   const benefitPage = slicePage(report.benefits, benefitPagination);
   const partnerPage = slicePage(report.partners, partnerPagination);

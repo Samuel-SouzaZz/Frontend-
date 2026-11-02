@@ -118,7 +118,11 @@ export function useUtilizacoesVM() {
     setPage,
     start,
     end,
-  } = usePagination(rows.length, PAGE_SIZE);
+  } = usePagination(
+    rows.length,
+    PAGE_SIZE,
+    JSON.stringify([search, status, inicio, fim, colaborador, conveniado, beneficio]),
+  );
 
   const visibleRows = useMemo(
     () =>
@@ -127,11 +131,6 @@ export function useUtilizacoesVM() {
         .slice(start, end),
     [rows, start, end],
   );
-
-  const filter = (setter: (value: string) => void, value: string) => {
-    setter(value);
-    setPage(1);
-  };
 
   // ── Ações ──
   async function estornar(event: FormEvent<HTMLFormElement>) {
@@ -199,7 +198,6 @@ export function useUtilizacoesVM() {
     page: currentPage,
     setPage,
     periodoInvalido,
-    filter,
     limparFiltros,
 
     // dados derivados

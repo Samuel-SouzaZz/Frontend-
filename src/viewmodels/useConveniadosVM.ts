@@ -79,7 +79,11 @@ export function useConveniadosVM() {
     setPage,
     start,
     end,
-  } = usePagination(filtered.length, PAGE_SIZE);
+  } = usePagination(
+    filtered.length,
+    PAGE_SIZE,
+    JSON.stringify([search, status, category]),
+  );
 
 const visibleRows = filtered.slice(start, end);
 

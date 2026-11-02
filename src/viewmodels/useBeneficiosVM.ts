@@ -96,7 +96,11 @@ const {
   setPage,
   start,
   end,
-} = usePagination(filtered.length, PAGE_SIZE);
+} = usePagination(
+  filtered.length,
+  PAGE_SIZE,
+  JSON.stringify([search, status, windowType]),
+);
 
 const visibleRows = filtered.slice(start, end);
 

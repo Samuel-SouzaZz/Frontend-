@@ -48,7 +48,6 @@ export default function Utilizacoes() {
     beneficio,
     setBeneficio,
     periodoInvalido,
-    filter,
     limparFiltros,
     rows,
     aprovadas,
@@ -120,13 +119,13 @@ export default function Utilizacoes() {
         <div className="filters">
           <SearchField
             value={search}
-            onChange={(value) => filter(setSearch, value)}
+            onChange={(value) => setSearch(value)}
             placeholder="Buscar por nome, benefício, parceiro ou número"
           />
           <Field label="Status">
             <select
               value={status}
-              onChange={(event) => filter(setStatus, event.target.value)}
+              onChange={(event) => setStatus(event.target.value)}
             >
               <option value="">Todos os status</option>
               {["PENDENTE", "APROVADA", "REPROVADA", "ESTORNADA"].map(
@@ -142,7 +141,7 @@ export default function Utilizacoes() {
             <input
               type="date"
               value={inicio}
-              onChange={(event) => filter(setInicio, event.target.value)}
+              onChange={(event) => setInicio(event.target.value)}
             />
           </Field>
           <Field
@@ -157,7 +156,7 @@ export default function Utilizacoes() {
               type="date"
               value={fim}
               min={inicio || undefined}
-              onChange={(event) => filter(setFim, event.target.value)}
+              onChange={(event) => setFim(event.target.value)}
             />
           </Field>
         </div>
@@ -165,7 +164,7 @@ export default function Utilizacoes() {
           <Field label="Colaborador">
             <select
               value={colaborador}
-              onChange={(event) => filter(setColaborador, event.target.value)}
+              onChange={(event) => setColaborador(event.target.value)}
             >
               <option value="">Todos os colaboradores</option>
               {data.colaboradores.map((item) => (
@@ -178,7 +177,7 @@ export default function Utilizacoes() {
           <Field label="Conveniado">
             <select
               value={conveniado}
-              onChange={(event) => filter(setConveniado, event.target.value)}
+              onChange={(event) => setConveniado(event.target.value)}
             >
               <option value="">Todos os conveniados</option>
               {data.conveniados.map((item) => (
@@ -191,7 +190,7 @@ export default function Utilizacoes() {
           <Field label="Benefício ou item">
             <select
               value={beneficio}
-              onChange={(event) => filter(setBeneficio, event.target.value)}
+              onChange={(event) => setBeneficio(event.target.value)}
             >
               <option value="">Todos os benefícios</option>
               <optgroup label="Benefícios regulares">
