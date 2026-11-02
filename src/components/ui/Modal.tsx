@@ -1,4 +1,11 @@
-import { useEffect, useId, useRef, useState, type ReactNode } from "react";
+import {
+  useEffect,
+  useId,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import { ChevronDown, X } from "lucide-react";
 import { invalidFields, ValidationContext } from "./validation";
 
@@ -59,7 +66,7 @@ export function Modal({
     };
   }, []);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const form = submittedFormRef.current;
     if (!pending.length || !form?.isConnected) return;
     const next = invalidFields(form);
