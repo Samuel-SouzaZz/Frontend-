@@ -191,6 +191,8 @@ small {
   justify-content: space-between;
   gap: 20px;
   margin: 24px 0;
+  position: relative;
+  z-index: 2;
 }
 .heading-actions {
   display: flex;
