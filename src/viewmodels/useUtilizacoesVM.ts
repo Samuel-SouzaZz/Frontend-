@@ -14,7 +14,7 @@ type Utilizacao = ReturnType<typeof usePortal>["data"]["utilizacoes"][number];
 const PAGE_SIZE = 8;
 
 export function useUtilizacoesVM() {
-  const { data, save } = usePortal();
+  const { data, estornar: estornarUtilizacao } = usePortal();
   const { notify } = useToast();
   const navigate = useNavigate();
 
@@ -145,15 +145,7 @@ export function useUtilizacoesVM() {
     }
     setSaving(true);
     try {
-      await save("utilizacoes", reversal.id, {
-        status: "ESTORNADA",
-        observacoes: [
-          reversal.observacoes,
-          `Motivo do estorno: ${motivo.trim()}`,
-        ]
-          .filter(Boolean)
-          .join("\n"),
-      });
+      await estornarUtilizacao(reversal.id, motivo);
       notify(
         "Utilização estornada. O registro permanece no histórico.",
         "success",

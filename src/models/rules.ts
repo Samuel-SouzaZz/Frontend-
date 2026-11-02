@@ -29,22 +29,6 @@ export function canEstornar(uso: Utilizacao): boolean {
 }
 
 /**
- * Valida se uma solicitação de estorno atende aos requisitos de negócio.
- */
-export function validateEstorno(
-  uso: Utilizacao | undefined,
-  update: { status?: string; observacoes?: string | null },
-): { valid: boolean; error?: string } {
-  if (!uso || !canEstornar(uso) || update.status !== "ESTORNADA" || !update.observacoes?.trim()) {
-    return {
-      valid: false,
-      error: "Só é permitido estornar uma utilização aprovada, informando o motivo.",
-    };
-  }
-  return { valid: true };
-}
-
-/**
  * Verifica se um registro temporal está contido dentro de um período em dias.
  * @param value Data em formato ISO ou SQL datetime
  * @param days Quantidade de dias retroativos (0 indica todo o período)

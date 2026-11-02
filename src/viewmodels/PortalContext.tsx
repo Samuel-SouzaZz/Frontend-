@@ -8,9 +8,18 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import type { PortalData, Resource, Entity } from "../models/types";
-import { isAdministrador } from "../models/selectors";
-import { listResource, saveResource } from "../services/api";
+import type {
+  PortalData,
+  Resource,
+  Entity,
+  Utilizacao,
+} from "../models/types";
+import { canEstornar, isAdministrador } from "../models/selectors";
+import {
+  cancelUtilizacao,
+  listResource,
+  saveResource,
+} from "../services/api";
 import {
   createLocalDemoData,
   isLocalDemoUser,
@@ -39,6 +48,7 @@ interface Portal {
     id: number | undefined,
     payload: Partial<Entity<K>>,
   ) => Promise<Entity<K>>;
+  estornar: (id: number, motivo: string) => Promise<Utilizacao>;
 }
 const Context = createContext<Portal | null>(null);
 export function PortalProvider({ children }: { children: ReactNode }) {
@@ -98,23 +108,8 @@ export function PortalProvider({ children }: { children: ReactNode }) {
       throw new Error(
         "Somente o administrador pode alterar usuários e perfis.",
       );
-    if (resource === "utilizacoes") {
-      const previous = dataRef.current.utilizacoes.find((x) => x.id === id);
-      const update = payload as Partial<PortalData["utilizacoes"][number]>;
-      if (
-        !previous ||
-        previous.status !== "APROVADA" ||
-        update.status !== "ESTORNADA" ||
-        !update.observacoes?.trim()
-      )
-        throw new Error(
-          "Só é permitido estornar uma utilização aprovada, informando o motivo.",
-        );
-      if (
-        Object.keys(update).some((k) => !["status", "observacoes"].includes(k))
-      )
-        throw new Error("O histórico de utilização não pode ser editado.");
-    }
+    if (resource === "utilizacoes")
+      throw new Error("O histórico de utilização não pode ser editado.");
     const currentData = dataRef.current;
     const rows = currentData[resource] as Entity<K>[];
     const result = isLocalDemoUser(u)
@@ -131,9 +126,38 @@ export function PortalProvider({ children }: { children: ReactNode }) {
     setData(next);
     return result;
   }, []);
+  const estornar = useCallback(async (id: number, motivo: string) => {
+    const u = userRef.current;
+    if (!u) throw new Error("Faça login para continuar.");
+    const atual = dataRef.current.utilizacoes.find((item) => item.id === id);
+    const texto = motivo.trim();
+    if (!atual || !canEstornar(atual) || !texto)
+      throw new Error(
+        "Só é permitido estornar uma utilização aprovada, informando o motivo.",
+      );
+    const observacoes = [atual.observacoes, `Motivo do estorno: ${texto}`]
+      .filter(Boolean)
+      .join("\n");
+    let result: Utilizacao;
+    if (isLocalDemoUser(u)) {
+      result = { ...atual, status: "ESTORNADA", observacoes };
+    } else {
+      await saveResource("utilizacoes", id, { observacoes });
+      result = await cancelUtilizacao(id);
+    }
+    const next = {
+      ...dataRef.current,
+      utilizacoes: dataRef.current.utilizacoes.map((item) =>
+        item.id === id ? result : item,
+      ),
+    };
+    dataRef.current = next;
+    setData(next);
+    return result;
+  }, []);
   const value = useMemo<Portal>(
-    () => ({ data, loading, error, reload, save }),
-    [data, loading, error, reload, save],
+    () => ({ data, loading, error, reload, save, estornar }),
+    [data, loading, error, reload, save, estornar],
   );
   return (
     <Context.Provider value={value}>

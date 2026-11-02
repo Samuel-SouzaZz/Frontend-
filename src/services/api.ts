@@ -1,4 +1,9 @@
-import type { Resource, SessionUser, Entity } from "../models/types";
+import type {
+  Resource,
+  SessionUser,
+  Entity,
+  Utilizacao,
+} from "../models/types";
 const configured =
   import.meta.env.VITE_API_URL || "http://localhost:3333/api/v1";
 export const API_URL = configured.replace(/\/$/, "");
@@ -103,6 +108,11 @@ export function listResource<K extends Resource>(
   signal?: AbortSignal,
 ) {
   return request<Entity<K>[]>(`/${endpoints[resource]}`, { signal });
+}
+export function cancelUtilizacao(id: number) {
+  return request<Utilizacao>(`/${endpoints.utilizacoes}/${id}`, {
+    method: "DELETE",
+  });
 }
 export function saveResource<K extends Resource>(
   resource: K,
