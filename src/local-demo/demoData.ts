@@ -1,4 +1,4 @@
-import type { PortalData } from "../../src/models/types";
+import type { PortalData } from "../models/types";
 const date = (offset: number) => {
   const d = new Date();
   d.setDate(d.getDate() + offset);

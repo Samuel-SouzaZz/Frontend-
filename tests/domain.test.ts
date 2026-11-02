@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { createFixtureData } from "./fixtures/portalData";
+import { createFixtureData } from "../src/local-demo/demoData";
 import { buildReport } from "../src/models/reportSelectors";
 import {
   beneficioDaUtilizacao,

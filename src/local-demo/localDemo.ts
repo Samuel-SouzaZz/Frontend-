@@ -1,5 +1,5 @@
 import type { Entity, PortalData, Resource, SessionUser } from "../models/types";
-import { createFixtureData } from "../../tests/fixtures/portalData";
+import { createFixtureData } from "./demoData";
 
 const sessionKey = "fcv.local.demo";
 
