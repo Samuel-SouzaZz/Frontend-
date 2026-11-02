@@ -19,6 +19,7 @@ export function Modal({
   const modalBodyRef = useRef<HTMLDivElement>(null);
   const modalContentRef = useRef<HTMLDivElement>(null);
   const dragRef = useRef({ pointerId: -1, startY: 0, startScrollTop: 0 });
+  const submittedFormRef = useRef<HTMLFormElement | null>(null);
   const [dragging, setDragging] = useState(false);
   const [hasMoreBelow, setHasMoreBelow] = useState(false);
   const id = useId();
@@ -58,11 +59,12 @@ export function Modal({
     };
   }, []);
 
-  function revalidate(target: EventTarget) {
-    if (!pending.length || !(target instanceof HTMLElement)) return;
-    const form = target.closest("form");
-    if (form) setPending(invalidFields(form));
-  }
+  useEffect(() => {
+    const form = submittedFormRef.current;
+    if (!pending.length || !form?.isConnected) return;
+    const next = invalidFields(form);
+    if (next.join("|") !== pending.join("|")) setPending(next);
+  });
 
   function stopDragging() {
     dragRef.current.pointerId = -1;
@@ -83,6 +85,7 @@ export function Modal({
       }}
       onSubmitCapture={(event) => {
         if (!(event.target instanceof HTMLFormElement)) return;
+        submittedFormRef.current = event.target;
         const issues = invalidFields(event.target);
         setPending(issues);
         if (issues.length) {
@@ -90,8 +93,6 @@ export function Modal({
           event.stopPropagation();
         }
       }}
-      onInputCapture={(event) => revalidate(event.target)}
-      onChangeCapture={(event) => revalidate(event.target)}
     >
       <div className="modal-header">
         <div>
