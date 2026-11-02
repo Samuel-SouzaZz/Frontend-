@@ -4,6 +4,7 @@ import {
   type ReactNode,
   type SelectHTMLAttributes,
 } from "react";
+import { FieldContext } from "./fieldContext";
 import { FormSelect } from "./FormSelect";
 import { ValidationContext } from "./validation";
 
@@ -12,7 +13,7 @@ export function Field({
   children,
   hint,
   error,
-  required,
+  required = false,
 }: {
   label: string;
   children: ReactNode;
@@ -27,27 +28,29 @@ export function Field({
       ? children
       : undefined;
   return (
-    <label
-      className={`field ${invalid ? "field-invalid" : ""}`}
-      data-field-label={label}
-      data-required={required ? "true" : undefined}
-    >
-      <span>
-        {label}
-        {required && <em aria-hidden="true"> *</em>}
-      </span>
-      {selectElement ? (
-        <FormSelect element={selectElement} invalid={invalid} label={label} />
-      ) : (
-        children
-      )}
-      {hint && <small>{hint}</small>}
-      {error && <small className="form-error">{error}</small>}
-      {invalid && (
-        <small className="field-validation-error">
-          Preencha ou corrija este campo.
-        </small>
-      )}
-    </label>
+    <FieldContext.Provider value={{ label, required, invalid }}>
+      <label
+        className={`field ${invalid ? "field-invalid" : ""}`}
+        data-field-label={label}
+        data-required={required ? "true" : undefined}
+      >
+        <span>
+          {label}
+          {required && <em aria-hidden="true"> *</em>}
+        </span>
+        {selectElement ? (
+          <FormSelect element={selectElement} invalid={invalid} label={label} />
+        ) : (
+          children
+        )}
+        {hint && <small>{hint}</small>}
+        {error && <small className="form-error">{error}</small>}
+        {invalid && (
+          <small className="field-validation-error">
+            Preencha ou corrija este campo.
+          </small>
+        )}
+      </label>
+    </FieldContext.Provider>
   );
 }

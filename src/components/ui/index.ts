@@ -8,4 +8,5 @@ export { Modal } from "./Modal";
 export { PageHeader } from "./PageHeader";
 export { Pagination } from "./Pagination";
 export { SearchField } from "./SearchField";
+export { Select, type SelectOption } from "./Select";
 export { StatCard, type StatTone } from "./StatCard";
