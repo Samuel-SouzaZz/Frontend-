@@ -1,10 +1,10 @@
 import { useState, type FormEvent } from "react";
 import { usePortal } from "./PortalContext";
-import { useToast } from "./ToastContext";
 import { conveniadoNome, formatMoney } from "../models/selectors";
 import type { Beneficio } from "../models/types";
 import { usePagination } from "../hooks/usePagination";
 import { useUrlFilters } from "../hooks/useUrlFilters";
+import { useAsyncAction } from "../hooks/useAsyncAction";
 
 const PAGE_SIZE = 8;
 const FILTER_KEYS = ["buscar", "status", "renovacao"] as const;
@@ -62,7 +62,7 @@ export function valueSummary(item: Beneficio) {
 
 export function useBeneficiosVM() {
   const { data, save, loading } = usePortal();
-  const { notify } = useToast();
+  const { running: submitting, run } = useAsyncAction();
 
   // ── Filtros ──
   const { values: filters, setter } = useUrlFilters(FILTER_KEYS);
@@ -81,7 +81,6 @@ export function useBeneficiosVM() {
   const [selectedPartner, setSelectedPartner] = useState("");
   const [form, setForm] = useState<BeneficioForm>(blankForm);
   const [formError, setFormError] = useState("");
-  const [submitting, setSubmitting] = useState(false);
 
   // ── Dados derivados ──
   const filtered = data.beneficios.filter(
@@ -186,111 +185,83 @@ const visibleRows = filtered.slice(start, end);
       );
       return;
     }
-    setSubmitting(true);
-    try {
-      const fixed = form.tipo_janela === "CALENDARIO_FIXO";
-      await save("beneficios", editing?.id, {
-        nome: form.nome.trim(),
-        descricao: form.descricao.trim() || null,
-        status: form.status,
-        tipo_beneficio: form.tipo_beneficio,
-        valor: value,
-        quantidade_maxima_utilizacoes: count,
-        tipo_janela: form.tipo_janela,
-        unidade_ciclo: fixed ? form.unidade_ciclo : null,
-        dia_reset: fixed && form.dia_reset ? form.dia_reset : null,
-        intervalo_valor: fixed ? null : interval,
-        intervalo_unidade: fixed ? null : form.intervalo_unidade,
-        referencia_contagem: fixed ? null : form.referencia_contagem,
-      });
-      notify(
-        editing
+    const fixed = form.tipo_janela === "CALENDARIO_FIXO";
+    await run(
+      () =>
+        save("beneficios", editing?.id, {
+          nome: form.nome.trim(),
+          descricao: form.descricao.trim() || null,
+          status: form.status,
+          tipo_beneficio: form.tipo_beneficio,
+          valor: value,
+          quantidade_maxima_utilizacoes: count,
+          tipo_janela: form.tipo_janela,
+          unidade_ciclo: fixed ? form.unidade_ciclo : null,
+          dia_reset: fixed && form.dia_reset ? form.dia_reset : null,
+          intervalo_valor: fixed ? null : interval,
+          intervalo_unidade: fixed ? null : form.intervalo_unidade,
+          referencia_contagem: fixed ? null : form.referencia_contagem,
+        }),
+      {
+        success: editing
           ? "Benefício atualizado."
           : "Benefício cadastrado. Vincule os conveniados para disponibilizar as ofertas.",
-      );
-      setFormOpen(false);
-    } catch (error) {
-      setFormError(
-        error instanceof Error
-          ? error.message
-          : "Não foi possível salvar o benefício.",
-      );
-    } finally {
-      setSubmitting(false);
-    }
+        fallbackError: "Não foi possível salvar o benefício.",
+        onSuccess: () => setFormOpen(false),
+        onError: setFormError,
+      },
+    );
   }
 
   async function discontinue() {
     if (!discontinuing) return;
-    setSubmitting(true);
-    try {
-      await save("beneficios", discontinuing.id, { status: "DESCONTINUADO" });
-      notify(
-        "Benefício descontinuado. As ofertas e o histórico foram preservados.",
-      );
-      setDiscontinuing(undefined);
-    } catch (error) {
-      notify(
-        error instanceof Error
-          ? error.message
-          : "Não foi possível descontinuar.",
-        "error",
-      );
-    } finally {
-      setSubmitting(false);
-    }
+    await run(
+      () =>
+        save("beneficios", discontinuing.id, { status: "DESCONTINUADO" }),
+      {
+        success:
+          "Benefício descontinuado. As ofertas e o histórico foram preservados.",
+        fallbackError: "Não foi possível descontinuar.",
+        onSuccess: () => setDiscontinuing(undefined),
+      },
+    );
   }
 
   async function linkPartner(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!linking || !selectedPartner) return;
-    setSubmitting(true);
     setFormError("");
-    try {
-      const existing = linkedOffers.find(
-        (item) => item.conveniado_id === Number(selectedPartner),
-      );
-      await save("ofertas", existing?.id, {
-        beneficio_id: linking.id,
-        conveniado_id: Number(selectedPartner),
-        status: "ATIVO",
-      });
-      notify(
-        existing
+    const existing = linkedOffers.find(
+      (item) => item.conveniado_id === Number(selectedPartner),
+    );
+    await run(
+      () =>
+        save("ofertas", existing?.id, {
+          beneficio_id: linking.id,
+          conveniado_id: Number(selectedPartner),
+          status: "ATIVO",
+        }),
+      {
+        success: existing
           ? "Oferta reativada para o conveniado."
           : "Conveniado vinculado ao benefício.",
-      );
-      setSelectedPartner("");
-    } catch (error) {
-      setFormError(
-        error instanceof Error
-          ? error.message
-          : "Não foi possível vincular o conveniado.",
-      );
-    } finally {
-      setSubmitting(false);
-    }
+        fallbackError: "Não foi possível vincular o conveniado.",
+        onSuccess: () => setSelectedPartner(""),
+        onError: setFormError,
+      },
+    );
   }
 
   async function changeOffer(id: number, nextStatus: "ATIVO" | "INATIVO") {
-    setSubmitting(true);
     setFormError("");
-    try {
-      await save("ofertas", id, { status: nextStatus });
-      notify(
+    await run(() => save("ofertas", id, { status: nextStatus }), {
+      success:
         nextStatus === "ATIVO"
           ? "Oferta reativada."
           : "Conveniado desvinculado. O histórico da oferta foi preservado.",
-      );
-    } catch (error) {
-      setFormError(
-        error instanceof Error
-          ? error.message
-          : "Não foi possível atualizar a oferta.",
-      );
-    } finally {
-      setSubmitting(false);
-    }
+      fallbackError: "Não foi possível atualizar a oferta.",
+      onError: setFormError,
+    });
   }
 
   return {

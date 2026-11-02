@@ -3,6 +3,7 @@ import { usePortal } from "./PortalContext";
 import { useToast } from "./ToastContext";
 import { usePagination } from "../hooks/usePagination";
 import { useUrlFilters } from "../hooks/useUrlFilters";
+import { useAsyncAction } from "../hooks/useAsyncAction";
 import {
   createDataIndexes,
   colaboradorNomeIndexed,
@@ -26,6 +27,7 @@ const URL_KEYS = [
 export function useUtilizacoesVM() {
   const { data, estornar: estornarUtilizacao } = usePortal();
   const { notify } = useToast();
+  const { running: saving, run } = useAsyncAction();
 
   // ── Filtros ──
   const { values: filters, setter, update } = useUrlFilters(URL_KEYS);
@@ -54,7 +56,6 @@ export function useUtilizacoesVM() {
     update({ utilizacao: item ? String(item.id) : "" });
   const [reversal, setReversal] = useState<Utilizacao | null>(null);
   const [motivo, setMotivo] = useState("");
-  const [saving, setSaving] = useState(false);
 
   const periodoInvalido = !!inicio && !!fim && fim < inicio;
 
@@ -148,26 +149,15 @@ export function useUtilizacoesVM() {
       setReversal(null);
       return;
     }
-    setSaving(true);
-    try {
-      await estornarUtilizacao(reversal.id, motivo);
-      notify(
-        "Utilização estornada. O registro permanece no histórico.",
-        "success",
-      );
-      setReversal(null);
-      setSelected(null);
-      setMotivo("");
-    } catch (error) {
-      notify(
-        error instanceof Error
-          ? error.message
-          : "Não foi possível estornar a utilização.",
-        "error",
-      );
-    } finally {
-      setSaving(false);
-    }
+    await run(() => estornarUtilizacao(reversal.id, motivo), {
+      success: "Utilização estornada. O registro permanece no histórico.",
+      fallbackError: "Não foi possível estornar a utilização.",
+      onSuccess: () => {
+        setReversal(null);
+        setSelected(null);
+        setMotivo("");
+      },
+    });
   }
 
   function limparFiltros() {

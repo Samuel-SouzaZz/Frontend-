@@ -1,13 +1,14 @@
 import { useMemo, useState, type FormEvent } from "react";
 import { usePortal } from "./PortalContext";
-import { useToast } from "./ToastContext";
 import { colaboradorNome, formatMoney, statusLabel, toLocalDateString } from "../models/selectors";
 import { usePagination } from "../hooks/usePagination";
 import { useUrlFilters } from "../hooks/useUrlFilters";
+import { useAsyncAction } from "../hooks/useAsyncAction";
 
 export type PortalData = ReturnType<typeof usePortal>["data"];
 export type Campanha = PortalData["campanhas"][number];
 export type Item = PortalData["itensCampanha"][number];
+export type OfertaCampanha = PortalData["ofertasCampanha"][number];
 
 export const TIPOS: Record<string, string> = {
   CAMPANHA: "Campanha",
@@ -42,7 +43,7 @@ const FILTER_KEYS = ["buscar", "tipo", "status", "inicio", "fim"] as const;
 
 export function useCampanhasVM() {
   const { data, save } = usePortal();
-  const { notify } = useToast();
+  const { running: saving, run } = useAsyncAction();
 
   // ── Filtros ──
   const { values: filters, setter } = useUrlFilters(FILTER_KEYS);
@@ -64,7 +65,6 @@ export function useCampanhasVM() {
   const [linkItem, setLinkItem] = useState<Item | null>(null);
   const [partnerId, setPartnerId] = useState("");
   const [cancelTarget, setCancelTarget] = useState<Campanha | null>(null);
-  const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState("");
 
   // ── Dados derivados ──
@@ -178,27 +178,39 @@ const eventList = {
     setShowItemForm(true);
   }
 
-  async function execute(
+  function execute(
     action: () => Promise<unknown>,
     message: string,
     after?: () => void,
     onError?: (message: string) => void,
   ) {
-    if (saving) return;
-    setSaving(true);
-    try {
-      await action();
-      notify(message, "success");
-      after?.();
-    } catch (error) {
-      const errorMessage = error instanceof Error
-        ? error.message
-        : "Não foi possível salvar. Tente novamente.";
-      if (onError) onError(errorMessage);
-      else notify(errorMessage, "error");
-    } finally {
-      setSaving(false);
-    }
+    return run(action, {
+      success: message,
+      fallbackError: "Não foi possível salvar. Tente novamente.",
+      onSuccess: after,
+      onError,
+    });
+  }
+
+  function toggleOfertaCampanha(oferta: OfertaCampanha) {
+    const ativa = oferta.status === "ATIVO";
+    return execute(
+      () =>
+        save("ofertasCampanha", oferta.id, {
+          status: ativa ? "INATIVO" : "ATIVO",
+        }),
+      ativa ? "Vínculo inativado. Histórico preservado." : "Vínculo reativado.",
+    );
+  }
+
+  function cancelarCampanha() {
+    if (!cancelTarget) return;
+    const alvo = cancelTarget;
+    return execute(
+      () => save("campanhas", alvo.id, { status: "CANCELADA" }),
+      "Iniciativa cancelada. Histórico preservado.",
+      () => setCancelTarget(null),
+    );
   }
 
   async function submitCampanha(event: FormEvent<HTMLFormElement>) {
@@ -295,7 +307,6 @@ const eventList = {
   return {
     // contexto
     data,
-    save,
     PAGE_SIZE,
     TIPOS,
 
@@ -358,12 +369,13 @@ const eventList = {
     // cancelamento
     cancelTarget,
     setCancelTarget,
+    cancelarCampanha,
+    toggleOfertaCampanha,
 
     // loading
     saving,
     formError,
     setFormError,
-    execute,
 
     // helpers re-exportados para o JSX
     statusLabel,

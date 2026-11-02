@@ -37,7 +37,6 @@ import {
 export default function Campanhas() {
   const {
     data,
-    save,
     PAGE_SIZE,
     search,
     setSearch,
@@ -87,7 +86,8 @@ export default function Campanhas() {
     saving,
     formError,
     setFormError,
-    execute,
+    cancelarCampanha,
+    toggleOfertaCampanha,
   } = useCampanhasVM();
 
   const lists = [
@@ -363,20 +363,7 @@ export default function Campanhas() {
                                     selected.status === "CANCELADA" ||
                                     selected.status === "ENCERRADA"))
                               }
-                              onClick={() =>
-                                execute(
-                                  () =>
-                                    save("ofertasCampanha", oferta.id, {
-                                      status:
-                                        oferta.status === "ATIVO"
-                                          ? "INATIVO"
-                                          : "ATIVO",
-                                    }),
-                                  oferta.status === "ATIVO"
-                                    ? "Vínculo inativado. Histórico preservado."
-                                    : "Vínculo reativado.",
-                                )
-                              }
+                              onClick={() => void toggleOfertaCampanha(oferta)}
                             >
                               {oferta.status === "ATIVO"
                                 ? "Desvincular"
@@ -770,14 +757,7 @@ export default function Campanhas() {
           onClose={() => {
             if (!saving) setCancelTarget(null);
           }}
-          onConfirm={() =>
-            execute(
-              () =>
-                save("campanhas", cancelTarget.id, { status: "CANCELADA" }),
-              "Iniciativa cancelada. Histórico preservado.",
-              () => setCancelTarget(null),
-            )
-          }
+          onConfirm={() => void cancelarCampanha()}
           confirming={saving}
           confirmLabel="Confirmar cancelamento"
           confirmingLabel="Cancelando…"

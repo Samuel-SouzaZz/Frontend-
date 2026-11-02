@@ -7,6 +7,7 @@ import { PERFIL_ADMINISTRADOR, SENHA_MINIMA } from "../models/rules";
 import type { Escopo, Perfil, Usuario } from "../models/types";
 import { usePagination } from "../hooks/usePagination";
 import { useUrlFilters } from "../hooks/useUrlFilters";
+import { useAsyncAction } from "../hooks/useAsyncAction";
 
 const PAGE_SIZE = 8;
 const FILTER_KEYS = ["buscar", "status", "escopo"] as const;
@@ -77,6 +78,7 @@ export function usePerfisVM() {
   const { user } = useAuth();
   const { data, save, loading } = usePortal();
   const { notify } = useToast();
+  const { running: submitting, run } = useAsyncAction();
   const admin = user !== null && isAdministrador(user, data);
 
   // ── Tabs e filtros ──
@@ -100,7 +102,6 @@ export function usePerfisVM() {
   const [profileForm, setProfileForm] = useState<ProfileForm>(blankProfile);
   const [userForm, setUserForm] = useState<UserForm>(blankUser);
   const [formError, setFormError] = useState("");
-  const [submitting, setSubmitting] = useState(false);
 
   // ── Dados derivados ──
   const editingProtected =
@@ -242,31 +243,27 @@ export function usePerfisVM() {
       );
       return;
     }
-    setSubmitting(true);
-    try {
-      await save(
-        "perfis",
-        editingProfile?.id,
-        editingProtected
-          ? { descricao: profileForm.descricao.trim() || null }
-          : {
-              ...profileForm,
-              nome: name,
-              descricao: profileForm.descricao.trim() || null,
-              permissoes: [...new Set(profileForm.permissoes)],
-            },
-      );
-      notify(editingProfile ? "Perfil atualizado." : "Perfil cadastrado.");
-      setProfileFormOpen(false);
-    } catch (error) {
-      setFormError(
-        error instanceof Error
-          ? error.message
-          : "Não foi possível salvar o perfil.",
-      );
-    } finally {
-      setSubmitting(false);
-    }
+    await run(
+      () =>
+        save(
+          "perfis",
+          editingProfile?.id,
+          editingProtected
+            ? { descricao: profileForm.descricao.trim() || null }
+            : {
+                ...profileForm,
+                nome: name,
+                descricao: profileForm.descricao.trim() || null,
+                permissoes: [...new Set(profileForm.permissoes)],
+              },
+        ),
+      {
+        success: editingProfile ? "Perfil atualizado." : "Perfil cadastrado.",
+        fallbackError: "Não foi possível salvar o perfil.",
+        onSuccess: () => setProfileFormOpen(false),
+        onError: setFormError,
+      },
+    );
   }
 
   async function submitUser(event: FormEvent<HTMLFormElement>) {
@@ -318,29 +315,23 @@ export function usePerfisVM() {
       setFormError("Selecione um perfil ativo.");
       return;
     }
-    setSubmitting(true);
-    try {
-      const payload: Partial<Usuario> = {
-        nome: name,
-        email,
-        ...(editingSelf
-          ? {}
-          : { perfil_id: Number(userForm.perfil_id), status: userForm.status }),
-        ...(userForm.senha ? { senha: userForm.senha } : {}),
-      };
-      await save("usuarios", editingUser?.id, payload);
-      notify(editingUser ? "Usuário atualizado." : "Usuário cadastrado.");
-      setUserFormOpen(false);
-      setUserForm(blankUser());
-    } catch (error) {
-      setFormError(
-        error instanceof Error
-          ? error.message
-          : "Não foi possível salvar o usuário.",
-      );
-    } finally {
-      setSubmitting(false);
-    }
+    const payload: Partial<Usuario> = {
+      nome: name,
+      email,
+      ...(editingSelf
+        ? {}
+        : { perfil_id: Number(userForm.perfil_id), status: userForm.status }),
+      ...(userForm.senha ? { senha: userForm.senha } : {}),
+    };
+    await run(() => save("usuarios", editingUser?.id, payload), {
+      success: editingUser ? "Usuário atualizado." : "Usuário cadastrado.",
+      fallbackError: "Não foi possível salvar o usuário.",
+      onSuccess: () => {
+        setUserFormOpen(false);
+        setUserForm(blankUser());
+      },
+      onError: setFormError,
+    });
   }
 
   async function inactivate() {
@@ -356,26 +347,18 @@ export function usePerfisVM() {
       notify("Você não pode inativar sua própria conta.", "error");
       return;
     }
-    setSubmitting(true);
-    try {
-      if (inactivating.type === "perfil")
-        await save("perfis", inactivating.item.id, { status: "INATIVO" });
-      else
-        await save("usuarios", inactivating.item.id, { status: "INATIVO" });
-      notify(
-        `${inactivating.type === "perfil" ? "Perfil" : "Usuário"} inativado. Os vínculos foram preservados.`,
-      );
-      setInactivating(undefined);
-    } catch (error) {
-      notify(
-        error instanceof Error
-          ? error.message
-          : "Não foi possível inativar o registro.",
-        "error",
-      );
-    } finally {
-      setSubmitting(false);
-    }
+    const target = inactivating;
+    await run(
+      () =>
+        target.type === "perfil"
+          ? save("perfis", target.item.id, { status: "INATIVO" })
+          : save("usuarios", target.item.id, { status: "INATIVO" }),
+      {
+        success: `${target.type === "perfil" ? "Perfil" : "Usuário"} inativado. Os vínculos foram preservados.`,
+        fallbackError: "Não foi possível inativar o registro.",
+        onSuccess: () => setInactivating(undefined),
+      },
+    );
   }
 
   return {

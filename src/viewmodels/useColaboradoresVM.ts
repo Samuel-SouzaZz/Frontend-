@@ -1,9 +1,9 @@
 import { useMemo, useState, type FormEvent } from "react";
 import { usePortal } from "./PortalContext";
-import { useToast } from "./ToastContext";
 import type { Colaborador } from "../models/types";
 import { usePagination } from "../hooks/usePagination";
 import { useUrlFilters } from "../hooks/useUrlFilters";
+import { useAsyncAction } from "../hooks/useAsyncAction";
 
 const PAGE_SIZE = 8;
 const FILTER_KEYS = ["buscar", "status", "setor"] as const;
@@ -30,7 +30,7 @@ const blankForm = (): ColaboradorForm => ({
 
 export function useColaboradoresVM() {
   const { data, save, loading } = usePortal();
-  const { notify } = useToast();
+  const { running: submitting, run } = useAsyncAction();
 
   // ── Filtros ──
   const { values: filters, setter } = useUrlFilters(FILTER_KEYS);
@@ -46,7 +46,6 @@ export function useColaboradoresVM() {
   const [inactivating, setInactivating] = useState<Colaborador>();
   const [form, setForm] = useState<ColaboradorForm>(blankForm);
   const [formError, setFormError] = useState("");
-  const [submitting, setSubmitting] = useState(false);
 
   // ── Dados derivados memoizados ──
   const sectors = useMemo(
@@ -152,44 +151,35 @@ export function useColaboradoresVM() {
       setFormError("Esta matrícula já está cadastrada.");
       return;
     }
-    setSubmitting(true);
-    try {
-      await save("colaboradores", editing?.id, {
-        ...form,
-        usuario_id: Number(form.usuario_id),
-        matricula: form.matricula.trim(),
-        setor: form.setor.trim(),
-        cargo: form.cargo.trim(),
-        telefone: form.telefone.trim() || null,
-      });
-      notify(editing ? "Colaborador atualizado." : "Colaborador cadastrado.");
-      setFormOpen(false);
-    } catch (error) {
-      setFormError(
-        error instanceof Error
-          ? error.message
-          : "Não foi possível salvar o colaborador.",
-      );
-    } finally {
-      setSubmitting(false);
-    }
+    await run(
+      () =>
+        save("colaboradores", editing?.id, {
+          ...form,
+          usuario_id: Number(form.usuario_id),
+          matricula: form.matricula.trim(),
+          setor: form.setor.trim(),
+          cargo: form.cargo.trim(),
+          telefone: form.telefone.trim() || null,
+        }),
+      {
+        success: editing ? "Colaborador atualizado." : "Colaborador cadastrado.",
+        fallbackError: "Não foi possível salvar o colaborador.",
+        onSuccess: () => setFormOpen(false),
+        onError: setFormError,
+      },
+    );
   }
 
   async function inactivate() {
     if (!inactivating) return;
-    setSubmitting(true);
-    try {
-      await save("colaboradores", inactivating.id, { status: "INATIVO" });
-      notify("Colaborador inativado. O histórico foi preservado.");
-      setInactivating(undefined);
-    } catch (error) {
-      notify(
-        error instanceof Error ? error.message : "Não foi possível inativar.",
-        "error",
-      );
-    } finally {
-      setSubmitting(false);
-    }
+    await run(
+      () => save("colaboradores", inactivating.id, { status: "INATIVO" }),
+      {
+        success: "Colaborador inativado. O histórico foi preservado.",
+        fallbackError: "Não foi possível inativar.",
+        onSuccess: () => setInactivating(undefined),
+      },
+    );
   }
 
   return {
