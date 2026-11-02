@@ -17,8 +17,8 @@
 .profile-summary { padding: 30px 24px; display: flex; align-items: center; flex-direction: column; gap: 16px; text-align: center; }
 .profile-avatar { width: 84px; height: 84px; display: grid; place-items: center; border-radius: 50%; flex-shrink: 0; background: #e8f2ff; border: 3px solid #f5f9ff; box-shadow: 0 0 0 1px #d7e7fa; color: var(--primary); font-size: 28px; font-weight: 700; }
 .profile-summary h2 { font-size: 20px; line-height: 1.4; margin: 2px 0 0; overflow-wrap: anywhere; }
-.profile-role { display: flex; align-items: center; justify-content: center; gap: 7px; margin: 0; font-size: 12px; color: #597189; }
-.profile-email { display: flex; align-items: flex-start; justify-content: center; gap: 8px; margin: 6px 0 0; padding-top: 18px; width: 100%; border-top: 1px solid var(--stroke); font-size: 12px; color: #597189; overflow-wrap: anywhere; min-width: 0; }
+.profile-role { display: flex; align-items: center; justify-content: center; gap: 7px; margin: 0; font-size: 12px; color: var(--text-soft); }
+.profile-email { display: flex; align-items: flex-start; justify-content: center; gap: 8px; margin: 6px 0 0; padding-top: 18px; width: 100%; border-top: 1px solid var(--stroke); font-size: 12px; color: var(--text-soft); overflow-wrap: anywhere; min-width: 0; }
 .profile-email svg, .profile-role svg { flex-shrink: 0; }
 .profile-details .panel-header h2 { display: flex; align-items: center; gap: 9px; }
 .profile-details-body { padding: 24px; }
@@ -27,7 +27,7 @@
 .profile-details .detail-list dd { font-size: 14px; }
 .profile-description { margin-top: 28px; padding: 18px; border-radius: 12px; background: #f6faff; }
 .profile-description h3 { font-size: 13px; margin: 0 0 8px; }
-.profile-description p { margin: 0; color: #597189; font-size: 13px; line-height: 1.7; overflow-wrap: anywhere; }
+.profile-description p { margin: 0; color: var(--text-soft); font-size: 13px; line-height: 1.7; overflow-wrap: anywhere; }
 @media (max-width: 1050px) { .profile-layout { grid-template-columns: 1fr; } }
 @media (max-width: 480px) { .profile-details-body { padding: 20px; } .profile-summary { padding: 26px 20px; } }
 @media (prefers-reduced-motion: no-preference) { .profile-layout { animation: fcv-section-enter 260ms var(--motion-ease) both; } }

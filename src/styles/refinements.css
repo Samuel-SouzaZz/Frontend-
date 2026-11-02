@@ -6,7 +6,7 @@
 .app-shell .sidebar-user .avatar,
 .app-shell .topbar-right > .avatar {
   border: 1px solid #dce1ef;
-  background: #edf0f8;
+  background: var(--surface-soft);
   color: var(--primary);
 }
 .app-shell .notification-trigger {
@@ -25,34 +25,15 @@
   min-height: 144px;
   align-items: flex-start;
   border-radius: 13px;
-  background: #fff;
+  background: var(--surface);
 }
 .app-shell .campaign-stats .stat-icon {
-  background: #edf0f8;
+  background: var(--surface-soft);
   color: var(--primary);
 }
 .app-shell .campaign-stats .stat-content {
   display: grid;
   grid-template-rows: minmax(34px, auto) auto minmax(30px, auto);
-}
-.app-shell .badge-ativo,
-.app-shell .badge-ativa,
-.app-shell .badge-aprovada {
-  color: #16714d;
-  background: #eaf8f0;
-}
-.app-shell .badge-pendente,
-.app-shell .badge-planejada,
-.app-shell .badge-em_analise,
-.app-shell .badge-afastado {
-  color: #94620b;
-  background: #fff5e2;
-}
-.app-shell .badge-inativo,
-.app-shell .badge-reprovada,
-.app-shell .badge-cancelada {
-  color: #ad3d56;
-  background: #fff0f3;
 }
 .app-shell .campaign-list {
   display: flex;
@@ -87,7 +68,7 @@
 .app-shell .campaign-list .page-button.selected:hover {
   border-color: var(--primary);
   background: var(--primary);
-  color: #fff;
+  color: var(--surface);
 }
 .app-shell .campaign-panel .campaign-filter-row {
   display: grid;
@@ -138,14 +119,14 @@
 .app-shell .field :is(input, textarea),
 .modal .field :is(input, textarea) {
   border-radius: 11px;
-  border-color: #dce6f0;
+  border-color: var(--border-input);
   transition: border-color 180ms ease, box-shadow 180ms ease, background-color 180ms ease;
 }
 .app-shell .field :is(input, textarea):focus,
 .modal .field :is(input, textarea):focus {
-  border-color: #4c8bd4;
+  border-color: var(--focus);
   background-color: #fcfdff;
-  box-shadow: 0 0 0 4px #4c8bd41a, 0 2px 5px #17395f0a;
+  box-shadow: 0 0 0 4px var(--focus-ring), 0 2px 5px var(--shadow-color);
 }
 .field > span::before {
   width: 6px;
@@ -172,7 +153,7 @@
   outline: none;
 }
 .login-input:focus-within > svg {
-  color: #4c8bd4;
+  color: var(--focus);
   transition: color 180ms ease;
 }
 .app-shell .portal-search-results a[aria-selected="true"] {
@@ -210,7 +191,7 @@
   }
   .app-shell .btn-primary:hover:not(:disabled),
   .modal .btn-primary:hover:not(:disabled) {
-    background: #202d5c;
+    background: var(--navy);
     box-shadow: 0 4px 10px #28377226;
   }
   .app-shell .btn-secondary:hover:not(:disabled),
@@ -239,10 +220,10 @@
 }
 .app-shell .field.field-invalid :is(input, textarea),
 .modal .field.field-invalid :is(input, textarea) {
-  border-color: #c74661;
+  border-color: var(--error);
 }
 .modal .field .field-validation-error {
-  color: #c74661;
+  color: var(--error);
 }
 @media (prefers-reduced-motion: no-preference) {
   .page-content > .page-heading,
@@ -352,7 +333,7 @@
   padding: 6px 9px;
   border: 1px solid #e0e8ef;
   border-radius: 6px;
-  background: #fff;
+  background: var(--surface);
   box-shadow: 0 4px 12px #17395f12;
   color: #456078;
   font-size: 11px;

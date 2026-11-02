@@ -1,11 +1,3 @@
-:root {
-  --primary: #283772;
-  --navy: #202d5c;
-  --muted: #737f9c;
-  --canvas: #f5f6fa;
-  --stroke: #e2e6f0;
-  background: var(--canvas);
-}
 .sr-only {
   position: absolute;
   width: 1px;
@@ -73,8 +65,8 @@
 }
 .portal-search:focus-within {
   outline: 2px solid #c0ddfa;
-  border-color: #4c8bd4;
-  box-shadow: 0 0 0 4px #4c8bd41a, 0 2px 5px #17395f0a;
+  border-color: var(--focus);
+  box-shadow: 0 0 0 4px var(--focus-ring), 0 2px 5px var(--shadow-color);
 }
 .portal-search input:focus-visible {
   outline: none;
@@ -142,7 +134,7 @@ thead {
   grid-template-columns: minmax(0, 1.08fr) minmax(440px, .92fr);
   min-height: 100vh;
   min-height: 100svh;
-  background: #fff;
+  background: var(--surface);
 }
 .login-form-side {
   padding: 48px clamp(32px, 6vw, 92px);
@@ -151,16 +143,16 @@ thead {
   align-items: center;
   justify-content: center;
   min-width: 0;
-  background: #fff;
+  background: var(--surface);
   box-shadow: none;
 }
 .login-panel {
-  background: #fff;
+  background: var(--surface);
   box-shadow: none;
   width: min(100%, 400px);
 }
 .login-form-content {
-  background: #fff;
+  background: var(--surface);
   box-shadow: none;
   margin: 0;
   width: 100%;
@@ -235,9 +227,9 @@ thead {
 .login-input input:-webkit-autofill:hover,
 .login-input input:-webkit-autofill:focus,
 .login-input input:autofill {
-  -webkit-box-shadow: 0 0 0 1000px #fff inset;
-  -webkit-text-fill-color: #202d5c;
-  caret-color: #202d5c;
+  -webkit-box-shadow: 0 0 0 1000px var(--surface) inset;
+  -webkit-text-fill-color: var(--navy);
+  caret-color: var(--navy);
 }
 .login-input > svg {
   width: 19px;
@@ -256,7 +248,7 @@ thead {
   transition: background .18s, transform .18s, box-shadow .18s;
 }
 .login-submit.btn-primary:hover {
-  background: #202d5c;
+  background: var(--navy);
   box-shadow: 0 4px 12px #28377226;
 }
 .login-submit.btn-secondary {
@@ -278,7 +270,7 @@ thead {
   object-position: 100% 58%;
 }
 .login-form-content .form-error {
-  color: #c74661;
+  color: var(--error);
   font-size: 13px;
   margin: 0;
 }

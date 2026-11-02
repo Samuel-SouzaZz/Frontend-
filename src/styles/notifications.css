@@ -38,7 +38,7 @@
   gap: 12px;
   margin-bottom: 18px;
 }
-.notifications-toolbar > span { color: #597189; font-size: 12px; }
+.notifications-toolbar > span { color: var(--text-soft); font-size: 12px; }
 .notifications-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
 .notification-item {
   display: flex;
@@ -64,15 +64,15 @@
 .notification-label { display: flex; flex-wrap: wrap; gap: 4px 8px; color: #687e94; font-size: 10px; }
 .notification-label > span { font-variant-numeric: tabular-nums; }
 .notification-copy strong { display: block; margin: 6px 0; font-size: 14px; color: var(--navy); }
-.notification-copy p { margin: 0 0 8px; color: #597189; font-size: 12px; line-height: 1.6; }
+.notification-copy p { margin: 0 0 8px; color: var(--text-soft); font-size: 12px; line-height: 1.6; }
 .notification-copy time { font-size: 10px; color: #687e94; }
 .notification-chevron { color: #7191b2; margin-top: 10px; flex-shrink: 0; }
-.notifications-limit { font-size: 11px; color: #597189; margin-top: 14px; }
+.notifications-limit { font-size: 11px; color: var(--text-soft); margin-top: 14px; }
 .notifications-state { min-height: 180px; padding: 32px 16px; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; }
 .notifications-state p { margin: 0; font-size: 13px; line-height: 1.7; }
 .notifications-empty > svg { color: #15977a; }
 .notifications-empty h3 { margin: 0; font-size: 18px; }
-.notifications-empty p { color: #597189; }
+.notifications-empty p { color: var(--text-soft); }
 .notifications-footer { padding-top: 20px; margin-top: 22px; border-top: 1px solid var(--stroke); }
 @media (max-width: 480px) {
   .notification-item { padding: 12px; gap: 10px; }
