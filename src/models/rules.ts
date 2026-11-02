@@ -2,6 +2,7 @@ import type { PortalData, Utilizacao } from "./types";
 import { parseDate } from "./formatters";
 
 export const PERFIL_ADMINISTRADOR = "FCV_ADMINISTRADOR";
+export const SENHA_MINIMA = 6;
 
 /**
  * Verifica se o usuário autenticado possui perfil de Administrador FCV.
