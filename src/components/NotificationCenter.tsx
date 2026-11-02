@@ -13,7 +13,8 @@ import { Modal } from "./ui";
 const MAX_VISIBLE = 8;
 
 export default function NotificationCenter() {
-  const { data, loading, error, reload } = usePortal();
+  const { data, loading, refreshing, error: portalError, resourceErrors, reload } = usePortal();
+  const error = portalError ?? resourceErrors.utilizacoes ?? null;
   const [open, setOpen] = useState(false);
   const countId = useId();
   const pending = useMemo(
@@ -43,8 +44,8 @@ export default function NotificationCenter() {
     {open && <Modal title="Notificações" description="Acompanhe as utilizações que aguardam validação." onClose={() => setOpen(false)}>
       <div className="notifications-toolbar">
         <span>{ready ? countLabel : "Utilizações pendentes"}</span>
-        <button type="button" className="btn btn-secondary btn-small" aria-label="Atualizar notificações" onClick={() => void reload()} disabled={loading}>
-          <RefreshCw size={15} aria-hidden="true" />Atualizar
+        <button type="button" className="btn btn-secondary btn-small" aria-label="Atualizar notificações" onClick={() => void reload()} disabled={loading || refreshing}>
+          <RefreshCw size={15} aria-hidden="true" />{refreshing ? "Atualizando…" : "Atualizar"}
         </button>
       </div>
 

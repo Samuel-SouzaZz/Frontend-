@@ -27,6 +27,7 @@ import {
 import Brand from "./Brand";
 import PortalSearch from "./PortalSearch";
 import NotificationCenter from "./NotificationCenter";
+import type { Resource } from "../models/types";
 const navigation = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
   { to: "/colaboradores", label: "Colaboradores", icon: Users },
@@ -37,6 +38,18 @@ const navigation = [
   { to: "/relatorios", label: "Relatórios", icon: ChartNoAxesCombined },
   { to: "/perfis", label: "Configurações", icon: ShieldCheck },
 ];
+const resourceLabels: Record<Resource, string> = {
+  usuarios: "Usuários",
+  perfis: "Perfis",
+  colaboradores: "Colaboradores",
+  conveniados: "Conveniados",
+  beneficios: "Benefícios",
+  ofertas: "Ofertas",
+  campanhas: "Campanhas",
+  itensCampanha: "Itens de campanha",
+  ofertasCampanha: "Ofertas de campanha",
+  utilizacoes: "Utilizações",
+};
 const helpByPage: Record<string, string> = {
   "/": "Confira os indicadores e ajuste o período para comparar utilizações.",
   "/colaboradores": "Consulte colaboradores e mantenha seus dados e vínculos atualizados.",
@@ -51,7 +64,11 @@ const helpByPage: Record<string, string> = {
 export default function Layout() {
   const { user, logout } = useAuth();
   const location = useLocation();
-  const { loading, error, reload, data } = usePortal();
+  const { loading, refreshing, error, resourceErrors, reload, data } =
+    usePortal();
+  const failedResources = (Object.keys(resourceErrors) as Resource[]).map(
+    (resource) => resourceLabels[resource],
+  );
   const { toast } = useToast();
   const pageHelp =
     helpByPage[location.pathname] ??
@@ -206,7 +223,23 @@ export default function Layout() {
               </button>
             </div>
           ) : (
-            <Outlet key={location.pathname} />
+            <>
+              {failedResources.length > 0 && (
+                <section className="inline-notice" role="alert">
+                  <h2>Alguns dados não foram carregados</h2>
+                  <p>{failedResources.join(", ")}.</p>
+                  <button
+                    className="button-link"
+                    type="button"
+                    disabled={refreshing}
+                    onClick={() => void reload()}
+                  >
+                    {refreshing ? "Carregando…" : "Tentar novamente"}
+                  </button>
+                </section>
+              )}
+              <Outlet key={location.pathname} />
+            </>
           )}
           <footer className="page-footer">
             <span>Fundação Cristiano Varella · Pela vida.</span>

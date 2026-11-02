@@ -26,6 +26,7 @@ import {
   saveLocalDemoEntity,
 } from "../local-demo/localDemo";
 import { useAuth } from "./AuthContext";
+
 const empty: PortalData = {
   usuarios: [],
   perfis: [],
@@ -38,10 +39,17 @@ const empty: PortalData = {
   ofertasCampanha: [],
   utilizacoes: [],
 };
+
+const resources = Object.keys(empty) as Resource[];
+
+export type ResourceErrors = Partial<Record<Resource, string>>;
+
 interface Portal {
   data: PortalData;
   loading: boolean;
+  refreshing: boolean;
   error: string | null;
+  resourceErrors: ResourceErrors;
   reload: () => Promise<void>;
   save: <K extends Resource>(
     resource: K,
@@ -50,50 +58,80 @@ interface Portal {
   ) => Promise<Entity<K>>;
   estornar: (id: number, motivo: string) => Promise<Utilizacao>;
 }
+
 const Context = createContext<Portal | null>(null);
+
+function failureMessage(reason: unknown) {
+  return reason instanceof Error ? reason.message : "Falha ao carregar dados.";
+}
+
 export function PortalProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
-  const [data, setData] = useState<PortalData>(empty),
-    [loading, setLoading] = useState(true),
-    [error, setError] = useState<string | null>(null);
+  const [data, setData] = useState<PortalData>(empty);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [resourceErrors, setResourceErrors] = useState<ResourceErrors>({});
   const dataRef = useRef(data);
+  const loadedRef = useRef(false);
   const generation = useRef(0);
-  dataRef.current = data;
   const userRef = useRef(user);
+  dataRef.current = data;
   userRef.current = user;
+
   const reload = useCallback(async () => {
     const current = ++generation.current;
-    setLoading(true);
+    const firstLoad = !loadedRef.current;
+    if (firstLoad) setLoading(true);
+    else setRefreshing(true);
     setError(null);
     if (isLocalDemoUser(userRef.current)) {
       const next = createLocalDemoData();
-      setData(next);
       dataRef.current = next;
+      loadedRef.current = true;
+      setData(next);
+      setResourceErrors({});
       setLoading(false);
+      setRefreshing(false);
       return;
     }
-    const resources = Object.keys(empty) as Resource[];
-    try {
-      const results = await Promise.all(resources.map((r) => listResource(r)));
-      if (current !== generation.current) return;
-      const next = Object.fromEntries(
-        resources.map((r, i) => [r, results[i]]),
-      ) as unknown as PortalData;
-      setData(next);
+    const results = await Promise.allSettled(
+      resources.map((resource) => listResource(resource)),
+    );
+    if (current !== generation.current) return;
+    const previous = dataRef.current;
+    const errors: ResourceErrors = {};
+    const next = { ...previous };
+    results.forEach((result, index) => {
+      const resource = resources[index];
+      if (result.status === "fulfilled") {
+        Object.assign(next, { [resource]: result.value });
+      } else {
+        errors[resource] = failureMessage(result.reason);
+      }
+    });
+    const failures = Object.values(errors);
+    if (failures.length === resources.length && !loadedRef.current) {
+      setError(failures[0] ?? "Falha ao carregar dados.");
+    } else {
+      loadedRef.current = true;
       dataRef.current = next;
-    } catch (e) {
-      if (current === generation.current)
-        setError(e instanceof Error ? e.message : "Falha ao carregar dados.");
-    } finally {
-      if (current === generation.current) setLoading(false);
+      setData(next);
     }
+    setResourceErrors(errors);
+    setLoading(false);
+    setRefreshing(false);
   }, []);
+
   useEffect(() => {
+    loadedRef.current = false;
+    dataRef.current = empty;
     void reload();
     return () => {
       generation.current++;
     };
-  }, [user?.id]);
+  }, [user?.id, reload]);
+
   const save = useCallback(async function save<K extends Resource>(
     resource: K,
     id: number | undefined,
@@ -156,15 +194,30 @@ export function PortalProvider({ children }: { children: ReactNode }) {
     return result;
   }, []);
   const value = useMemo<Portal>(
-    () => ({ data, loading, error, reload, save, estornar }),
-    [data, loading, error, reload, save, estornar],
+    () => ({
+      data,
+      loading,
+      refreshing,
+      error,
+      resourceErrors,
+      reload,
+      save,
+      estornar,
+    }),
+    [
+      data,
+      loading,
+      refreshing,
+      error,
+      resourceErrors,
+      reload,
+      save,
+      estornar,
+    ],
   );
-  return (
-    <Context.Provider value={value}>
-      {children}
-    </Context.Provider>
-  );
+  return <Context.Provider value={value}>{children}</Context.Provider>;
 }
+
 export const usePortal = () => {
   const c = useContext(Context);
   if (!c) throw new Error("PortalProvider ausente");
