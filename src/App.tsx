@@ -14,6 +14,7 @@ import Relatorios from "./pages/Relatorios";
 import Perfis from "./pages/Perfis";
 import MeuPerfil from "./pages/MeuPerfil";
 import { isAdministrador } from "./models/selectors";
+import { useSessionUser } from "./hooks/useSessionUser";
 function Protected() {
   const { user, restoring } = useAuth();
   if (restoring)
@@ -33,9 +34,9 @@ function Protected() {
   );
 }
 function AdminPage() {
-  const { user } = useAuth();
+  const user = useSessionUser();
   const { data } = usePortal();
-  return isAdministrador(user!, data) ? (
+  return isAdministrador(user, data) ? (
     <Perfis />
   ) : (
     <div className="error-state">
