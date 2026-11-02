@@ -1,34 +1,37 @@
+import { Plus, Users } from "lucide-react";
 import {
-  Eye,
-  Pencil,
-  Plus,
-  UserCheck,
-  UserMinus,
-  Users,
-  UserRoundCheck,
-} from "lucide-react";
-import {
-  Badge,
   ConfirmModal,
-  DataTable,
-  DetailList,
   EmptyState,
-  Field,
-  Modal,
+  FilterBar,
   PageHeader,
   Pagination,
   SearchField,
-  StatCard,
+  Select,
+  type SelectOption,
 } from "../components/ui";
-import {
-  capitalizeFirstLetter,
-  colaboradorNome,
-  formatDate,
-} from "../models/selectors";
+import { ColaboradorDetailsModal } from "../components/colaboradores/ColaboradorDetailsModal";
+import { ColaboradorFormModal } from "../components/colaboradores/ColaboradorFormModal";
+import { ColaboradoresStats } from "../components/colaboradores/ColaboradoresStats";
+import { ColaboradoresTable } from "../components/colaboradores/ColaboradoresTable";
+import { colaboradorNome } from "../models/selectors";
+import type { Colaborador } from "../models/types";
 import { useColaboradoresVM } from "../viewmodels/useColaboradoresVM";
+
+const STATUS_FILTRO: SelectOption[] = [
+  { value: "", label: "Todos os status" },
+  { value: "ATIVO", label: "Ativos" },
+  { value: "AFASTADO", label: "Afastados" },
+  { value: "INATIVO", label: "Inativos" },
+];
 
 export default function Colaboradores() {
   const vm = useColaboradoresVM();
+  const nomeDe = (item: Colaborador) => colaboradorNome(vm.data, item.id);
+  const filtrar = (setter: (value: string) => void) => (value: string) => {
+    setter(value);
+    vm.setPage(1);
+  };
+  const details = vm.details;
 
   return (
     <>
@@ -39,6 +42,7 @@ export default function Colaboradores() {
         description="Cadastre e acompanhe os colaboradores da Fundação."
         actions={
           <button
+            type="button"
             className="btn btn-primary"
             disabled={vm.loading}
             onClick={() => vm.openForm()}
@@ -47,150 +51,37 @@ export default function Colaboradores() {
           </button>
         }
       />
-      <div className="stats-grid">
-        <StatCard
-          label="Total de colaboradores"
-          value={vm.data.colaboradores.length}
-          icon={<Users size={21} />}
-          detail="Cadastros na plataforma"
-        />
-        <StatCard
-          label="Colaboradores ativos"
-          value={
-            vm.data.colaboradores.filter((item) => item.status === "ATIVO").length
-          }
-          icon={<UserCheck size={21} />}
-          tone="green"
-          detail="Com acesso aos benefícios"
-        />
-        <StatCard
-          label="Colaboradores afastados"
-          value={
-            vm.data.colaboradores.filter((item) => item.status === "AFASTADO")
-              .length
-          }
-          icon={<UserRoundCheck size={21} />}
-          tone="amber"
-          detail="Acesso suspenso por afastamento"
-        />
-        <StatCard
-          label="Colaboradores inativos"
-          value={
-            vm.data.colaboradores.filter((item) => item.status === "INATIVO")
-              .length
-          }
-          icon={<UserMinus size={21} />}
-          tone="purple"
-          detail="Histórico preservado"
-        />
-      </div>
+      <ColaboradoresStats colaboradores={vm.data.colaboradores} />
       <section className="panel" aria-label="Lista de colaboradores">
-        <div className="filters">
+        <FilterBar>
           <SearchField
             value={vm.search}
-            onChange={(value) => {
-              vm.setSearch(value);
-              vm.setPage(1);
-            }}
+            onChange={filtrar(vm.setSearch)}
             placeholder="Buscar por nome, matrícula, setor ou cargo..."
           />
-          <select
+          <Select
             aria-label="Filtrar colaboradores por status"
             value={vm.status}
-            onChange={(event) => {
-              vm.setStatus(event.target.value);
-              vm.setPage(1);
-            }}
-          >
-            <option value="">Todos os status</option>
-            <option value="ATIVO">Ativos</option>
-            <option value="AFASTADO">Afastados</option>
-            <option value="INATIVO">Inativos</option>
-          </select>
-          <select
+            options={STATUS_FILTRO}
+            onChange={filtrar(vm.setStatus)}
+          />
+          <Select
             aria-label="Filtrar por setor"
             value={vm.setor}
-            onChange={(event) => {
-              vm.setSetor(event.target.value);
-              vm.setPage(1);
-            }}
-          >
-            <option value="">Todos os setores</option>
-            {vm.sectors.map((value) => (
-              <option key={value}>{value}</option>
-            ))}
-          </select>
-        </div>
-        {vm.filtered.length ? (
-          <DataTable
-            rows={vm.visibleRows}
-            getRowKey={(item) => item.id}
-            columns={[
-              {
-                key: "nome",
-                label: "Colaborador",
-                render: (item) => (
-                  <div>
-                    <div className="cell-title">
-                      {colaboradorNome(vm.data, item.id)}
-                    </div>
-                    <div className="cell-subtitle">{item.cargo}</div>
-                  </div>
-                ),
-              },
-              {
-                key: "matricula",
-                label: "Matrícula",
-                render: (item) => (
-                  <span className="cell-title">{item.matricula}</span>
-                ),
-              },
-              { key: "setor", label: "Setor", render: (item) => item.setor },
-              {
-                key: "admissao",
-                label: "Admissão",
-                render: (item) => formatDate(item.data_admissao),
-              },
-              {
-                key: "status",
-                label: "Status",
-                render: (item) => <Badge status={item.status} />,
-              },
-              {
-                key: "acoes",
-                label: "Ações",
-                render: (item) => (
-                  <div className="table-actions">
-                    <button
-                      className="icon-button"
-                      title="Visualizar colaborador"
-                      aria-label={`Visualizar ${colaboradorNome(vm.data, item.id)}`}
-                      onClick={() => vm.setDetails(item)}
-                    >
-                      <Eye size={17} />
-                    </button>
-                    <button
-                      className="icon-button"
-                      title="Editar colaborador"
-                      aria-label={`Editar ${colaboradorNome(vm.data, item.id)}`}
-                      onClick={() => vm.openForm(item)}
-                    >
-                      <Pencil size={17} />
-                    </button>
-                    {item.status !== "INATIVO" && (
-                      <button
-                        className="icon-button"
-                        title="Inativar colaborador"
-                        aria-label={`Inativar ${colaboradorNome(vm.data, item.id)}`}
-                        onClick={() => vm.setInactivating(item)}
-                      >
-                        <UserMinus size={17} />
-                      </button>
-                    )}
-                  </div>
-                ),
-              },
+            onChange={filtrar(vm.setSetor)}
+            options={[
+              { value: "", label: "Todos os setores" },
+              ...vm.sectors.map((value) => ({ value, label: value })),
             ]}
+          />
+        </FilterBar>
+        {vm.filtered.length ? (
+          <ColaboradoresTable
+            rows={vm.visibleRows}
+            nomeDe={nomeDe}
+            onView={vm.setDetails}
+            onEdit={vm.openForm}
+            onInactivate={vm.setInactivating}
           />
         ) : (
           <EmptyState
@@ -209,196 +100,42 @@ export default function Colaboradores() {
           onChange={vm.setPage}
         />
       </section>
-
       {vm.formOpen && (
-        <Modal
-          title={vm.editing ? "Editar colaborador" : "Novo colaborador"}
-          description="Vincule uma conta existente e preencha os dados de trabalho."
-          onClose={() => {
-            if (!vm.submitting) vm.setFormOpen(false);
-          }}
-          wide
-        >
-          <form onSubmit={vm.submit} className="form-grid">
-            <Field
-              label="Usuário vinculado"
-              required
-              hint="Selecione uma conta do perfil Colaborador que ainda não possua vínculo."
-            >
-              <select
-                required
-                value={vm.form.usuario_id}
-                onChange={(event) =>
-                  vm.setForm({ ...vm.form, usuario_id: event.target.value })
-                }
-              >
-                <option value="">Selecione o usuário</option>
-                {vm.availableUsers.map((user) => (
-                  <option key={user.id} value={user.id}>
-                    {capitalizeFirstLetter(user.nome)} · {user.email}
-                  </option>
-                ))}
-              </select>
-            </Field>
-            <Field label="Matrícula" required>
-              <input
-                required
-                maxLength={30}
-                value={vm.form.matricula}
-                onChange={(event) =>
-                  vm.setForm({ ...vm.form, matricula: event.target.value })
-                }
-                placeholder="Ex.: FCV-0124"
-              />
-            </Field>
-            <Field label="Setor" required>
-              <input
-                required
-                maxLength={100}
-                value={vm.form.setor}
-                onChange={(event) =>
-                  vm.setForm({ ...vm.form, setor: event.target.value })
-                }
-                placeholder="Ex.: Enfermagem"
-              />
-            </Field>
-            <Field label="Cargo" required>
-              <input
-                required
-                maxLength={100}
-                value={vm.form.cargo}
-                onChange={(event) =>
-                  vm.setForm({ ...vm.form, cargo: event.target.value })
-                }
-                placeholder="Ex.: Enfermeiro(a)"
-              />
-            </Field>
-            <Field label="Data de admissão" required>
-              <input
-                type="date"
-                required
-                value={vm.form.data_admissao}
-                onChange={(event) =>
-                  vm.setForm({ ...vm.form, data_admissao: event.target.value })
-                }
-              />
-            </Field>
-            <Field label="Telefone">
-              <input
-                type="tel"
-                maxLength={20}
-                value={vm.form.telefone}
-                onChange={(event) => {
-                  const telefone = event.currentTarget.value.replace(
-                    /[^\d+()\s-]/g,
-                    "",
-                  );
-                  vm.setForm({ ...vm.form, telefone });
-                }}
-                placeholder="(32) 99999-9999"
-              />
-            </Field>
-            <Field label="Status" required>
-              <select
-                value={vm.form.status}
-                onChange={(event) =>
-                  vm.setForm({
-                    ...vm.form,
-                    status: event.target.value as typeof vm.form.status,
-                  })
-                }
-              >
-                <option value="ATIVO">Ativo</option>
-                <option value="AFASTADO">Afastado</option>
-                <option value="INATIVO">Inativo</option>
-              </select>
-            </Field>
-            {!vm.availableUsers.length && (
-              <p className="full-width inline-notice">
-                Não há uma conta do perfil Colaborador sem vínculo. Solicite ao
-                administrador o cadastro em Perfis e usuários.
-              </p>
-            )}
-            {vm.formError && (
-              <p className="full-width form-error" role="alert">
-                {vm.formError}
-              </p>
-            )}
-            <div className="modal-footer full-width">
-              <button
-                type="button"
-                className="btn btn-secondary"
-                disabled={vm.submitting}
-                onClick={() => vm.setFormOpen(false)}
-              >
-                Cancelar
-              </button>
-              <button
-                type="submit"
-                className="btn btn-primary"
-                disabled={vm.submitting || !vm.availableUsers.length}
-              >
-                {vm.submitting
-                  ? "Salvando..."
-                  : vm.editing
-                    ? "Salvar alterações"
-                    : "Cadastrar colaborador"}
-              </button>
-            </div>
-          </form>
-        </Modal>
+        <ColaboradorFormModal
+          form={vm.form}
+          onChange={vm.setForm}
+          availableUsers={vm.availableUsers}
+          editing={Boolean(vm.editing)}
+          submitting={vm.submitting}
+          error={vm.formError}
+          onSubmit={vm.submit}
+          onClose={() => vm.setFormOpen(false)}
+        />
       )}
-      {vm.details && (
-        <Modal
-          title="Detalhes do colaborador"
-          description={colaboradorNome(vm.data, vm.details.id)}
+      {details && (
+        <ColaboradorDetailsModal
+          colaborador={details}
+          nome={nomeDe(details)}
+          email={
+            vm.data.usuarios.find((user) => user.id === details.usuario_id)
+              ?.email
+          }
+          utilizacoes={
+            vm.data.utilizacoes.filter(
+              (item) => item.colaborador_id === details.id,
+            ).length
+          }
           onClose={() => vm.setDetails(undefined)}
-        >
-          <DetailList
-            items={[
-              { label: "Status", value: <Badge status={vm.details.status} /> },
-              { label: "Matrícula", value: vm.details.matricula },
-              { label: "Setor", value: vm.details.setor },
-              { label: "Cargo", value: vm.details.cargo },
-              { label: "Admissão", value: formatDate(vm.details.data_admissao) },
-              { label: "Telefone", value: vm.details.telefone || "Não informado" },
-              {
-                label: "E-mail",
-                value:
-                  vm.data.usuarios.find((user) => user.id === vm.details!.usuario_id)
-                    ?.email || "Usuário não disponível",
-              },
-              {
-                label: "Registros de utilização",
-                value: vm.data.utilizacoes.filter(
-                  (item) => item.colaborador_id === vm.details!.id,
-                ).length,
-              },
-            ]}
-          />
-          <div className="modal-footer">
-            <button
-              className="btn btn-secondary"
-              onClick={() => vm.setDetails(undefined)}
-            >
-              Fechar
-            </button>
-            <button
-              className="btn btn-primary"
-              onClick={() => {
-                vm.openForm(vm.details);
-                vm.setDetails(undefined);
-              }}
-            >
-              <Pencil size={16} /> Editar cadastro
-            </button>
-          </div>
-        </Modal>
+          onEdit={() => {
+            vm.openForm(details);
+            vm.setDetails(undefined);
+          }}
+        />
       )}
       {vm.inactivating && (
         <ConfirmModal
           title="Inativar colaborador"
-          description={`Deseja inativar ${colaboradorNome(vm.data, vm.inactivating.id)}? O acesso aos benefícios será bloqueado e os registros anteriores serão preservados.`}
+          description={`Deseja inativar ${nomeDe(vm.inactivating)}? O acesso aos benefícios será bloqueado e os registros anteriores serão preservados.`}
           onClose={() => {
             if (!vm.submitting) vm.setInactivating(undefined);
           }}
