@@ -28,8 +28,6 @@ export function useUtilizacoesVM() {
   const { data, estornar: estornarUtilizacao } = usePortal();
   const { notify } = useToast();
   const { running: saving, run } = useAsyncAction();
-
-  // ── Filtros ──
   const { values: filters, setter, update } = useUrlFilters(URL_KEYS);
   const {
     buscar: search,
@@ -47,8 +45,6 @@ export function useUtilizacoesVM() {
   const setColaborador = setter("colaborador");
   const setConveniado = setter("conveniado");
   const setBeneficio = setter("beneficio");
-
-  // ── Modais ──
   const selectedId = Number(filters.utilizacao);
   const selected =
     data.utilizacoes.find((item) => item.id === selectedId) ?? null;
@@ -63,7 +59,6 @@ export function useUtilizacoesVM() {
     setSelected(null);
   }
 
-  // ── Índices e dados derivados memoizados em O(N) ──
   const indexes = useMemo(() => createDataIndexes(data), [data]);
 
   const enrichedRows = useMemo(() => {
@@ -119,8 +114,8 @@ export function useUtilizacoesVM() {
     periodoInvalido,
   ]);
 
-    const aprovadas = rows.filter((uso) => uso.status === "APROVADA");
-    const {
+  const aprovadas = rows.filter((uso) => uso.status === "APROVADA");
+  const {
     page: currentPage,
     setPage,
     start,
@@ -128,7 +123,15 @@ export function useUtilizacoesVM() {
   } = usePagination(
     rows.length,
     PAGE_SIZE,
-    JSON.stringify([search, status, inicio, fim, colaborador, conveniado, beneficio]),
+    JSON.stringify([
+      search,
+      status,
+      inicio,
+      fim,
+      colaborador,
+      conveniado,
+      beneficio,
+    ]),
   );
 
   const visibleRows = useMemo(
@@ -139,7 +142,6 @@ export function useUtilizacoesVM() {
     [rows, start, end],
   );
 
-  // ── Ações ──
   async function estornar(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!reversal || !motivo.trim() || saving) return;
@@ -174,11 +176,8 @@ export function useUtilizacoesVM() {
   }
 
   return {
-    // contexto
     data,
     PAGE_SIZE,
-
-    // filtros
     search,
     setSearch,
     status,
@@ -197,19 +196,13 @@ export function useUtilizacoesVM() {
     setPage,
     periodoInvalido,
     limparFiltros,
-
-    // dados derivados
     rows,
     aprovadas,
     currentPage,
     visibleRows,
-
-    // detalhes
     selected,
     setSelected,
     closeDetails,
-
-    // estorno
     reversal,
     setReversal,
     motivo,

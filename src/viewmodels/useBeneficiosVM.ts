@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { usePortal } from "./PortalContext";
-import { conveniadoNome, formatMoney } from "../models/selectors";
+import { formatMoney } from "../models/selectors";
 import type { Beneficio } from "../models/types";
 import { usePagination } from "../hooks/usePagination";
 import { useUrlFilters } from "../hooks/useUrlFilters";
@@ -63,16 +63,11 @@ export function valueSummary(item: Beneficio) {
 export function useBeneficiosVM() {
   const { data, save, loading } = usePortal();
   const { running: submitting, run } = useAsyncAction();
-
-  // ── Filtros ──
   const { values: filters, setter } = useUrlFilters(FILTER_KEYS);
   const { buscar: search, status, renovacao: windowType } = filters;
   const setSearch = setter("buscar");
   const setStatus = setter("status");
   const setWindowType = setter("renovacao");
-
-
-  // ── Modais / formulário ──
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<Beneficio>();
   const [details, setDetails] = useState<Beneficio>();
@@ -82,7 +77,6 @@ export function useBeneficiosVM() {
   const [form, setForm] = useState<BeneficioForm>(blankForm);
   const [formError, setFormError] = useState("");
 
-  // ── Dados derivados ──
   const filtered = data.beneficios.filter(
     (item) =>
       (!status || item.status === status) &&
@@ -92,18 +86,18 @@ export function useBeneficiosVM() {
         .includes(search.trim().toLocaleLowerCase("pt-BR")),
   );
 
-const {
-  page: currentPage,
-  setPage,
-  start,
-  end,
-} = usePagination(
-  filtered.length,
-  PAGE_SIZE,
-  JSON.stringify([search, status, windowType]),
-);
+  const {
+    page: currentPage,
+    setPage,
+    start,
+    end,
+  } = usePagination(
+    filtered.length,
+    PAGE_SIZE,
+    JSON.stringify([search, status, windowType]),
+  );
 
-const visibleRows = filtered.slice(start, end);
+  const visibleRows = filtered.slice(start, end);
 
   const activeOffers = (id: number) =>
     data.ofertas.filter(
@@ -122,7 +116,6 @@ const visibleRows = filtered.slice(start, end);
       ),
   );
 
-  // ── Ações ──
   function openForm(item?: Beneficio) {
     setEditing(item);
     setForm(
@@ -265,12 +258,9 @@ const visibleRows = filtered.slice(start, end);
   }
 
   return {
-    // contexto
     data,
     loading,
     PAGE_SIZE,
-
-    // filtros
     search,
     setSearch,
     status,
@@ -279,16 +269,12 @@ const visibleRows = filtered.slice(start, end);
     setWindowType,
     page: currentPage,
     setPage,
-
-    // dados derivados
     filtered,
     currentPage,
     visibleRows,
     activeOffers,
     linkedOffers,
     availablePartners,
-
-    // formulário
     formOpen,
     setFormOpen,
     editing,
@@ -299,25 +285,16 @@ const visibleRows = filtered.slice(start, end);
     submitting,
     openForm,
     submit,
-
-    // detalhes
     details,
     setDetails,
-
-    // descontinuação
     discontinuing,
     setDiscontinuing,
     discontinue,
-
-    // conveniados
     linking,
     setLinking,
     selectedPartner,
     setSelectedPartner,
     linkPartner,
     changeOffer,
-
-    // helpers
-    conveniadoNome,
   };
 }

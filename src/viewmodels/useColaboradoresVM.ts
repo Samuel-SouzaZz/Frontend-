@@ -31,15 +31,11 @@ const blankForm = (): ColaboradorForm => ({
 export function useColaboradoresVM() {
   const { data, save, loading } = usePortal();
   const { running: submitting, run } = useAsyncAction();
-
-  // ── Filtros ──
   const { values: filters, setter } = useUrlFilters(FILTER_KEYS);
   const { buscar: search, status, setor } = filters;
   const setSearch = setter("buscar");
   const setStatus = setter("status");
   const setSetor = setter("setor");
-
-  // ── Modais / formulário ──
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<Colaborador>();
   const [details, setDetails] = useState<Colaborador>();
@@ -47,7 +43,6 @@ export function useColaboradoresVM() {
   const [form, setForm] = useState<ColaboradorForm>(blankForm);
   const [formError, setFormError] = useState("");
 
-  // ── Dados derivados memoizados ──
   const sectors = useMemo(
     () =>
       [...new Set(data.colaboradores.map((item) => item.setor).filter(Boolean))].sort(),
@@ -107,7 +102,6 @@ export function useColaboradoresVM() {
     [filtered, start, end],
   );
 
-  // ── Ações ──
   function openForm(item?: Colaborador) {
     setEditing(item);
     setForm(
@@ -183,12 +177,9 @@ export function useColaboradoresVM() {
   }
 
   return {
-    // contexto
     data,
     loading,
     PAGE_SIZE,
-
-    // filtros
     search,
     setSearch,
     status,
@@ -198,14 +189,10 @@ export function useColaboradoresVM() {
     page: currentPage,
     setPage,
     sectors,
-
-    // dados derivados
     filtered,
     currentPage,
     visibleRows,
     availableUsers,
-
-    // formulário
     formOpen,
     setFormOpen,
     editing,
@@ -215,12 +202,8 @@ export function useColaboradoresVM() {
     submitting,
     openForm,
     submit,
-
-    // detalhes
     details,
     setDetails,
-
-    // inativação
     inactivating,
     setInactivating,
     inactivate,

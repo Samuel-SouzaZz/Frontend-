@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { usePortal } from "./PortalContext";
-import { conveniadoDaUtilizacao, formatCnpj } from "../models/selectors";
+import { formatCnpj } from "../models/selectors";
 import type { Conveniado } from "../models/types";
 import { usePagination } from "../hooks/usePagination";
 import { useUrlFilters } from "../hooks/useUrlFilters";
@@ -32,23 +32,17 @@ const blankForm = (): ConveniadoForm => ({
 export function useConveniadosVM() {
   const { data, save, loading } = usePortal();
   const { running: submitting, run } = useAsyncAction();
-
-  // ── Filtros ──
   const { values: filters, setter } = useUrlFilters(FILTER_KEYS);
   const { buscar: search, status, categoria: category } = filters;
   const setSearch = setter("buscar");
   const setStatus = setter("status");
   const setCategory = setter("categoria");
-
-  // ── Modais / formulário ──
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<Conveniado>();
   const [details, setDetails] = useState<Conveniado>();
   const [inactivating, setInactivating] = useState<Conveniado>();
   const [form, setForm] = useState<ConveniadoForm>(blankForm);
   const [formError, setFormError] = useState("");
-
-  // ── Dados derivados ──
   const categories = [
     ...new Set(data.conveniados.map((item) => item.categoria)),
   ].sort();
@@ -86,14 +80,13 @@ export function useConveniadosVM() {
     JSON.stringify([search, status, category]),
   );
 
-const visibleRows = filtered.slice(start, end);
+  const visibleRows = filtered.slice(start, end);
 
   const activeOfferCount = (id: number) =>
     data.ofertas.filter(
       (item) => item.conveniado_id === id && item.status === "ATIVO",
     ).length;
 
-  // ── Ações ──
   function openForm(item?: Conveniado) {
     setEditing(item);
     setForm(
@@ -178,12 +171,9 @@ const visibleRows = filtered.slice(start, end);
   }
 
   return {
-    // contexto
     data,
     loading,
     PAGE_SIZE,
-
-    // filtros
     search,
     setSearch,
     status,
@@ -193,15 +183,11 @@ const visibleRows = filtered.slice(start, end);
     page: currentPage,
     setPage,
     categories,
-
-    // dados derivados
     filtered,
     currentPage,
     visibleRows,
     availableUsers,
     activeOfferCount,
-
-    // formulário
     formOpen,
     setFormOpen,
     editing,
@@ -211,17 +197,10 @@ const visibleRows = filtered.slice(start, end);
     submitting,
     openForm,
     submit,
-
-    // detalhes
     details,
     setDetails,
-
-    // inativação
     inactivating,
     setInactivating,
     inactivate,
-
-    // helpers
-    conveniadoDaUtilizacao,
   };
 }

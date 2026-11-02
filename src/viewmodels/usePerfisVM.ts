@@ -80,16 +80,12 @@ export function usePerfisVM() {
   const { notify } = useToast();
   const { running: submitting, run } = useAsyncAction();
   const admin = isAdministrador(user, data);
-
-  // ── Tabs e filtros ──
   const [tab, setTab] = useState<"perfis" | "usuarios">("perfis");
   const { values: filters, setter, clear: clearFilters } = useUrlFilters(FILTER_KEYS);
   const { buscar: search, status, escopo: scope } = filters;
   const setSearch = setter("buscar");
   const setStatus = setter("status");
   const setScope = setter("escopo");
-
-  // ── Modais / formulários ──
   const [profileFormOpen, setProfileFormOpen] = useState(false);
   const [userFormOpen, setUserFormOpen] = useState(false);
   const [editingProfile, setEditingProfile] = useState<Perfil>();
@@ -102,8 +98,6 @@ export function usePerfisVM() {
   const [profileForm, setProfileForm] = useState<ProfileForm>(blankProfile);
   const [userForm, setUserForm] = useState<UserForm>(blankUser);
   const [formError, setFormError] = useState("");
-
-  // ── Dados derivados ──
   const editingProtected =
     editingProfile !== undefined && protectedProfile(editingProfile);
   const editingSelf = editingUser?.id === user?.id;
@@ -143,7 +137,6 @@ export function usePerfisVM() {
       profile.status === "ATIVO" || profile.id === editingUser?.perfil_id,
   );
 
-  // ── Ações ──
   function changeTab(next: "perfis" | "usuarios") {
     setTab(next);
     clearFilters();
@@ -362,20 +355,15 @@ export function usePerfisVM() {
   }
 
   return {
-    // contexto
     user,
     data,
     loading,
     admin,
     PAGE_SIZE,
-
-    // tabs
     tab,
     setTab,
     changeTab,
     tabKey,
-
-    // filtros
     search,
     setSearch,
     status,
@@ -384,8 +372,6 @@ export function usePerfisVM() {
     setScope,
     page: currentPage,
     setPage,
-
-    // dados derivados
     filteredProfiles,
     filteredUsers,
     total,
@@ -395,8 +381,6 @@ export function usePerfisVM() {
     availableProfiles,
     editingProtected,
     editingSelf,
-
-    // formulário perfil
     profileFormOpen,
     setProfileFormOpen,
     editingProfile,
@@ -404,12 +388,8 @@ export function usePerfisVM() {
     setProfileForm,
     openProfile,
     submitProfile,
-
-    // detalhes perfil
     profileDetails,
     setProfileDetails,
-
-    // formulário usuário
     userFormOpen,
     setUserFormOpen,
     editingUser,
@@ -418,17 +398,11 @@ export function usePerfisVM() {
     openUser,
     closeUser,
     submitUser,
-
-    // detalhes usuário
     userDetails,
     setUserDetails,
-
-    // inativação
     inactivating,
     setInactivating,
     inactivate,
-
-    // estado
     formError,
     submitting,
   };

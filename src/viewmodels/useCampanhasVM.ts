@@ -1,6 +1,6 @@
 import { useMemo, useState, type FormEvent } from "react";
 import { usePortal } from "./PortalContext";
-import { colaboradorNome, formatMoney, statusLabel, toLocalDateString } from "../models/selectors";
+import { toLocalDateString } from "../models/selectors";
 import { usePagination } from "../hooks/usePagination";
 import { useUrlFilters } from "../hooks/useUrlFilters";
 import { useAsyncAction } from "../hooks/useAsyncAction";
@@ -44,8 +44,6 @@ const FILTER_KEYS = ["buscar", "tipo", "status", "inicio", "fim"] as const;
 export function useCampanhasVM() {
   const { data, save } = usePortal();
   const { running: saving, run } = useAsyncAction();
-
-  // ── Filtros ──
   const { values: filters, setter } = useUrlFilters(FILTER_KEYS);
   const { buscar: search, tipo, status, inicio, fim } = filters;
   const setSearch = setter("buscar");
@@ -53,8 +51,6 @@ export function useCampanhasVM() {
   const setStatus = setter("status");
   const setInicio = setter("inicio");
   const setFim = setter("fim");
-
-  // ── Modais ──
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [editing, setEditing] = useState<Campanha | null>(null);
   const [showForm, setShowForm] = useState(false);
@@ -67,7 +63,6 @@ export function useCampanhasVM() {
   const [cancelTarget, setCancelTarget] = useState<Campanha | null>(null);
   const [formError, setFormError] = useState("");
 
-  // ── Dados derivados ──
   const selected = data.campanhas.find((item) => item.id === selectedId);
   const periodoInvalido = !!inicio && !!fim && fim < inicio;
 
@@ -94,18 +89,22 @@ export function useCampanhasVM() {
     .filter((item) => item.tipo.startsWith("EVENTO"))
     .sort((a, b) => b.data_inicio.localeCompare(a.data_inicio));
 
-const filterKey = JSON.stringify([search, tipo, status, inicio, fim]);
-const campaignPagination = usePagination(campaigns.length, PAGE_SIZE, filterKey);
-const eventPagination = usePagination(events.length, PAGE_SIZE, filterKey);
+  const filterKey = JSON.stringify([search, tipo, status, inicio, fim]);
+  const campaignPagination = usePagination(
+    campaigns.length,
+    PAGE_SIZE,
+    filterKey,
+  );
+  const eventPagination = usePagination(events.length, PAGE_SIZE, filterKey);
 
-const campaignList = {
-  current: campaignPagination.page,
-  rows: campaigns.slice(campaignPagination.start, campaignPagination.end),
-};
-const eventList = {
-  current: eventPagination.page,
-  rows: events.slice(eventPagination.start, eventPagination.end),
-};
+  const campaignList = {
+    current: campaignPagination.page,
+    rows: campaigns.slice(campaignPagination.start, campaignPagination.end),
+  };
+  const eventList = {
+    current: eventPagination.page,
+    rows: events.slice(eventPagination.start, eventPagination.end),
+  };
 
   const campanhaItems = data.itensCampanha.filter(
     (item) => item.campanha_id === selectedId,
@@ -136,7 +135,6 @@ const eventList = {
 
   const today = toLocalDateString();
 
-  // ── Ações ──
   function abrirForm(item?: Campanha) {
     setFormError("");
     setEditing(item ?? null);
@@ -305,12 +303,9 @@ const eventList = {
   }
 
   return {
-    // contexto
     data,
     PAGE_SIZE,
     TIPOS,
-
-    // filtros
     search,
     setSearch,
     tipo,
@@ -326,8 +321,6 @@ const eventList = {
     eventPage: eventPagination.page,
     setEventPage: eventPagination.setPage,
     periodoInvalido,
-
-    // dados derivados
     rows,
     campaigns,
     events,
@@ -340,8 +333,6 @@ const eventList = {
     usosCampanha,
     participantes,
     today,
-
-    // formulário campanha
     editing,
     showForm,
     setShowForm,
@@ -349,8 +340,6 @@ const eventList = {
     setForm,
     abrirForm,
     submitCampanha,
-
-    // formulário item
     itemEditing,
     showItemForm,
     setShowItemForm,
@@ -358,28 +347,17 @@ const eventList = {
     setItemForm,
     abrirItem,
     submitItem,
-
-    // vínculo conveniado
     linkItem,
     setLinkItem,
     partnerId,
     setPartnerId,
     submitLink,
-
-    // cancelamento
     cancelTarget,
     setCancelTarget,
     cancelarCampanha,
     toggleOfertaCampanha,
-
-    // loading
     saving,
     formError,
     setFormError,
-
-    // helpers re-exportados para o JSX
-    statusLabel,
-    formatMoney,
-    colaboradorNome,
   };
 }
