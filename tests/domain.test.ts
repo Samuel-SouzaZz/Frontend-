@@ -11,6 +11,7 @@ import {
   statusLabel,
   withinPeriod,
 } from "../src/models/selectors";
+import { buildTimeline } from "../src/models/timeline";
 import type { PortalData, Utilizacao } from "../src/models/types";
 
 function fixture(): PortalData {
@@ -304,4 +305,30 @@ test("fixtures têm IDs, chaves únicas e referências coerentes", () => {
           beneficio.quantidade_maxima_utilizacoes > 0,
       );
   }
+});
+
+test("linha do tempo do dashboard cobre o periodo escolhido em seis intervalos", () => {
+  const now = new Date(2026, 10, 2, 15, 0, 0);
+  const dates = [
+    new Date(2026, 9, 4, 9, 0, 0),
+    new Date(2026, 9, 20, 9, 0, 0),
+    new Date(2026, 10, 2, 10, 0, 0),
+  ];
+  const ultimos30 = buildTimeline(dates, 30, now);
+  assert.equal(ultimos30.length, 6);
+  assert.equal(ultimos30.reduce((total, item) => total + item.count, 0), 3);
+  assert.equal(ultimos30[0].label, "03/10");
+  assert.equal(ultimos30[0].count, 1);
+  assert.equal(ultimos30[5].count, 1);
+
+  const doze = buildTimeline(dates, 365, now);
+  assert.equal(doze.reduce((total, item) => total + item.count, 0), 3);
+  assert.equal(doze[5].count, 3);
+
+  const tudo = buildTimeline(dates, 0, now);
+  assert.equal(tudo.reduce((total, item) => total + item.count, 0), 3);
+  assert.equal(tudo[0].count, 1);
+
+  const vazio = buildTimeline([], 0, now);
+  assert.deepEqual(vazio.map((item) => item.count), [0, 0, 0, 0, 0, 0]);
 });

@@ -87,8 +87,8 @@ export default function Dashboard() {
               aria-label={`Utilizações aprovadas: ${months.map((m) => `${m.label}: ${m.count}`).join(", ")}`}
             >
               <title>
-                Utilizações aprovadas nos últimos seis meses dentro do período
-                selecionado
+                Utilizações aprovadas no período selecionado, divididas em
+                seis intervalos
               </title>
               {[0, 1, 2, 3].map((i) => (
                 <g key={i}>
@@ -124,7 +124,8 @@ export default function Dashboard() {
               ))}
             </svg>
             <p className="chart-caption">
-              Eixo vertical: utilizações aprovadas · Eixo horizontal: mês ·
+              Eixo vertical: utilizações aprovadas · Eixo horizontal: início
+              de cada intervalo ·
               Fonte: registros do portal
             </p>
           </div>

@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { buildReport } from "../models/reportSelectors";
 import { withinPeriod, parseDate, toLocalDateString } from "../models/selectors";
+import { buildTimeline } from "../models/timeline";
 import { useAuth } from "./AuthContext";
 import { usePortal } from "./PortalContext";
 
@@ -69,31 +70,17 @@ export function useDashboardVM() {
     [usages],
   );
 
-  const months = useMemo(() => {
-    return Array.from({ length: 6 }, (_, i) => {
-      const date = new Date();
-      date.setDate(1);
-      date.setMonth(date.getMonth() - (5 - i));
-      const targetMonth = date.getMonth();
-      const targetYear = date.getFullYear();
-
-      const count = approved.filter((u) => {
-        const usageDate = parseDate(u.data_solicitacao);
-        return (
-          usageDate.getMonth() === targetMonth &&
-          usageDate.getFullYear() === targetYear
-        );
-      }).length;
-
-      return {
-        label: date.toLocaleDateString("pt-BR", { month: "short" }).replace(".", ""),
-        count,
-      };
-    });
-  }, [approved]);
+  const months = useMemo(
+    () => buildTimeline(approved.map((u) => parseDate(u.data_solicitacao)), days),
+    [approved, days],
+  );
 
   const maxMonth = useMemo(
-    () => Math.max(1, ...months.map((month) => month.count)),
+    () =>
+      Math.max(
+        3,
+        Math.ceil(Math.max(...months.map((month) => month.count)) / 3) * 3,
+      ),
     [months],
   );
 
