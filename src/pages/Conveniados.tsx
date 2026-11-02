@@ -288,6 +288,7 @@ export default function Conveniados() {
                 required
                 maxLength={18}
                 inputMode="numeric"
+                pattern="(\D*\d){14}\D*"
                 value={form.cnpj}
                 onChange={(event) => {
                   const cnpj = event.currentTarget.value.replace(

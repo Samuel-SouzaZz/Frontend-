@@ -27,7 +27,11 @@ export function Field({
       ? children
       : undefined;
   return (
-    <label className={`field ${invalid ? "field-invalid" : ""}`}>
+    <label
+      className={`field ${invalid ? "field-invalid" : ""}`}
+      data-field-label={label}
+      data-required={required ? "true" : undefined}
+    >
       <span>
         {label}
         {required && <em aria-hidden="true"> *</em>}
