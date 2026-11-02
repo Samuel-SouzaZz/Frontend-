@@ -34,6 +34,7 @@ export default function Colaboradores() {
     <>
       <PageHeader
         eyebrow="GESTÃO DE PESSOAS"
+        icon={Users}
         title="Colaboradores"
         description="Cadastre e acompanhe os colaboradores da Fundação."
         actions={

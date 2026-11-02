@@ -1,6 +1,7 @@
 import {
   CheckCircle2,
   CircleDollarSign,
+  ClipboardList,
   Eye,
   History,
   RotateCcw,
@@ -69,6 +70,7 @@ export default function Utilizacoes() {
     <>
       <PageHeader
         eyebrow="ACOMPANHAMENTO"
+        icon={ClipboardList}
         title="Utilizações"
         description="Acompanhe os resgates e consulte o histórico de benefícios da fundação."
       />

@@ -76,6 +76,7 @@ export default function Beneficios() {
     <>
       <PageHeader
         eyebrow="CATÁLOGO DE BENEFÍCIOS"
+        icon={Gift}
         title="Benefícios"
         description="Configure as condições, a renovação e os conveniados de cada benefício."
         actions={

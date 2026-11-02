@@ -106,6 +106,7 @@ export default function Campanhas() {
     <>
       <PageHeader
         eyebrow="RELACIONAMENTO"
+        icon={Megaphone}
         title="Campanhas e eventos"
         description="Organize iniciativas e benefícios promocionais para os colaboradores."
         actions={

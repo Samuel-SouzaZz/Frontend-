@@ -1,5 +1,6 @@
 import {
   BarChart3,
+  ChartNoAxesCombined,
   CheckCircle2,
   CircleDollarSign,
   Download,
@@ -75,6 +76,7 @@ export default function RelatoriosView(props: ReturnType<typeof useRelatoriosVM>
     <>
       <PageHeader
         eyebrow="INTELIGÊNCIA E GESTÃO"
+        icon={ChartNoAxesCombined}
         title="Relatórios"
         description="Transforme os registros de utilização em informações para a fundação."
         actions={

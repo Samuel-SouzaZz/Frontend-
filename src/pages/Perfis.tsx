@@ -4,8 +4,9 @@ import {
   Pencil,
   Plus,
   Power,
-  ShieldCheck,
+  Settings,
   Shield,
+  ShieldCheck,
   UserCheck,
   Users,
 } from "lucide-react";
@@ -91,6 +92,7 @@ export default function Perfis() {
     <>
       <PageHeader
         eyebrow="CONFIGURAÇÕES"
+        icon={Settings}
         title="Perfis e usuários"
         description="Organize os acessos e mantenha as contas da plataforma atualizadas."
         actions={

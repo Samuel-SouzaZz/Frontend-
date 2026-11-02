@@ -3,6 +3,7 @@ import {
   CheckCircle2,
   Clock3,
   Eye,
+  Handshake,
   Pencil,
   Plus,
   Power,
@@ -65,6 +66,7 @@ export default function Conveniados() {
     <>
       <PageHeader
         eyebrow="REDE DE PARCEIROS"
+        icon={Handshake}
         title="Conveniados"
         description="Gerencie os estabelecimentos que fazem parte da nossa rede."
         actions={
