@@ -1,5 +1,4 @@
 import { useState, type FormEvent, type KeyboardEvent } from "react";
-import { useAuth } from "./AuthContext";
 import { usePortal } from "./PortalContext";
 import { useToast } from "./ToastContext";
 import { isAdministrador } from "../models/selectors";
@@ -8,6 +7,7 @@ import type { Escopo, Perfil, Usuario } from "../models/types";
 import { usePagination } from "../hooks/usePagination";
 import { useUrlFilters } from "../hooks/useUrlFilters";
 import { useAsyncAction } from "../hooks/useAsyncAction";
+import { useSessionUser } from "../hooks/useSessionUser";
 
 const PAGE_SIZE = 8;
 const FILTER_KEYS = ["buscar", "status", "escopo"] as const;
@@ -75,11 +75,11 @@ export const permissionLabel = (permission: string) =>
   permission;
 
 export function usePerfisVM() {
-  const { user } = useAuth();
+  const user = useSessionUser();
   const { data, save, loading } = usePortal();
   const { notify } = useToast();
   const { running: submitting, run } = useAsyncAction();
-  const admin = user !== null && isAdministrador(user, data);
+  const admin = isAdministrador(user, data);
 
   // ── Tabs e filtros ──
   const [tab, setTab] = useState<"perfis" | "usuarios">("perfis");

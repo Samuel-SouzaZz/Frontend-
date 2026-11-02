@@ -21,7 +21,7 @@ export default function Dashboard() {
   return (
     <>
       <PageHeader
-        title={`Olá, ${capitalizeFirstLetter(user!.nome).split(" ").slice(0,2).join(" ")}!`}
+        title={`Olá, ${capitalizeFirstLetter(user.nome).split(" ").slice(0,2).join(" ")}!`}
         description="Aqui está um resumo das utilizações e dos benefícios da Fundação."
         actions={
           <label className="period-control">

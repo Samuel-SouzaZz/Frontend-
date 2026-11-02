@@ -1,4 +1,4 @@
-import { useAuth } from "./AuthContext";
+import { useSessionUser } from "../hooks/useSessionUser";
 import { usePortal } from "./PortalContext";
 import { capitalizeFirstLetter, formatDate, initials } from "../models/selectors";
 
@@ -8,11 +8,11 @@ const roleLabels: Record<string, string> = {
 };
 
 export function useMeuPerfilVM() {
-  const { user } = useAuth();
+  const user = useSessionUser();
   const { data } = usePortal();
-  const account = data.usuarios.find((item) => item.id === user!.id) ?? user!;
+  const account = data.usuarios.find((item) => item.id === user.id) ?? user;
   const profile = data.perfis.find((item) => item.id === account.perfil_id);
-  const profileName = profile?.nome ?? user!.perfil;
+  const profileName = profile?.nome ?? user.perfil;
 
   return {
     account,

@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useAuth } from "../viewmodels/AuthContext";
+import { useSessionUser } from "../hooks/useSessionUser";
 import { usePortal } from "../viewmodels/PortalContext";
 import { useToast } from "../viewmodels/ToastContext";
 import {
@@ -62,7 +63,8 @@ const helpByPage: Record<string, string> = {
   "/meu-perfil": "Confira os dados da sua conta e o perfil de acesso atual.",
 };
 export default function Layout() {
-  const { user, logout } = useAuth();
+  const { logout } = useAuth();
+  const user = useSessionUser();
   const location = useLocation();
   const { loading, refreshing, error, resourceErrors, reload, data } =
     usePortal();
@@ -86,7 +88,7 @@ export default function Layout() {
     media.addEventListener("change", updateDesktop);
     return () => media.removeEventListener("change", updateDesktop);
   }, []);
-  const admin = isAdministrador(user!, data);
+  const admin = isAdministrador(user, data);
   return (
     <div className={`app-shell ${collapsed ? "sidebar-collapsed" : ""}`}>
       <a className="skip-link" href="#main">
@@ -139,8 +141,8 @@ export default function Layout() {
           <button className="sidebar-help" type="button" aria-expanded={help} aria-controls="page-help" onClick={() => setHelp(!help)}><HelpCircle size={20} />Ajuda</button>
           <div className="sidebar-user">
             <Link to="/meu-perfil" className="sidebar-profile-link" aria-label="Abrir meu perfil" aria-current={location.pathname === "/meu-perfil" ? "page" : undefined} onClick={() => { setOpen(false); setHelp(false); }}>
-              <span className="avatar" aria-hidden="true">{initials(user!.nome)}</span>
-              <div><strong>{capitalizeFirstLetter(user!.nome)}</strong><small>{admin ? "Administrador FCV" : "Operador FCV"}</small></div>
+              <span className="avatar" aria-hidden="true">{initials(user.nome)}</span>
+              <div><strong>{capitalizeFirstLetter(user.nome)}</strong><small>{admin ? "Administrador FCV" : "Operador FCV"}</small></div>
             </Link>
             <button
               className="icon-button"
@@ -189,8 +191,8 @@ export default function Layout() {
           <div className="topbar-right">
             <NotificationCenter />
             <Link to="/meu-perfil" className="profile-link" aria-label="Abrir meu perfil" aria-current={location.pathname === "/meu-perfil" ? "page" : undefined}>
-              <span className="avatar small" aria-hidden="true">{initials(user!.nome)}</span>
-              <div className="topbar-identity"><strong>{capitalizeFirstLetter(user!.nome)}</strong><small>{admin ? "Administrador" : "Operador"}</small></div>
+              <span className="avatar small" aria-hidden="true">{initials(user.nome)}</span>
+              <div className="topbar-identity"><strong>{capitalizeFirstLetter(user.nome)}</strong><small>{admin ? "Administrador" : "Operador"}</small></div>
             </Link>
           </div>
         </header>

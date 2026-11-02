@@ -2,12 +2,12 @@ import { useState, useMemo } from "react";
 import { buildReport } from "../models/reportSelectors";
 import { withinPeriod, parseDate, toLocalDateString } from "../models/selectors";
 import { buildTimeline } from "../models/timeline";
-import { useAuth } from "./AuthContext";
+import { useSessionUser } from "../hooks/useSessionUser";
 import { usePortal } from "./PortalContext";
 
 export function useDashboardVM() {
   const { data } = usePortal();
-  const { user } = useAuth();
+  const user = useSessionUser();
   const [days, setDays] = useState(30);
 
   const usages = useMemo(
