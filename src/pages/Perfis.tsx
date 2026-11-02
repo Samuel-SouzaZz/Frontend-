@@ -26,6 +26,7 @@ import {
   capitalizeFirstLetter,
   formatDate,
 } from "../models/selectors";
+import { SENHA_MINIMA } from "../models/rules";
 import { isLocalDemoUser } from "../local-demo/localDemo";
 import type { Escopo, Perfil, Usuario } from "../models/types";
 import {
@@ -668,14 +669,14 @@ export default function Perfis() {
                 required={!editingUser}
                 hint={
                   editingUser
-                    ? "Deixe em branco para manter a senha. Se alterar, use pelo menos 8 caracteres."
-                    : "Use pelo menos 8 caracteres."
+                    ? `Deixe em branco para manter a senha. Se alterar, use pelo menos ${SENHA_MINIMA} caracteres.`
+                    : `Use pelo menos ${SENHA_MINIMA} caracteres.`
                 }
               >
                 <input
                   type="password"
                   required={!editingUser}
-                  minLength={8}
+                  minLength={SENHA_MINIMA}
                   autoComplete="new-password"
                   value={userForm.senha}
                   onChange={(event) => {

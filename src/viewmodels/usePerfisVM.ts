@@ -3,6 +3,7 @@ import { useAuth } from "./AuthContext";
 import { usePortal } from "./PortalContext";
 import { useToast } from "./ToastContext";
 import { isAdministrador } from "../models/selectors";
+import { SENHA_MINIMA } from "../models/rules";
 import type { Escopo, Perfil, Usuario } from "../models/types";
 import { usePagination } from "../hooks/usePagination";
 
@@ -289,9 +290,9 @@ export function usePerfisVM() {
     }
     if (
       (!editingUser || userForm.senha.length > 0) &&
-      userForm.senha.length < 8
+      userForm.senha.length < SENHA_MINIMA
     ) {
-      setFormError("A senha deve ter pelo menos 8 caracteres.");
+      setFormError(`A senha deve ter pelo menos ${SENHA_MINIMA} caracteres.`);
       return;
     }
     if (
