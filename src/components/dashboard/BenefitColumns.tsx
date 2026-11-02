@@ -1,4 +1,4 @@
-type Item = { name: string; count: number };
+type Item = { key: string; name: string; count: number };
 
 export function BenefitColumns({
   items,
@@ -16,7 +16,7 @@ export function BenefitColumns({
       </div>
       <div className="benefit-columns">
         {items.slice(0, 6).map((item, index) => (
-          <div key={`${index}-${item.name}`}>
+          <div key={item.key}>
             <strong>{item.count}</strong>
             <div
               style={{

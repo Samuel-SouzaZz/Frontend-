@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { ArrowUpRight, Gift } from "lucide-react";
 
-type Item = { name: string; count: number };
+type Item = { key: string; name: string; count: number };
 
 export function LeastUsedBenefits({
   items,
@@ -20,7 +20,7 @@ export function LeastUsedBenefits({
       </div>
       <div className="least-benefits">
         {items.map((item, index) => (
-          <article key={`${index}-${item.name}`}>
+          <article key={item.key}>
             <span className={`stat-icon ${index % 2 ? "green" : "purple"}`}>
               <Gift size={22} />
             </span>

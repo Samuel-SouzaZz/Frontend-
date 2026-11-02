@@ -25,6 +25,8 @@ export default function Dashboard() {
     report,
     byBenefit,
     least,
+    beneficiosUtilizados,
+    beneficiosSemUso,
     colors,
     donut,
     maximum,
@@ -48,11 +50,11 @@ export default function Dashboard() {
       />
       <DashboardStats
         aprovadas={approved.length}
-        beneficiosUtilizados={byBenefit.filter((item) => item.count > 0).length}
+        beneficiosUtilizados={beneficiosUtilizados}
         colaboradoresAtivos={
           data.colaboradores.filter((item) => item.status === "ATIVO").length
         }
-        beneficiosSemUso={byBenefit.filter((item) => item.count === 0).length}
+        beneficiosSemUso={beneficiosSemUso}
       />
       <div className="dashboard-grid">
         <MonthlyChart

@@ -33,14 +33,28 @@ export function useDashboardVM() {
   );
 
   const byBenefit = useMemo(
-    () => report.benefits.map((item) => ({ name: item.nome, count: item.count })),
+    () =>
+      report.benefits.map((item) => ({
+        key: item.key,
+        name: item.nome,
+        count: item.count,
+        ativo: item.status === "ATIVO",
+      })),
     [report.benefits],
   );
 
-  const least = useMemo(
-    () => [...byBenefit].sort((a, b) => a.count - b.count).slice(0, 3),
+  const ativos = useMemo(
+    () => byBenefit.filter((item) => item.ativo),
     [byBenefit],
   );
+
+  const least = useMemo(
+    () => [...ativos].sort((a, b) => a.count - b.count).slice(0, 3),
+    [ativos],
+  );
+
+  const beneficiosUtilizados = byBenefit.filter((item) => item.count > 0).length;
+  const beneficiosSemUso = ativos.filter((item) => item.count === 0).length;
 
   const colors = useMemo(
     () => ["#283772", "#3b4b86", "#4f6098", "#6575ae", "#8391c0", "#a7b1d2"],
@@ -101,6 +115,8 @@ export function useDashboardVM() {
     report,
     byBenefit,
     least,
+    beneficiosUtilizados,
+    beneficiosSemUso,
     colors,
     donut,
     maximum,
