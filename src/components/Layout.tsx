@@ -238,7 +238,7 @@ export default function Layout() {
                   </button>
                 </section>
               )}
-              <Outlet key={location.pathname} />
+              <Outlet />
             </>
           )}
           <footer className="page-footer">

@@ -3,6 +3,7 @@ import { usePortal } from "./PortalContext";
 import { useToast } from "./ToastContext";
 import { colaboradorNome, formatMoney, statusLabel, toLocalDateString } from "../models/selectors";
 import { usePagination } from "../hooks/usePagination";
+import { useUrlFilters } from "../hooks/useUrlFilters";
 
 export type PortalData = ReturnType<typeof usePortal>["data"];
 export type Campanha = PortalData["campanhas"][number];
@@ -37,19 +38,20 @@ const EMPTY_ITEM = {
 };
 
 const PAGE_SIZE = 6;
+const FILTER_KEYS = ["buscar", "tipo", "status", "inicio", "fim"] as const;
 
 export function useCampanhasVM() {
   const { data, save } = usePortal();
   const { notify } = useToast();
 
   // ── Filtros ──
-  const [search, setSearch] = useState(
-    () => new URLSearchParams(window.location.search).get("buscar") ?? "",
-  );
-  const [tipo, setTipo] = useState("");
-  const [status, setStatus] = useState("");
-  const [inicio, setInicio] = useState("");
-  const [fim, setFim] = useState("");
+  const { values: filters, setter } = useUrlFilters(FILTER_KEYS);
+  const { buscar: search, tipo, status, inicio, fim } = filters;
+  const setSearch = setter("buscar");
+  const setTipo = setter("tipo");
+  const setStatus = setter("status");
+  const setInicio = setter("inicio");
+  const setFim = setter("fim");
 
   // ── Modais ──
   const [selectedId, setSelectedId] = useState<number | null>(null);
@@ -76,7 +78,7 @@ export function useCampanhasVM() {
           !periodoInvalido &&
           `${item.nome} ${item.descricao ?? ""} ${item.patrocinador ?? ""}`
             .toLocaleLowerCase("pt-BR")
-            .includes(search.toLocaleLowerCase("pt-BR")) &&
+            .includes(search.trim().toLocaleLowerCase("pt-BR")) &&
           (!tipo || item.tipo === tipo) &&
           (!status || item.status === status) &&
           (!inicio || item.data_fim.slice(0, 10) >= inicio) &&

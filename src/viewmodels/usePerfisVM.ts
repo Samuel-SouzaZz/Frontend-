@@ -6,8 +6,10 @@ import { isAdministrador } from "../models/selectors";
 import { PERFIL_ADMINISTRADOR, SENHA_MINIMA } from "../models/rules";
 import type { Escopo, Perfil, Usuario } from "../models/types";
 import { usePagination } from "../hooks/usePagination";
+import { useUrlFilters } from "../hooks/useUrlFilters";
 
 const PAGE_SIZE = 8;
+const FILTER_KEYS = ["buscar", "status", "escopo"] as const;
 
 export const permissions = [
   { value: "cadastros", label: "Cadastros" },
@@ -79,11 +81,11 @@ export function usePerfisVM() {
 
   // ── Tabs e filtros ──
   const [tab, setTab] = useState<"perfis" | "usuarios">("perfis");
-  const [search, setSearch] = useState(
-    () => new URLSearchParams(window.location.search).get("buscar") ?? "",
-  );
-  const [status, setStatus] = useState("");
-  const [scope, setScope] = useState("");
+  const { values: filters, setter, clear: clearFilters } = useUrlFilters(FILTER_KEYS);
+  const { buscar: search, status, escopo: scope } = filters;
+  const setSearch = setter("buscar");
+  const setStatus = setter("status");
+  const setScope = setter("escopo");
 
   // ── Modais / formulários ──
   const [profileFormOpen, setProfileFormOpen] = useState(false);
@@ -143,9 +145,7 @@ export function usePerfisVM() {
   // ── Ações ──
   function changeTab(next: "perfis" | "usuarios") {
     setTab(next);
-    setSearch("");
-    setStatus("");
-    setScope("");
+    clearFilters();
     setPage(1);
   }
 

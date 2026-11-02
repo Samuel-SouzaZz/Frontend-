@@ -4,8 +4,10 @@ import { useToast } from "./ToastContext";
 import { conveniadoDaUtilizacao, formatCnpj } from "../models/selectors";
 import type { Conveniado } from "../models/types";
 import { usePagination } from "../hooks/usePagination";
+import { useUrlFilters } from "../hooks/useUrlFilters";
 
 const PAGE_SIZE = 8;
+const FILTER_KEYS = ["buscar", "status", "categoria"] as const;
 
 export type ConveniadoForm = {
   usuario_id: string;
@@ -32,11 +34,11 @@ export function useConveniadosVM() {
   const { notify } = useToast();
 
   // ── Filtros ──
-  const [search, setSearch] = useState(
-    () => new URLSearchParams(window.location.search).get("buscar") ?? "",
-  );
-  const [status, setStatus] = useState("");
-  const [category, setCategory] = useState("");
+  const { values: filters, setter } = useUrlFilters(FILTER_KEYS);
+  const { buscar: search, status, categoria: category } = filters;
+  const setSearch = setter("buscar");
+  const setStatus = setter("status");
+  const setCategory = setter("categoria");
 
   // ── Modais / formulário ──
   const [formOpen, setFormOpen] = useState(false);

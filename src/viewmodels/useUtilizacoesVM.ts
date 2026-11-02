@@ -1,8 +1,8 @@
 import { useMemo, useState, type FormEvent } from "react";
-import { useNavigate } from "react-router-dom";
 import { usePortal } from "./PortalContext";
 import { useToast } from "./ToastContext";
 import { usePagination } from "../hooks/usePagination";
+import { useUrlFilters } from "../hooks/useUrlFilters";
 import {
   createDataIndexes,
   colaboradorNomeIndexed,
@@ -12,32 +12,46 @@ import {
 
 type Utilizacao = ReturnType<typeof usePortal>["data"]["utilizacoes"][number];
 const PAGE_SIZE = 8;
+const URL_KEYS = [
+  "buscar",
+  "status",
+  "inicio",
+  "fim",
+  "colaborador",
+  "conveniado",
+  "beneficio",
+  "utilizacao",
+] as const;
 
 export function useUtilizacoesVM() {
   const { data, estornar: estornarUtilizacao } = usePortal();
   const { notify } = useToast();
-  const navigate = useNavigate();
 
   // ── Filtros ──
-  const [search, setSearch] = useState(
-    () => new URLSearchParams(window.location.search).get("buscar") ?? "",
-  );
-  const [status, setStatus] = useState(
-    () => new URLSearchParams(window.location.search).get("status") ?? "",
-  );
-  const [inicio, setInicio] = useState("");
-  const [fim, setFim] = useState("");
-  const [colaborador, setColaborador] = useState("");
-  const [conveniado, setConveniado] = useState("");
-  const [beneficio, setBeneficio] = useState("");
+  const { values: filters, setter, update } = useUrlFilters(URL_KEYS);
+  const {
+    buscar: search,
+    status,
+    inicio,
+    fim,
+    colaborador,
+    conveniado,
+    beneficio,
+  } = filters;
+  const setSearch = setter("buscar");
+  const setStatus = setter("status");
+  const setInicio = setter("inicio");
+  const setFim = setter("fim");
+  const setColaborador = setter("colaborador");
+  const setConveniado = setter("conveniado");
+  const setBeneficio = setter("beneficio");
 
   // ── Modais ──
-  const [selected, setSelected] = useState<Utilizacao | null>(() => {
-    const id = Number(
-      new URLSearchParams(window.location.search).get("utilizacao"),
-    );
-    return data.utilizacoes.find((item) => item.id === id) ?? null;
-  });
+  const selectedId = Number(filters.utilizacao);
+  const selected =
+    data.utilizacoes.find((item) => item.id === selectedId) ?? null;
+  const setSelected = (item: Utilizacao | null) =>
+    update({ utilizacao: item ? String(item.id) : "" });
   const [reversal, setReversal] = useState<Utilizacao | null>(null);
   const [motivo, setMotivo] = useState("");
   const [saving, setSaving] = useState(false);
@@ -46,14 +60,6 @@ export function useUtilizacoesVM() {
 
   function closeDetails() {
     setSelected(null);
-    const params = new URLSearchParams(window.location.search);
-    if (params.has("utilizacao")) {
-      params.delete("utilizacao");
-      navigate(
-        { pathname: "/utilizacoes", search: params.toString() },
-        { replace: true },
-      );
-    }
   }
 
   // ── Índices e dados derivados memoizados em O(N) ──
@@ -165,13 +171,15 @@ export function useUtilizacoesVM() {
   }
 
   function limparFiltros() {
-    setSearch("");
-    setStatus("");
-    setInicio("");
-    setFim("");
-    setColaborador("");
-    setConveniado("");
-    setBeneficio("");
+    update({
+      buscar: "",
+      status: "",
+      inicio: "",
+      fim: "",
+      colaborador: "",
+      conveniado: "",
+      beneficio: "",
+    });
     setPage(1);
   }
 

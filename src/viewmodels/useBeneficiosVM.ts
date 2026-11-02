@@ -4,8 +4,10 @@ import { useToast } from "./ToastContext";
 import { conveniadoNome, formatMoney } from "../models/selectors";
 import type { Beneficio } from "../models/types";
 import { usePagination } from "../hooks/usePagination";
+import { useUrlFilters } from "../hooks/useUrlFilters";
 
 const PAGE_SIZE = 8;
+const FILTER_KEYS = ["buscar", "status", "renovacao"] as const;
 
 export type BeneficioForm = {
   nome: string;
@@ -63,11 +65,11 @@ export function useBeneficiosVM() {
   const { notify } = useToast();
 
   // ── Filtros ──
-  const [search, setSearch] = useState(
-    () => new URLSearchParams(window.location.search).get("buscar") ?? "",
-  );
-  const [status, setStatus] = useState("");
-  const [windowType, setWindowType] = useState("");
+  const { values: filters, setter } = useUrlFilters(FILTER_KEYS);
+  const { buscar: search, status, renovacao: windowType } = filters;
+  const setSearch = setter("buscar");
+  const setStatus = setter("status");
+  const setWindowType = setter("renovacao");
 
 
   // ── Modais / formulário ──

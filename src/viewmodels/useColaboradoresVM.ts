@@ -3,8 +3,10 @@ import { usePortal } from "./PortalContext";
 import { useToast } from "./ToastContext";
 import type { Colaborador } from "../models/types";
 import { usePagination } from "../hooks/usePagination";
+import { useUrlFilters } from "../hooks/useUrlFilters";
 
 const PAGE_SIZE = 8;
+const FILTER_KEYS = ["buscar", "status", "setor"] as const;
 
 export type ColaboradorForm = {
   usuario_id: string;
@@ -31,11 +33,11 @@ export function useColaboradoresVM() {
   const { notify } = useToast();
 
   // ── Filtros ──
-  const [search, setSearch] = useState(
-    () => new URLSearchParams(window.location.search).get("buscar") ?? "",
-  );
-  const [status, setStatus] = useState("");
-  const [setor, setSetor] = useState("");
+  const { values: filters, setter } = useUrlFilters(FILTER_KEYS);
+  const { buscar: search, status, setor } = filters;
+  const setSearch = setter("buscar");
+  const setStatus = setter("status");
+  const setSetor = setter("setor");
 
   // ── Modais / formulário ──
   const [formOpen, setFormOpen] = useState(false);
