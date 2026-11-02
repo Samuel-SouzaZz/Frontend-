@@ -6,7 +6,6 @@ import {
   RotateCcw,
   Users,
 } from "lucide-react";
-import { ConfirmModal } from "../components/ConfirmModal";
 import {
   beneficioDaUtilizacao,
   colaboradorNome,
@@ -17,6 +16,7 @@ import {
 } from "../models/selectors";
 import {
   Badge,
+  ConfirmModal,
   DataTable,
   DetailList,
   EmptyState,

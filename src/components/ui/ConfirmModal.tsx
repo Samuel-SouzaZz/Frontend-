@@ -1,5 +1,5 @@
 import type { FormEventHandler, ReactNode } from "react";
-import { Modal } from "./ui";
+import { Modal } from "./Modal";
 
 type ConfirmModalProps = {
   title: string;

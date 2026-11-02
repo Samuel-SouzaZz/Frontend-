@@ -17,6 +17,7 @@ import {
 } from "../models/selectors";
 import {
   Badge,
+  ConfirmModal,
   DetailList,
   DataTable,
   EmptyState,
@@ -27,7 +28,6 @@ import {
   SearchField,
   StatCard,
 } from "../components/ui";
-import { ConfirmModal } from "../components/ConfirmModal";
 import {
   useCampanhasVM,
   TIPOS,

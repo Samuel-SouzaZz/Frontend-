@@ -7,9 +7,9 @@ import {
   Plus,
   Power,
 } from "lucide-react";
-import { ConfirmModal } from "../components/ConfirmModal";
 import {
   Badge,
+  ConfirmModal,
   DataTable,
   DetailList,
   EmptyState,

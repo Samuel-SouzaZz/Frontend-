@@ -1,0 +1,49 @@
+import {
+  isValidElement,
+  useContext,
+  type ReactNode,
+  type SelectHTMLAttributes,
+} from "react";
+import { FormSelect } from "./FormSelect";
+import { ValidationContext } from "./validation";
+
+export function Field({
+  label,
+  children,
+  hint,
+  error,
+  required,
+}: {
+  label: string;
+  children: ReactNode;
+  hint?: string;
+  error?: string;
+  required?: boolean;
+}) {
+  const invalid = useContext(ValidationContext).includes(label);
+  const selectElement =
+    isValidElement<SelectHTMLAttributes<HTMLSelectElement>>(children) &&
+    children.type === "select"
+      ? children
+      : undefined;
+  return (
+    <label className={`field ${invalid ? "field-invalid" : ""}`}>
+      <span>
+        {label}
+        {required && <em aria-hidden="true"> *</em>}
+      </span>
+      {selectElement ? (
+        <FormSelect element={selectElement} invalid={invalid} label={label} />
+      ) : (
+        children
+      )}
+      {hint && <small>{hint}</small>}
+      {error && <small className="form-error">{error}</small>}
+      {invalid && (
+        <small className="field-validation-error">
+          Preencha ou corrija este campo.
+        </small>
+      )}
+    </label>
+  );
+}
