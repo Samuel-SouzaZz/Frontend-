@@ -152,7 +152,6 @@ export interface SessionUser extends Usuario {
   escopo: Escopo;
 }
 
-// Estruturas de agregação e indicadores de domínio
 export interface BenefitReportItem {
   key: string;
   nome: string;

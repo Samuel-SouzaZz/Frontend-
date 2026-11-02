@@ -6,18 +6,11 @@ import {
   conveniadoDaUtilizacaoIndexed,
 } from "./selectors";
 
-/**
- * Gera a chave única que identifica o benefício ou item de campanha de uma utilização.
- */
 export function usoKey(data: PortalData, uso: Utilizacao): string {
   const item = beneficioDaUtilizacao(data, uso);
   return `${uso.beneficio_conveniado_id ? "beneficio" : "campanha"}:${item?.id ?? "desconhecido"}`;
 }
 
-/**
- * Constrói o relatório agregado de utilização para um intervalo de datas.
- * Executa agrupamentos otimizados em complexidade linear O(N) utilizando Map/Set.
- */
 export function buildReport(data: PortalData, inicio: string, fim: string): ReportResult {
   const valid = Boolean(inicio && fim && fim >= inicio);
 
@@ -77,7 +70,6 @@ export function buildReport(data: PortalData, inicio: string, fim: string): Repo
       )
     : [];
 
-  // Pré-agrupamento de utilizações aprovadas por chave de benefício e por conveniado (O(N))
   const indexes = createDataIndexes(data);
   const usosPorBeneficioKey = new Map<string, Utilizacao[]>();
   const usosPorConveniadoId = new Map<number, Utilizacao[]>();
@@ -108,7 +100,6 @@ export function buildReport(data: PortalData, inicio: string, fim: string): Repo
     }
   }
 
-  // Catálogo completo de benefícios regulares + itens de campanha
   const catalogo = [
     ...data.beneficios.map((item) => ({
       key: `beneficio:${item.id}`,
@@ -192,7 +183,6 @@ export function buildReport(data: PortalData, inicio: string, fim: string): Repo
       };
     });
 
-  // Otimização do cálculo de campanhas
   const itemCampanhaMap = new Map<number, number>();
   for (const item of data.itensCampanha) {
     itemCampanhaMap.set(item.id, item.campanha_id);

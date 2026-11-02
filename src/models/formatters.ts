@@ -6,18 +6,11 @@ const moneyFormatter = new Intl.NumberFormat("pt-BR", {
 export const formatMoney = (value: number) =>
   moneyFormatter.format(Number(value) || 0);
 
-/**
- * Normaliza e faz o parse seguro de strings de data (ISO ou SQL 'YYYY-MM-DD HH:mm:ss').
- * Previne erros de 'Invalid Date' no Safari ao lidar com datas do MySQL com espaço.
- */
 export function parseDate(value: string): Date {
   const normalized = value.length === 10 ? `${value}T12:00:00` : value.replace(" ", "T");
   return new Date(normalized);
 }
 
-/**
- * Retorna uma data no formato local 'YYYY-MM-DD', evitando a divergência UTC de toISOString().
- */
 export function toLocalDateString(date = new Date()): string {
   return date.toLocaleDateString("sv-SE");
 }

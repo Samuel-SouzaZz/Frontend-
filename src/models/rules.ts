@@ -4,9 +4,6 @@ import { parseDate } from "./formatters";
 export const PERFIL_ADMINISTRADOR = "FCV_ADMINISTRADOR";
 export const SENHA_MINIMA = 6;
 
-/**
- * Verifica se o usuário autenticado possui perfil de Administrador FCV.
- */
 export function isAdministrador(
   user: { perfil?: string; perfil_id?: number },
   data?: PortalData,
@@ -20,20 +17,10 @@ export function isAdministrador(
   return perfilNome === PERFIL_ADMINISTRADOR;
 }
 
-/**
- * Determina se uma utilização é passível de estorno.
- * Apenas utilizações no estado 'APROVADA' podem ser estornadas.
- */
 export function canEstornar(uso: Utilizacao): boolean {
   return uso.status === "APROVADA";
 }
 
-/**
- * Verifica se um registro temporal está contido dentro de um período em dias.
- * @param value Data em formato ISO ou SQL datetime
- * @param days Quantidade de dias retroativos (0 indica todo o período)
- * @param now Ponto de referência temporal
- */
 export function withinPeriod(value: string, days: number, now = new Date()): boolean {
   const date = parseDate(value);
   if (Number.isNaN(date.getTime()) || date > now) return false;

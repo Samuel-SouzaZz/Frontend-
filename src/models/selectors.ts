@@ -10,13 +10,9 @@ import type {
   Utilizacao,
 } from "./types";
 
-// Re-exportações para total compatibilidade retroativa
 export * from "./formatters";
 export * from "./rules";
 
-/**
- * Estrutura de índices Map para resolução relacional em complexidade O(1).
- */
 export interface DataIndexes {
   usuarios: Map<number, Usuario>;
   colaboradores: Map<number, Colaborador>;
@@ -27,9 +23,6 @@ export interface DataIndexes {
   ofertasCampanha: Map<number, OfertaCampanha>;
 }
 
-/**
- * Constrói índices Map em O(N) para todas as entidades relacionais do portal.
- */
 export function createDataIndexes(data: PortalData): DataIndexes {
   return {
     usuarios: new Map(data.usuarios.map((u) => [u.id, u])),
@@ -42,10 +35,6 @@ export function createDataIndexes(data: PortalData): DataIndexes {
   };
 }
 
-/**
- * Retorna o nome do colaborador a partir do seu ID de entidade.
- * Realiza a resolução de relacionamento: Colaborador -> Usuario -> nome.
- */
 export function colaboradorNome(data: PortalData, colaboradorId: number): string {
   const colaborador = data.colaboradores.find((c) => c.id === colaboradorId);
   if (!colaborador) return `Colaborador #${colaboradorId}`;
@@ -53,9 +42,6 @@ export function colaboradorNome(data: PortalData, colaboradorId: number): string
   return usuario?.nome ?? `Colaborador #${colaboradorId}`;
 }
 
-/**
- * Versão O(1) de colaboradorNome utilizando índices pré-computados.
- */
 export function colaboradorNomeIndexed(
   indexes: DataIndexes,
   colaboradorId: number,
@@ -66,17 +52,11 @@ export function colaboradorNomeIndexed(
   return usuario?.nome ?? `Colaborador #${colaboradorId}`;
 }
 
-/**
- * Retorna o nome fantasia (ou fallback para ID) de um conveniado.
- */
 export function conveniadoNome(data: PortalData, conveniadoId: number): string {
   const conveniado = data.conveniados.find((c) => c.id === conveniadoId);
   return conveniado?.nome_fantasia || conveniado?.razao_social || `Conveniado #${conveniadoId}`;
 }
 
-/**
- * Versão O(1) de conveniadoNome utilizando índices pré-computados.
- */
 export function conveniadoNomeIndexed(
   indexes: DataIndexes,
   conveniadoId: number,
@@ -85,9 +65,6 @@ export function conveniadoNomeIndexed(
   return conveniado?.nome_fantasia || conveniado?.razao_social || `Conveniado #${conveniadoId}`;
 }
 
-/**
- * Obtém o item de benefício associado à utilização (seja benefício regular ou item de campanha).
- */
 export function beneficioDaUtilizacao(
   data: PortalData,
   uso: Utilizacao,
@@ -107,9 +84,6 @@ export function beneficioDaUtilizacao(
   return undefined;
 }
 
-/**
- * Versão O(1) de beneficioDaUtilizacao utilizando índices pré-computados.
- */
 export function beneficioDaUtilizacaoIndexed(
   indexes: DataIndexes,
   uso: Utilizacao,
@@ -129,9 +103,6 @@ export function beneficioDaUtilizacaoIndexed(
   return undefined;
 }
 
-/**
- * Obtém o conveniado associado à utilização, via oferta regular ou oferta de campanha.
- */
 export function conveniadoDaUtilizacao(
   data: PortalData,
   uso: Utilizacao,
@@ -151,9 +122,6 @@ export function conveniadoDaUtilizacao(
   return undefined;
 }
 
-/**
- * Versão O(1) de conveniadoDaUtilizacao utilizando índices pré-computados.
- */
 export function conveniadoDaUtilizacaoIndexed(
   indexes: DataIndexes,
   uso: Utilizacao,
