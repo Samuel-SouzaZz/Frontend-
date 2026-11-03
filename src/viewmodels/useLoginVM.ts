@@ -2,7 +2,7 @@ import { useState, type FormEvent } from "react";
 import { useAuth } from "./AuthContext";
 
 export function useLoginVM() {
-  const { user, restoring, login, loginLocal } = useAuth();
+  const { user, restoring, login } = useAuth();
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
   const [visible, setVisible] = useState(false);
@@ -18,5 +18,5 @@ export function useLoginVM() {
     finally { setBusy(false); }
   }
   function beginRecovery() { setError(""); setRecovering(true); }
-  return { user, restoring, loginLocal, email, setEmail, senha, setSenha, visible, setVisible, busy, error, recovering, setRecovering, submit, beginRecovery };
+  return { user, restoring, email, setEmail, senha, setSenha, visible, setVisible, busy, error, recovering, setRecovering, submit, beginRecovery };
 }

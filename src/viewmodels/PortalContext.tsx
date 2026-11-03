@@ -12,11 +12,6 @@ import type { PortalData, Resource, Entity, Utilizacao } from "../models/types";
 import { canEstornar, isAdministrador } from "../models/selectors";
 import { errorMessage } from "../hooks/useAsyncAction";
 import { cancelUtilizacao, listResource, saveResource } from "../services/api";
-import {
-  createLocalDemoData,
-  isLocalDemoUser,
-  saveLocalDemoEntity,
-} from "../local-demo/localDemo";
 import { useAuth } from "./AuthContext";
 
 const empty: PortalData = {
@@ -73,16 +68,6 @@ export function PortalProvider({ children }: { children: ReactNode }) {
     if (firstLoad) setLoading(true);
     else setRefreshing(true);
     setError(null);
-    if (isLocalDemoUser(userRef.current)) {
-      const next = createLocalDemoData();
-      dataRef.current = next;
-      loadedRef.current = true;
-      setData(next);
-      setResourceErrors({});
-      setLoading(false);
-      setRefreshing(false);
-      return;
-    }
     const results = await Promise.allSettled(
       resources.map((resource) => listResource(resource)),
     );
@@ -141,9 +126,7 @@ export function PortalProvider({ children }: { children: ReactNode }) {
       throw new Error("O histórico de utilização não pode ser editado.");
     const currentData = dataRef.current;
     const rows = currentData[resource] as Entity<K>[];
-    const result = isLocalDemoUser(u)
-      ? saveLocalDemoEntity(rows, id, payload)
-      : await saveResource(resource, id, payload);
+    const result = await saveResource(resource, id, payload);
     const next = {
       ...currentData,
       [resource]:
@@ -167,13 +150,8 @@ export function PortalProvider({ children }: { children: ReactNode }) {
     const observacoes = [atual.observacoes, `Motivo do estorno: ${texto}`]
       .filter(Boolean)
       .join("\n");
-    let result: Utilizacao;
-    if (isLocalDemoUser(u)) {
-      result = { ...atual, status: "ESTORNADA", observacoes };
-    } else {
-      await saveResource("utilizacoes", id, { observacoes });
-      result = await cancelUtilizacao(id);
-    }
+    await saveResource("utilizacoes", id, { observacoes });
+    const result = await cancelUtilizacao(id);
     const next = {
       ...dataRef.current,
       utilizacoes: dataRef.current.utilizacoes.map((item) =>
