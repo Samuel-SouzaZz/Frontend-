@@ -7,6 +7,7 @@ import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Colaboradores from "./pages/Colaboradores";
 import Conveniados from "./pages/Conveniados";
+import ColaboradorDetalhe from "./pages/ColaboradorDetalhe";
 import Beneficios from "./pages/Beneficios";
 import Utilizacoes from "./pages/Utilizacoes";
 import Campanhas from "./pages/Campanhas";
@@ -54,8 +55,12 @@ function Routing() {
       <Route path="/login" element={<Login />} />
       <Route element={<Protected />}>
         <Route index element={<Dashboard />} />
-        <Route path="colaboradores" element={<Colaboradores />} />
-        <Route path="beneficios" element={<Beneficios />} />
+       <Route path="colaboradores" element={<Colaboradores />} />
+<Route
+  path="colaboradores/:id"
+  element={<ColaboradorDetalhe />}
+/>
+<Route path="beneficios" element={<Beneficios />} />
         <Route path="conveniados" element={<Conveniados />} />
         <Route path="utilizacoes" element={<Utilizacoes />} />
         <Route path="campanhas" element={<Campanhas />} />
