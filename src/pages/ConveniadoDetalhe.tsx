@@ -2,6 +2,7 @@ import { Link, useParams } from "react-router-dom";
 
 import {
   Ban,
+  CheckCircle2,
   Gift,
   Megaphone,
   Pencil,
@@ -94,17 +95,30 @@ export default function ConveniadoDetalhe() {
           </>
         }
         detalhes={`CNPJ ${formatCnpj(conveniado.cnpj)} · ${conveniado.endereco}`}
-        acoes={
-          <>
-            <button
-              type="button"
-              className="btn btn-secondary"
-              onClick={() => vm.openForm(conveniado)}
-            >
-              <Pencil size={16} aria-hidden="true" />
-              Editar
-            </button>
+       acoes={
+  <>
+    {conveniado.status === "EM_ANALISE" && (
+      <button
+        type="button"
+        className="btn btn-primary"
+        onClick={() => vm.setAprovando(true)}
+      >
+        <CheckCircle2
+          size={16}
+          aria-hidden="true"
+        />
+        Aprovar parceiro
+      </button>
+    )}
 
+    <button
+      type="button"
+      className="btn btn-secondary"
+      onClick={() => vm.openForm(conveniado)}
+    >
+      <Pencil size={16} aria-hidden="true" />
+      Editar
+    </button>
             {conveniado.status !== "INATIVO" && (
               <button
                 type="button"
@@ -360,6 +374,26 @@ export default function ConveniadoDetalhe() {
           </p>
         </ConfirmModal>
       )}
+
+      {vm.aprovando && (
+  <ConfirmModal
+    title="Aprovar parceiro"
+    description="Depois de aprovado, ele pode ser escolhido nos benefícios e campanhas."
+    onClose={() => {
+      if (!vm.aprovandoAgora) {
+        vm.setAprovando(false);
+      }
+    }}
+    onConfirm={() => void vm.aprovar()}
+    confirming={vm.aprovandoAgora}
+    confirmLabel="Sim, aprovar"
+    confirmingLabel="Aprovando…"
+  >
+    <p>
+      <strong>{nome}</strong>
+    </p>
+  </ConfirmModal>
+)}
     </div>
   );
 }
