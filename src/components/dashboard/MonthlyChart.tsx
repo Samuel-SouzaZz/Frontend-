@@ -20,7 +20,7 @@ export function MonthlyChart({
       <div className="panel-header">
         <div>
           <span className="eyebrow">ACOMPANHAMENTO</span>
-          <h2>Utilizações por mês</h2>
+          <h2>Utilizações no período</h2>
         </div>
         <span className="chart-legend">
           <i />
