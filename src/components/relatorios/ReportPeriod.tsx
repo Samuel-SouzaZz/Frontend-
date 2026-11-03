@@ -1,4 +1,4 @@
-import { Field, FilterBar } from "../ui";
+import { DateField, Field, FilterBar } from "../ui";
 
 type ReportPeriodProps = {
   inicio: string;
@@ -26,10 +26,10 @@ export function ReportPeriod({
       </div>
       <FilterBar>
         <Field label="De" required>
-          <input
-            type="date"
+          <DateField
+            fimDoPeriodo={fim}
             value={inicio}
-            onChange={(event) => onInicioChange(event.target.value)}
+            onChange={(valor) => onInicioChange(valor)}
           />
         </Field>
         <Field
@@ -37,11 +37,11 @@ export function ReportPeriod({
           required
           error={valid ? undefined : "Informe um período válido."}
         >
-          <input
-            type="date"
+          <DateField
+            inicioDoPeriodo={inicio}
             min={inicio || undefined}
             value={fim}
-            onChange={(event) => onFimChange(event.target.value)}
+            onChange={(valor) => onFimChange(valor)}
           />
         </Field>
       </FilterBar>

@@ -1,5 +1,5 @@
 import { RotateCcw } from "lucide-react";
-import { Field, FilterBar, SearchField, Select, type SelectOption } from "../ui";
+import { DateField, Field, FilterBar, SearchField, Select, type SelectOption } from "../ui";
 import { statusLabel } from "../../models/formatters";
 
 export type FiltrosUtilizacao = {
@@ -55,10 +55,10 @@ export function UtilizacoesFilters({
           />
         </Field>
         <Field label="De">
-          <input
-            type="date"
+          <DateField
+            fimDoPeriodo={filtros.fim}
             value={filtros.inicio}
-            onChange={(event) => onChange("inicio", event.target.value)}
+            onChange={(valor) => onChange("inicio", valor)}
           />
         </Field>
         <Field
@@ -69,11 +69,11 @@ export function UtilizacoesFilters({
               : undefined
           }
         >
-          <input
-            type="date"
+          <DateField
+            inicioDoPeriodo={filtros.inicio}
             value={filtros.fim}
             min={filtros.inicio || undefined}
-            onChange={(event) => onChange("fim", event.target.value)}
+            onChange={(valor) => onChange("fim", valor)}
           />
         </Field>
       </FilterBar>

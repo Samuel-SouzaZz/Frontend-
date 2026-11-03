@@ -1,5 +1,5 @@
 import type { FormEvent } from "react";
-import { Field, FormModal, Select, type SelectOption } from "../ui";
+import { DateField, Field, FormModal, Select, type SelectOption } from "../ui";
 import { capitalizeFirstLetter } from "../../models/formatters";
 import type { Usuario } from "../../models/types";
 import type { ColaboradorForm } from "../../viewmodels/useColaboradoresVM";
@@ -92,11 +92,10 @@ export function ColaboradorFormModal({
         />
       </Field>
       <Field label="Data de admissão" required>
-        <input
-          type="date"
+        <DateField
           required
           value={form.data_admissao}
-          onChange={(event) => update({ data_admissao: event.target.value })}
+          onChange={(valor) => update({ data_admissao: valor })}
         />
       </Field>
       <Field label="Telefone">

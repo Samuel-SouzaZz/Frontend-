@@ -1,6 +1,7 @@
 export { Badge } from "./Badge";
 export { CellStack } from "./CellStack";
 export { ConfirmModal } from "./ConfirmModal";
+export { DateField } from "./DateField";
 export { DataTable, type Column } from "./DataTable";
 export { DetailList } from "./DetailList";
 export { EmptyState } from "./EmptyState";
