@@ -11,10 +11,14 @@ export function DataTable<T>({
   columns,
   rows,
   getRowKey,
+  onRowClick,
+  rowLabel,
 }: {
   columns: Column<T>[];
   rows: T[];
   getRowKey: (row: T) => string | number;
+  onRowClick?: (row: T) => void;
+  rowLabel?: (row: T) => string;
 }) {
   return (
     <div className="table-scroll">
@@ -28,12 +32,51 @@ export function DataTable<T>({
             ))}
           </tr>
         </thead>
+
         <tbody>
           {rows.length ? (
             rows.map((row) => (
-              <tr key={getRowKey(row)}>
+              <tr
+                key={getRowKey(row)}
+                className={onRowClick ? "is-clickable" : undefined}
+                tabIndex={onRowClick ? 0 : undefined}
+                aria-label={
+                  onRowClick && rowLabel
+                    ? rowLabel(row)
+                    : undefined
+                }
+                onClick={
+                  onRowClick
+                    ? (event) => {
+                        if (
+                          (event.target as HTMLElement).closest(
+                            "button, a, input"
+                          )
+                        ) {
+                          return;
+                        }
+
+                        onRowClick(row);
+                      }
+                    : undefined
+                }
+                onKeyDown={
+                  onRowClick
+                    ? (event) => {
+                        if (
+                          event.key === "Enter" &&
+                          event.target === event.currentTarget
+                        ) {
+                          onRowClick(row);
+                        }
+                      }
+                    : undefined
+                }
+              >
                 {columns.map((column) => (
-                  <td key={column.key}>{column.render(row)}</td>
+                  <td key={column.key}>
+                    {column.render(row)}
+                  </td>
                 ))}
               </tr>
             ))

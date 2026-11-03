@@ -1,0 +1,12 @@
+tr.is-clickable {
+  cursor: pointer;
+}
+
+tr.is-clickable:hover td {
+  background: #f6f9fd;
+}
+
+tr.is-clickable:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: -2px;
+}
