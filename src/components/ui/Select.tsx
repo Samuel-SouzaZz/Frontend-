@@ -104,6 +104,7 @@ export function Select({
       else openList();
     } else if (event.key === "Escape" && open) {
       event.preventDefault();
+      event.stopPropagation();
       setOpen(false);
     } else if (event.key === "Tab" && open) {
       setOpen(false);
@@ -133,9 +134,9 @@ export function Select({
         data-select-value={value}
         data-required={isRequired ? "true" : undefined}
         disabled={disabled}
-        onMouseDown={(event) => event.preventDefault()}
         onClick={(event) => {
           event.preventDefault();
+          event.currentTarget.focus();
           if (open) setOpen(false);
           else openList();
         }}
