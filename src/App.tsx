@@ -69,7 +69,7 @@ function Routing() {
 }
 export default function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter useTransitions={false}>
       <AuthProvider>
         <Routing />
       </AuthProvider>
