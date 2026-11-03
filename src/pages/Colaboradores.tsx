@@ -1,4 +1,6 @@
+import { useNavigate } from "react-router-dom";
 import { Plus, Users } from "lucide-react";
+
 import {
   ConfirmModal,
   EmptyState,
@@ -9,12 +11,14 @@ import {
   Select,
   type SelectOption,
 } from "../components/ui";
-import { ColaboradorDetailsModal } from "../components/colaboradores/ColaboradorDetailsModal";
+
 import { ColaboradorFormModal } from "../components/colaboradores/ColaboradorFormModal";
 import { ColaboradoresStats } from "../components/colaboradores/ColaboradoresStats";
 import { ColaboradoresTable } from "../components/colaboradores/ColaboradoresTable";
+
 import { colaboradorNome } from "../models/selectors";
 import type { Colaborador } from "../models/types";
+
 import { useColaboradoresVM } from "../viewmodels/useColaboradoresVM";
 
 const STATUS_FILTRO: SelectOption[] = [
@@ -26,12 +30,17 @@ const STATUS_FILTRO: SelectOption[] = [
 
 export default function Colaboradores() {
   const vm = useColaboradoresVM();
-  const nomeDe = (item: Colaborador) => colaboradorNome(vm.data, item.id);
-  const filtrar = (setter: (value: string) => void) => (value: string) => {
-    setter(value);
-    vm.setPage(1);
-  };
-  const details = vm.details;
+  const navigate = useNavigate();
+
+  const nomeDe = (item: Colaborador) =>
+    colaboradorNome(vm.data, item.id);
+
+  const filtrar =
+    (setter: (value: string) => void) =>
+    (value: string) => {
+      setter(value);
+      vm.setPage(1);
+    };
 
   return (
     <>
@@ -47,39 +56,55 @@ export default function Colaboradores() {
             disabled={vm.loading}
             onClick={() => vm.openForm()}
           >
-            <Plus size={18} /> Novo colaborador
+            <Plus size={18} />
+            Novo colaborador
           </button>
         }
       />
-      <ColaboradoresStats colaboradores={vm.data.colaboradores} />
-      <section className="panel" aria-label="Lista de colaboradores">
+
+      <ColaboradoresStats
+        colaboradores={vm.data.colaboradores}
+      />
+
+      <section
+        className="panel"
+        aria-label="Lista de colaboradores"
+      >
         <FilterBar>
           <SearchField
             value={vm.search}
             onChange={filtrar(vm.setSearch)}
             placeholder="Buscar por nome, matrícula, setor ou cargo..."
           />
+
           <Select
             aria-label="Filtrar colaboradores por status"
             value={vm.status}
             options={STATUS_FILTRO}
             onChange={filtrar(vm.setStatus)}
           />
+
           <Select
             aria-label="Filtrar por setor"
             value={vm.setor}
             onChange={filtrar(vm.setSetor)}
             options={[
               { value: "", label: "Todos os setores" },
-              ...vm.sectors.map((value) => ({ value, label: value })),
+              ...vm.sectors.map((value) => ({
+                value,
+                label: value,
+              })),
             ]}
           />
         </FilterBar>
+
         {vm.filtered.length ? (
           <ColaboradoresTable
             rows={vm.visibleRows}
             nomeDe={nomeDe}
-            onView={vm.setDetails}
+            onView={(item) =>
+              navigate(`/colaboradores/${item.id}`)
+            }
             onEdit={vm.openForm}
             onInactivate={vm.setInactivating}
           />
@@ -93,6 +118,7 @@ export default function Colaboradores() {
             description="Ajuste os filtros ou cadastre um novo colaborador."
           />
         )}
+
         <Pagination
           page={vm.currentPage}
           total={vm.filtered.length}
@@ -100,6 +126,7 @@ export default function Colaboradores() {
           onChange={vm.setPage}
         />
       </section>
+
       {vm.formOpen && (
         <ColaboradorFormModal
           form={vm.form}
@@ -112,32 +139,15 @@ export default function Colaboradores() {
           onClose={() => vm.setFormOpen(false)}
         />
       )}
-      {details && (
-        <ColaboradorDetailsModal
-          colaborador={details}
-          nome={nomeDe(details)}
-          email={
-            vm.data.usuarios.find((user) => user.id === details.usuario_id)
-              ?.email
-          }
-          utilizacoes={
-            vm.data.utilizacoes.filter(
-              (item) => item.colaborador_id === details.id,
-            ).length
-          }
-          onClose={() => vm.setDetails(undefined)}
-          onEdit={() => {
-            vm.openForm(details);
-            vm.setDetails(undefined);
-          }}
-        />
-      )}
+
       {vm.inactivating && (
         <ConfirmModal
           title="Inativar colaborador"
           description={`Deseja inativar ${nomeDe(vm.inactivating)}? O acesso aos benefícios será bloqueado e os registros anteriores serão preservados.`}
           onClose={() => {
-            if (!vm.submitting) vm.setInactivating(undefined);
+            if (!vm.submitting) {
+              vm.setInactivating(undefined);
+            }
           }}
           onConfirm={vm.inactivate}
           confirming={vm.submitting}

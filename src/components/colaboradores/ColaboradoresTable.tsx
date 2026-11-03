@@ -21,8 +21,10 @@ export function ColaboradoresTable({
   return (
     <DataTable
       rows={rows}
-      getRowKey={(item) => item.id}
-      columns={[
+     getRowKey={(item) => item.id}
+     onRowClick={onView}
+     rowLabel={(item) => `Abrir ${nomeDe(item)}`}
+     columns={[
         {
           key: "nome",
           label: "Colaborador",

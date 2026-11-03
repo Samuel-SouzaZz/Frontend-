@@ -38,7 +38,6 @@ export function useColaboradoresVM() {
   const setSetor = setter("setor");
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<Colaborador>();
-  const [details, setDetails] = useState<Colaborador>();
   const [inactivating, setInactivating] = useState<Colaborador>();
   const [form, setForm] = useState<ColaboradorForm>(blankForm);
   const [formError, setFormError] = useState("");
@@ -202,8 +201,6 @@ export function useColaboradoresVM() {
     submitting,
     openForm,
     submit,
-    details,
-    setDetails,
     inactivating,
     setInactivating,
     inactivate,
