@@ -927,12 +927,10 @@ tbody tr:hover {
   box-shadow: 0 0 0 3px #c7466114;
 }
 .field-select-menu {
-  position: absolute;
-  z-index: 80;
-  top: calc(100% + 7px);
-  right: 0;
-  left: 0;
-  max-height: min(280px, 40vh);
+  position: fixed;
+  inset: auto;
+  margin: 0;
+  max-height: 280px;
   overflow-y: auto;
   padding: 6px;
   border: 1px solid var(--border-input);
@@ -1188,7 +1186,6 @@ tbody tr:hover {
   font-size: 11px;
 }
 .period-control .field-select-menu {
-  left: auto;
   min-width: 190px;
 }
 .dashboard-grid {
