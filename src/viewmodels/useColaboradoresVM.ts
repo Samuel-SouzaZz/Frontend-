@@ -5,12 +5,11 @@ import { usePagination } from "../hooks/usePagination";
 import { useUrlFilters } from "../hooks/useUrlFilters";
 import { useAsyncAction } from "../hooks/useAsyncAction";
 import { useSessionUser } from "../hooks/useSessionUser";
-import { isAdministrador, SENHA_MINIMA } from "../models/rules";
+import { isAdministrador } from "../models/rules";
+import { contaLimpa, erroDaContaNova, type ModoConta } from "../models/contaNova";
 
 const PAGE_SIZE = 8;
 const FILTER_KEYS = ["buscar", "status", "setor"] as const;
-
-export type ModoConta = "nova" | "existente";
 
 export type ColaboradorForm = {
   modo: ModoConta;
@@ -25,8 +24,6 @@ export type ColaboradorForm = {
   telefone: string;
   status: Colaborador["status"];
 };
-
-const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const blankForm = (modo: ModoConta): ColaboradorForm => ({
   modo,
@@ -43,7 +40,7 @@ const blankForm = (modo: ModoConta): ColaboradorForm => ({
 });
 
 export function useColaboradoresVM() {
-  const { data, save, cadastrarColaborador, loading } = usePortal();
+  const { data, save, cadastrarComConta, loading } = usePortal();
   const sessao = useSessionUser();
   const podeCriarConta = isAdministrador(sessao, data);
   const { running: submitting, run } = useAsyncAction();
@@ -144,15 +141,9 @@ export function useColaboradoresVM() {
     event.preventDefault();
     setFormError("");
     const contaNova = !editing && form.modo === "nova";
-    if (contaNova) {
-      const email = form.email.trim().toLocaleLowerCase("pt-BR");
-      if (!form.nome.trim()) return setFormError("Informe o nome completo.");
-      if (!EMAIL.test(email)) return setFormError("Informe um e-mail válido.");
-      if (data.usuarios.some((user) => user.email.toLocaleLowerCase("pt-BR") === email))
-        return setFormError("Já existe uma conta com este e-mail. Use a opção Já tem conta.");
-      if (form.senha.length < SENHA_MINIMA)
-        return setFormError(`A senha inicial precisa ter pelo menos ${SENHA_MINIMA} caracteres.`);
-    } else if (!form.usuario_id) {
+    const erroConta = contaNova ? erroDaContaNova(form, data.usuarios) : "";
+    if (erroConta) return setFormError(erroConta);
+    if (!contaNova && !form.usuario_id) {
       setFormError("Selecione um usuário para vincular ao colaborador.");
       return;
     }
@@ -184,10 +175,7 @@ export function useColaboradoresVM() {
     await run(
       () =>
         contaNova
-          ? cadastrarColaborador(
-              { nome: form.nome.trim(), email: form.email.trim().toLocaleLowerCase("pt-BR"), senha: form.senha },
-              trabalho,
-            )
+          ? cadastrarComConta("colaboradores", contaLimpa(form), trabalho)
           : save("colaboradores", editing?.id, { ...trabalho, usuario_id: Number(form.usuario_id) }),
       {
         success: editing ? "Colaborador atualizado." : "Colaborador cadastrado.",

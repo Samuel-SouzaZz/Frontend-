@@ -3,6 +3,7 @@ import { Field, FormModal, Select, type SelectOption } from "../ui";
 import { capitalizeFirstLetter } from "../../models/formatters";
 import type { Usuario } from "../../models/types";
 import type { ConveniadoForm } from "../../viewmodels/useConveniadosVM";
+import { ContaNovaCampos } from "../conta/ContaNovaCampos";
 
 const STATUS: SelectOption[] = [
   { value: "EM_ANALISE", label: "Em análise" },
@@ -17,6 +18,8 @@ type ConveniadoFormModalProps = {
   onChange: (form: ConveniadoForm) => void;
   categories: string[];
   availableUsers: Usuario[];
+  podeCriarConta: boolean;
+  contaAtual?: Usuario;
   editing: boolean;
   submitting: boolean;
   error: string;
@@ -29,6 +32,8 @@ export function ConveniadoFormModal({
   onChange,
   categories,
   availableUsers,
+  podeCriarConta,
+  contaAtual,
   editing,
   submitting,
   error,
@@ -38,18 +43,38 @@ export function ConveniadoFormModal({
   const update = (patch: Partial<ConveniadoForm>) =>
     onChange({ ...form, ...patch });
   const semUsuarios = !availableUsers.length;
+  const contaNova = !editing && form.modo === "nova";
   return (
     <FormModal
       title={editing ? "Editar conveniado" : "Cadastrar conveniado"}
-      description="Preencha os dados do estabelecimento e vincule o usuário responsável."
+      description={
+        editing
+          ? "Atualize os dados do estabelecimento."
+          : contaNova
+            ? "Crie a conta de acesso do parceiro e os dados do estabelecimento de uma vez."
+            : "Vincule uma conta que já existe e preencha os dados do estabelecimento."
+      }
       wide
       submitting={submitting}
       submitLabel={editing ? "Salvar alterações" : "Cadastrar conveniado"}
-      submitDisabled={semUsuarios}
+      submitDisabled={!editing && !contaNova && semUsuarios}
       error={error}
       onSubmit={onSubmit}
       onClose={onClose}
     >
+      <ContaNovaCampos
+        modo={form.modo}
+        onModo={(modo) => update({ modo })}
+        conta={form}
+        onConta={update}
+        editing={editing}
+        podeCriarConta={podeCriarConta}
+        contaAtual={contaAtual}
+        rotuloNome="Nome do responsável"
+        exemploNome="Quem vai usar o app no parceiro"
+        exemploEmail="contato@parceiro.com"
+        tituloDados="Dados do estabelecimento"
+      />
       <Field label="Nome fantasia" required>
         <input
           required
@@ -100,24 +125,26 @@ export function ConveniadoFormModal({
           ))}
         </datalist>
       </Field>
-      <Field
-        label="Usuário responsável"
-        required
-        hint="Selecione uma conta do perfil Conveniado que ainda não possua vínculo."
-      >
-        <Select
-          value={form.usuario_id}
-          onChange={(value) => update({ usuario_id: value })}
-          placeholder="Selecione o usuário"
-          options={[
-            { value: "", label: "Selecione o usuário" },
-            ...availableUsers.map((user) => ({
-              value: String(user.id),
-              label: `${capitalizeFirstLetter(user.nome)} · ${user.email}`,
-            })),
-          ]}
-        />
-      </Field>
+      {!editing && !contaNova && (
+        <Field
+          label="Usuário responsável"
+          required
+          hint="Selecione uma conta do perfil Conveniado que ainda não possua vínculo."
+        >
+          <Select
+            value={form.usuario_id}
+            onChange={(value) => update({ usuario_id: value })}
+            placeholder="Selecione o usuário"
+            options={[
+              { value: "", label: "Selecione o usuário" },
+              ...availableUsers.map((user) => ({
+                value: String(user.id),
+                label: `${capitalizeFirstLetter(user.nome)} · ${user.email}`,
+              })),
+            ]}
+          />
+        </Field>
+      )}
       <Field label="Status" required>
         <Select
           value={form.status}
@@ -138,10 +165,12 @@ export function ConveniadoFormModal({
           />
         </Field>
       </div>
-      {semUsuarios && (
+      {!editing && !contaNova && semUsuarios && (
         <p className="full-width inline-notice">
-          Não há uma conta do perfil Conveniado sem vínculo. Solicite ao
-          administrador o cadastro em Perfis e usuários.
+          Não há conta do perfil Conveniado sem vínculo.{" "}
+          {podeCriarConta
+            ? "Use a opção Pessoa nova para criar a conta junto."
+            : "Peça ao administrador para cadastrar o parceiro."}
         </p>
       )}
     </FormModal>

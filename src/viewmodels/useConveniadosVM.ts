@@ -5,11 +5,18 @@ import type { Conveniado } from "../models/types";
 import { usePagination } from "../hooks/usePagination";
 import { useUrlFilters } from "../hooks/useUrlFilters";
 import { useAsyncAction } from "../hooks/useAsyncAction";
+import { useSessionUser } from "../hooks/useSessionUser";
+import { isAdministrador } from "../models/rules";
+import { contaLimpa, erroDaContaNova, type ModoConta } from "../models/contaNova";
 
 const PAGE_SIZE = 8;
 const FILTER_KEYS = ["buscar", "status", "categoria"] as const;
 
 export type ConveniadoForm = {
+  modo: ModoConta;
+  nome: string;
+  email: string;
+  senha: string;
   usuario_id: string;
   nome_fantasia: string;
   razao_social: string;
@@ -19,7 +26,11 @@ export type ConveniadoForm = {
   status: Conveniado["status"];
 };
 
-const blankForm = (): ConveniadoForm => ({
+const blankForm = (modo: ModoConta): ConveniadoForm => ({
+  modo,
+  nome: "",
+  email: "",
+  senha: "",
   usuario_id: "",
   nome_fantasia: "",
   razao_social: "",
@@ -30,7 +41,9 @@ const blankForm = (): ConveniadoForm => ({
 });
 
 export function useConveniadosVM() {
-  const { data, save, loading } = usePortal();
+  const { data, save, cadastrarComConta, loading } = usePortal();
+  const sessao = useSessionUser();
+  const podeCriarConta = isAdministrador(sessao, data);
   const { running: submitting, run } = useAsyncAction();
   const { values: filters, setter } = useUrlFilters(FILTER_KEYS);
   const { buscar: search, status, categoria: category } = filters;
@@ -40,7 +53,7 @@ export function useConveniadosVM() {
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<Conveniado>();
   const [inactivating, setInactivating] = useState<Conveniado>();
-  const [form, setForm] = useState<ConveniadoForm>(blankForm);
+  const [form, setForm] = useState<ConveniadoForm>(() => blankForm("existente"));
   const [formError, setFormError] = useState("");
   const categories = [
     ...new Set(data.conveniados.map((item) => item.categoria)),
@@ -91,6 +104,10 @@ export function useConveniadosVM() {
     setForm(
       item
         ? {
+            modo: "existente",
+            nome: "",
+            email: "",
+            senha: "",
             usuario_id: String(item.usuario_id),
             nome_fantasia: item.nome_fantasia,
             razao_social: item.razao_social,
@@ -99,7 +116,7 @@ export function useConveniadosVM() {
             endereco: item.endereco,
             status: item.status,
           }
-        : blankForm(),
+        : blankForm(podeCriarConta ? "nova" : "existente"),
     );
     setFormError("");
     setFormOpen(true);
@@ -109,7 +126,10 @@ export function useConveniadosVM() {
     event.preventDefault();
     setFormError("");
     const cnpj = form.cnpj.replace(/\D/g, "");
-    if (!form.usuario_id) {
+    const contaNova = !editing && form.modo === "nova";
+    const erroConta = contaNova ? erroDaContaNova(form, data.usuarios) : "";
+    if (erroConta) return setFormError(erroConta);
+    if (!contaNova && !form.usuario_id) {
       setFormError("Selecione o usuário responsável por este conveniado.");
       return;
     }
@@ -137,17 +157,19 @@ export function useConveniadosVM() {
       setFormError("Este CNPJ já está cadastrado.");
       return;
     }
+    const estabelecimento = {
+      nome_fantasia: form.nome_fantasia.trim(),
+      razao_social: form.razao_social.trim(),
+      categoria: form.categoria.trim(),
+      cnpj,
+      endereco: form.endereco.trim(),
+      status: form.status,
+    };
     await run(
       () =>
-        save("conveniados", editing?.id, {
-          ...form,
-          usuario_id: Number(form.usuario_id),
-          nome_fantasia: form.nome_fantasia.trim(),
-          razao_social: form.razao_social.trim(),
-          categoria: form.categoria.trim(),
-          cnpj,
-          endereco: form.endereco.trim(),
-        }),
+        contaNova
+          ? cadastrarComConta("conveniados", contaLimpa(form), estabelecimento)
+          : save("conveniados", editing?.id, { ...estabelecimento, usuario_id: Number(form.usuario_id) }),
       {
         success: editing ? "Conveniado atualizado." : "Conveniado cadastrado.",
         fallbackError: "Não foi possível salvar o conveniado.",
@@ -186,6 +208,8 @@ export function useConveniadosVM() {
     currentPage,
     visibleRows,
     availableUsers,
+    podeCriarConta,
+    contaAtual: editing ? data.usuarios.find((user) => user.id === editing.usuario_id) : undefined,
     activeOfferCount,
     formOpen,
     setFormOpen,

@@ -45,6 +45,8 @@ export default function Conveniados() {
     currentPage,
     visibleRows,
     availableUsers,
+    podeCriarConta,
+    contaAtual,
     activeOfferCount,
     formOpen,
     setFormOpen,
@@ -170,6 +172,8 @@ export default function Conveniados() {
           onChange={setForm}
           categories={categories}
           availableUsers={availableUsers}
+          podeCriarConta={podeCriarConta}
+          contaAtual={contaAtual}
           editing={Boolean(editing)}
           submitting={submitting}
           error={formError}

@@ -345,6 +345,8 @@ export default function ConveniadoDetalhe() {
           onChange={vm.setForm}
           categories={vm.categories}
           availableUsers={vm.availableUsers}
+          podeCriarConta={vm.podeCriarConta}
+          contaAtual={vm.contaAtual}
           editing={Boolean(vm.editing)}
           submitting={vm.submitting}
           error={vm.formError}

@@ -1,9 +1,9 @@
 import type { FormEvent } from "react";
 import { DateField, Field, FormModal, Select, type SelectOption } from "../ui";
 import { capitalizeFirstLetter } from "../../models/formatters";
-import { SENHA_MINIMA } from "../../models/rules";
 import type { Usuario } from "../../models/types";
-import type { ColaboradorForm, ModoConta } from "../../viewmodels/useColaboradoresVM";
+import type { ColaboradorForm } from "../../viewmodels/useColaboradoresVM";
+import { ContaNovaCampos } from "../conta/ContaNovaCampos";
 
 const STATUS: SelectOption[] = [
   { value: "ATIVO", label: "Ativo" },
@@ -40,10 +40,6 @@ export function ColaboradorFormModal({
     onChange({ ...form, ...patch });
   const semUsuarios = !availableUsers.length;
   const contaNova = !editing && form.modo === "nova";
-  const MODOS: { value: ModoConta; label: string }[] = [
-    { value: "nova", label: "Pessoa nova" },
-    { value: "existente", label: "Já tem conta" },
-  ];
   return (
     <FormModal
       title={editing ? "Editar colaborador" : "Novo colaborador"}
@@ -62,66 +58,19 @@ export function ColaboradorFormModal({
       onSubmit={onSubmit}
       onClose={onClose}
     >
-      {!editing && podeCriarConta && (
-        <div className="full-width colab-modo">
-          <span className="s-toggle" role="radiogroup" aria-label="Como cadastrar">
-            {MODOS.map((modo) => (
-              <button
-                key={modo.value}
-                type="button"
-                role="radio"
-                aria-checked={form.modo === modo.value}
-                className={form.modo === modo.value ? "is-active" : undefined}
-                onClick={() => update({ modo: modo.value })}
-              >
-                {modo.label}
-              </button>
-            ))}
-          </span>
-        </div>
-      )}
-      {editing && contaAtual && (
-        <p className="full-width colab-conta">
-          Conta de acesso: <strong>{capitalizeFirstLetter(contaAtual.nome)}</strong> · {contaAtual.email}
-        </p>
-      )}
-      {contaNova && (
-        <>
-          <p className="full-width colab-secao">Conta de acesso</p>
-          <Field label="Nome completo" required>
-            <input
-              required
-              maxLength={150}
-              autoComplete="off"
-              value={form.nome}
-              onChange={(event) => update({ nome: event.target.value })}
-              placeholder="Ex.: Carla Souza"
-            />
-          </Field>
-          <Field label="E-mail" required>
-            <input
-              required
-              type="email"
-              maxLength={150}
-              autoComplete="off"
-              value={form.email}
-              onChange={(event) => update({ email: event.target.value })}
-              placeholder="nome@fcv.org.br"
-            />
-          </Field>
-          <Field label="Senha inicial" required hint={`Mínimo de ${SENHA_MINIMA} caracteres. A pessoa usa para entrar no app.`}>
-            <input
-              required
-              type="password"
-              minLength={SENHA_MINIMA}
-              autoComplete="new-password"
-              value={form.senha}
-              onChange={(event) => update({ senha: event.target.value })}
-            />
-          </Field>
-          <p className="full-width colab-secao">Dados de trabalho</p>
-        </>
-      )}
+      <ContaNovaCampos
+        modo={form.modo}
+        onModo={(modo) => update({ modo })}
+        conta={form}
+        onConta={update}
+        editing={editing}
+        podeCriarConta={podeCriarConta}
+        contaAtual={contaAtual}
+        rotuloNome="Nome completo"
+        exemploNome="Ex.: Carla Souza"
+        exemploEmail="nome@fcv.org.br"
+        tituloDados="Dados de trabalho"
+      />
       {!editing && !contaNova && (
         <Field
           label="Usuário vinculado"
