@@ -12,6 +12,7 @@ import ConveniadoDetalhe from "./pages/ConveniadoDetalhe";
 import Beneficios from "./pages/Beneficios";
 import Utilizacoes from "./pages/Utilizacoes";
 import Campanhas from "./pages/Campanhas";
+import Calendario from "./pages/Calendario";
 import Relatorios from "./pages/Relatorios";
 import Perfis from "./pages/Perfis";
 import MeuPerfil from "./pages/MeuPerfil";
@@ -56,16 +57,14 @@ function Routing() {
       <Route path="/login" element={<Login />} />
       <Route element={<Protected />}>
         <Route index element={<Dashboard />} />
-       <Route path="colaboradores" element={<Colaboradores />} />
-<Route
-  path="colaboradores/:id"
-  element={<ColaboradorDetalhe />}
-/>
-<Route path="beneficios" element={<Beneficios />} />
+        <Route path="colaboradores" element={<Colaboradores />} />
+        <Route path="colaboradores/:id" element={<ColaboradorDetalhe />} />
+        <Route path="beneficios" element={<Beneficios />} />
         <Route path="conveniados" element={<Conveniados />} />
         <Route path="conveniados/:id" element={<ConveniadoDetalhe />} />
         <Route path="utilizacoes" element={<Utilizacoes />} />
         <Route path="campanhas" element={<Campanhas />} />
+        <Route path="calendario" element={<Calendario />} />
         <Route path="relatorios" element={<Relatorios />} />
         <Route path="perfis" element={<AdminPage />} />
         <Route path="meu-perfil" element={<MeuPerfil />} />
