@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from "react";
 import { requestPasswordReset, resetPassword } from "../services/api";
 import { SENHA_MINIMA } from "../models/rules";
+import { errorMessage } from "../hooks/useAsyncAction";
 
 type Step = "email" | "reset" | "done";
 
