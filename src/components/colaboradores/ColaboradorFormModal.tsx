@@ -1,8 +1,9 @@
 import type { FormEvent } from "react";
 import { DateField, Field, FormModal, Select, type SelectOption } from "../ui";
 import { capitalizeFirstLetter } from "../../models/formatters";
+import { SENHA_MINIMA } from "../../models/rules";
 import type { Usuario } from "../../models/types";
-import type { ColaboradorForm } from "../../viewmodels/useColaboradoresVM";
+import type { ColaboradorForm, ModoConta } from "../../viewmodels/useColaboradoresVM";
 
 const STATUS: SelectOption[] = [
   { value: "ATIVO", label: "Ativo" },
@@ -14,6 +15,8 @@ type ColaboradorFormModalProps = {
   form: ColaboradorForm;
   onChange: (form: ColaboradorForm) => void;
   availableUsers: Usuario[];
+  podeCriarConta: boolean;
+  contaAtual?: Usuario;
   editing: boolean;
   submitting: boolean;
   error: string;
@@ -25,6 +28,8 @@ export function ColaboradorFormModal({
   form,
   onChange,
   availableUsers,
+  podeCriarConta,
+  contaAtual,
   editing,
   submitting,
   error,
@@ -34,36 +39,109 @@ export function ColaboradorFormModal({
   const update = (patch: Partial<ColaboradorForm>) =>
     onChange({ ...form, ...patch });
   const semUsuarios = !availableUsers.length;
+  const contaNova = !editing && form.modo === "nova";
+  const MODOS: { value: ModoConta; label: string }[] = [
+    { value: "nova", label: "Pessoa nova" },
+    { value: "existente", label: "Já tem conta" },
+  ];
   return (
     <FormModal
       title={editing ? "Editar colaborador" : "Novo colaborador"}
-      description="Vincule uma conta existente e preencha os dados de trabalho."
+      description={
+        editing
+          ? "Atualize os dados de trabalho do colaborador."
+          : contaNova
+            ? "Crie a conta de acesso e os dados de trabalho de uma vez."
+            : "Vincule uma conta que já existe e preencha os dados de trabalho."
+      }
       wide
       submitting={submitting}
       submitLabel={editing ? "Salvar alterações" : "Cadastrar colaborador"}
-      submitDisabled={semUsuarios}
+      submitDisabled={!editing && !contaNova && semUsuarios}
       error={error}
       onSubmit={onSubmit}
       onClose={onClose}
     >
-      <Field
-        label="Usuário vinculado"
-        required
-        hint="Selecione uma conta do perfil Colaborador que ainda não possua vínculo."
-      >
-        <Select
-          value={form.usuario_id}
-          onChange={(value) => update({ usuario_id: value })}
-          placeholder="Selecione o usuário"
-          options={[
-            { value: "", label: "Selecione o usuário" },
-            ...availableUsers.map((user) => ({
-              value: String(user.id),
-              label: `${capitalizeFirstLetter(user.nome)} · ${user.email}`,
-            })),
-          ]}
-        />
-      </Field>
+      {!editing && podeCriarConta && (
+        <div className="full-width colab-modo">
+          <span className="s-toggle" role="radiogroup" aria-label="Como cadastrar">
+            {MODOS.map((modo) => (
+              <button
+                key={modo.value}
+                type="button"
+                role="radio"
+                aria-checked={form.modo === modo.value}
+                className={form.modo === modo.value ? "is-active" : undefined}
+                onClick={() => update({ modo: modo.value })}
+              >
+                {modo.label}
+              </button>
+            ))}
+          </span>
+        </div>
+      )}
+      {editing && contaAtual && (
+        <p className="full-width colab-conta">
+          Conta de acesso: <strong>{capitalizeFirstLetter(contaAtual.nome)}</strong> · {contaAtual.email}
+        </p>
+      )}
+      {contaNova && (
+        <>
+          <p className="full-width colab-secao">Conta de acesso</p>
+          <Field label="Nome completo" required>
+            <input
+              required
+              maxLength={150}
+              autoComplete="off"
+              value={form.nome}
+              onChange={(event) => update({ nome: event.target.value })}
+              placeholder="Ex.: Carla Souza"
+            />
+          </Field>
+          <Field label="E-mail" required>
+            <input
+              required
+              type="email"
+              maxLength={150}
+              autoComplete="off"
+              value={form.email}
+              onChange={(event) => update({ email: event.target.value })}
+              placeholder="nome@fcv.org.br"
+            />
+          </Field>
+          <Field label="Senha inicial" required hint={`Mínimo de ${SENHA_MINIMA} caracteres. A pessoa usa para entrar no app.`}>
+            <input
+              required
+              type="password"
+              minLength={SENHA_MINIMA}
+              autoComplete="new-password"
+              value={form.senha}
+              onChange={(event) => update({ senha: event.target.value })}
+            />
+          </Field>
+          <p className="full-width colab-secao">Dados de trabalho</p>
+        </>
+      )}
+      {!editing && !contaNova && (
+        <Field
+          label="Usuário vinculado"
+          required
+          hint="Selecione uma conta do perfil Colaborador que ainda não possua vínculo."
+        >
+          <Select
+            value={form.usuario_id}
+            onChange={(value) => update({ usuario_id: value })}
+            placeholder="Selecione o usuário"
+            options={[
+              { value: "", label: "Selecione o usuário" },
+              ...availableUsers.map((user) => ({
+                value: String(user.id),
+                label: `${capitalizeFirstLetter(user.nome)} · ${user.email}`,
+              })),
+            ]}
+          />
+        </Field>
+      )}
       <Field label="Matrícula" required>
         <input
           required
@@ -120,10 +198,12 @@ export function ColaboradorFormModal({
           }
         />
       </Field>
-      {semUsuarios && (
+      {!editing && !contaNova && semUsuarios && (
         <p className="full-width inline-notice">
-          Não há uma conta do perfil Colaborador sem vínculo. Solicite ao
-          administrador o cadastro em Perfis e usuários.
+          Não há conta do perfil Colaborador sem vínculo.{" "}
+          {podeCriarConta
+            ? "Use a opção Pessoa nova para criar a conta junto."
+            : "Peça ao administrador para cadastrar a pessoa."}
         </p>
       )}
     </FormModal>

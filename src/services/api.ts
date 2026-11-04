@@ -114,6 +114,9 @@ export function cancelUtilizacao(id: number) {
     method: "DELETE",
   });
 }
+export function removeResource(resource: Resource, id: number) {
+  return request<unknown>(`/${endpoints[resource]}/${id}`, { method: "DELETE" });
+}
 export function saveResource<K extends Resource>(
   resource: K,
   id: number | undefined,

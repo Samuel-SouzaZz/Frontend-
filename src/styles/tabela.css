@@ -277,3 +277,31 @@ thead th {
     left: 266px;
   }
 }
+.colab-modo {
+  display: flex;
+}
+.colab-secao {
+  margin: 4px 0 -4px;
+  padding-top: 10px;
+  border-top: 1.5px dashed var(--stroke);
+  color: var(--navy);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.colab-modo + .colab-secao {
+  border-top: 0;
+  padding-top: 0;
+}
+.colab-conta {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--surface-soft);
+  color: var(--text-soft);
+  font-size: 13px;
+}
+.colab-conta strong {
+  color: var(--navy);
+}
