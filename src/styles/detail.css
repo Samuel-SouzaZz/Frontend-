@@ -35,7 +35,7 @@ tr.is-clickable:focus-visible {
   border-radius: 16px;
   display: grid;
   place-items: center;
-  background: #075cc6;
+  background: var(--primary);
   color: white;
 }
 
@@ -133,8 +133,8 @@ tr.is-clickable:focus-visible {
 }
 
 .detail-tabs button.is-active {
-  color: #075cc6;
-  border-bottom-color: #075cc6;
+  color: var(--primary);
+  border-bottom-color: var(--primary);
 }
 
 .detail-tabs button span {
@@ -173,7 +173,7 @@ tr.is-clickable:focus-visible {
   display: grid;
   place-items: center;
   background: #eaf2fd;
-  color: #075cc6;
+  color: var(--primary);
 }
 
 .benefit-row-text {
@@ -206,7 +206,7 @@ tr.is-clickable:focus-visible {
 }
 
 .detail-empty svg {
-  color: #075cc6;
+  color: var(--primary);
 }
 
 .detail-empty strong {
@@ -253,7 +253,7 @@ tr.is-clickable:focus-visible {
   height: 14px;
   border-radius: 50%;
   background: white;
-  border: 3px solid #075cc6;
+  border: 3px solid var(--primary);
 }
 
 .timeline-card {
@@ -398,7 +398,7 @@ tr.is-clickable:focus-visible {
 }
 
 .detail-back:hover {
-  color: #075cc6;
+  color: var(--primary);
 }
 
 .summary-card {

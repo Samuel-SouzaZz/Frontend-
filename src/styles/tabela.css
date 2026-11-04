@@ -150,3 +150,35 @@
     flex: 1 1 100%;
   }
 }
+.field > span,
+.modal .field > span {
+  color: var(--navy);
+  font-size: 12px;
+  font-weight: 650;
+}
+.field > span::before {
+  display: none;
+}
+.field small,
+.modal .field small {
+  color: var(--text-soft);
+}
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #b7c0d9 transparent;
+}
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+*::-webkit-scrollbar-thumb {
+  border: 3px solid transparent;
+  border-radius: 999px;
+  background: #b7c0d9 padding-box;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--primary) padding-box;
+}
