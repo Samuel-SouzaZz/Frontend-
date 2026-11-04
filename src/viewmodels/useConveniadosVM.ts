@@ -39,7 +39,6 @@ export function useConveniadosVM() {
   const setCategory = setter("categoria");
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<Conveniado>();
-  const [details, setDetails] = useState<Conveniado>();
   const [inactivating, setInactivating] = useState<Conveniado>();
   const [form, setForm] = useState<ConveniadoForm>(blankForm);
   const [formError, setFormError] = useState("");
@@ -197,8 +196,6 @@ export function useConveniadosVM() {
     submitting,
     openForm,
     submit,
-    details,
-    setDetails,
     inactivating,
     setInactivating,
     inactivate,

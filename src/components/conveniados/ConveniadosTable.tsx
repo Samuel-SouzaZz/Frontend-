@@ -21,8 +21,10 @@ export function ConveniadosTable({
   return (
     <DataTable
       rows={rows}
-      getRowKey={(item) => item.id}
-      columns={[
+     getRowKey={(item) => item.id}
+onRowClick={onView}
+rowLabel={(item) => `Abrir ${item.nome_fantasia}`}
+columns={[
         {
           key: "nome",
           label: "Conveniado",

@@ -1,4 +1,7 @@
+import { useNavigate } from "react-router-dom";
+
 import { Handshake, Plus } from "lucide-react";
+
 import {
   ConfirmModal,
   EmptyState,
@@ -9,11 +12,13 @@ import {
   Select,
   type SelectOption,
 } from "../components/ui";
-import { ConveniadoDetailsModal } from "../components/conveniados/ConveniadoDetailsModal";
+
 import { ConveniadoFormModal } from "../components/conveniados/ConveniadoFormModal";
+
 import { ConveniadosStats } from "../components/conveniados/ConveniadosStats";
+
 import { ConveniadosTable } from "../components/conveniados/ConveniadosTable";
-import { conveniadoDaUtilizacao } from "../models/selectors";
+
 import { useConveniadosVM } from "../viewmodels/useConveniadosVM";
 
 const STATUS_FILTRO: SelectOption[] = [
@@ -50,20 +55,24 @@ export default function Conveniados() {
     submitting,
     openForm,
     submit,
-    details,
-    setDetails,
     inactivating,
     setInactivating,
     inactivate,
   } = useConveniadosVM();
 
-  const filtrar = (setter: (value: string) => void) => (value: string) => {
-    setter(value);
-    setPage(1);
-  };
+  const navigate = useNavigate();
+
+  const filtrar =
+    (setter: (value: string) => void) =>
+    (value: string) => {
+      setter(value);
+      setPage(1);
+    };
 
   return (
     <>
+      {/* CABEÇALHO */}
+
       <PageHeader
         eyebrow="REDE DE PARCEIROS"
         icon={Handshake}
@@ -76,39 +85,64 @@ export default function Conveniados() {
             disabled={loading}
             onClick={() => openForm()}
           >
-            <Plus size={18} /> Cadastrar conveniado
+            <Plus size={18} />
+            Cadastrar conveniado
           </button>
         }
       />
-      <ConveniadosStats conveniados={data.conveniados} />
-      <section className="panel" aria-label="Lista de conveniados">
+
+      {/* INDICADORES */}
+
+      <ConveniadosStats
+        conveniados={data.conveniados}
+      />
+
+      {/* LISTA */}
+
+      <section
+        className="panel"
+        aria-label="Lista de conveniados"
+      >
         <FilterBar>
           <SearchField
             value={search}
             onChange={filtrar(setSearch)}
             placeholder="Buscar por nome, CNPJ, categoria ou endereço..."
           />
+
           <Select
             aria-label="Filtrar conveniados por status"
             value={status}
             options={STATUS_FILTRO}
             onChange={filtrar(setStatus)}
           />
+
           <Select
             aria-label="Filtrar conveniados por categoria"
             value={category}
             onChange={filtrar(setCategory)}
             options={[
-              { value: "", label: "Todas as categorias" },
-              ...categories.map((value) => ({ value, label: value })),
+              {
+                value: "",
+                label: "Todas as categorias",
+              },
+              ...categories.map((value) => ({
+                value,
+                label: value,
+              })),
             ]}
           />
         </FilterBar>
+
+        {/* TABELA OU ESTADO VAZIO */}
+
         {filtered.length ? (
           <ConveniadosTable
             rows={visibleRows}
             activeOfferCount={activeOfferCount}
-            onView={setDetails}
+            onView={(item) =>
+              navigate(`/conveniados/${item.id}`)
+            }
             onEdit={openForm}
             onInactivate={setInactivating}
           />
@@ -122,6 +156,9 @@ export default function Conveniados() {
             description="Ajuste os filtros ou cadastre um novo estabelecimento."
           />
         )}
+
+        {/* PAGINAÇÃO */}
+
         <Pagination
           page={currentPage}
           total={filtered.length}
@@ -129,6 +166,9 @@ export default function Conveniados() {
           onChange={setPage}
         />
       </section>
+
+      {/* MODAL DE CADASTRO E EDIÇÃO */}
+
       {formOpen && (
         <ConveniadoFormModal
           form={form}
@@ -142,31 +182,17 @@ export default function Conveniados() {
           onClose={() => setFormOpen(false)}
         />
       )}
-      {details && (
-        <ConveniadoDetailsModal
-          conveniado={details}
-          responsavel={
-            data.usuarios.find((user) => user.id === details.usuario_id)?.nome
-          }
-          ofertasAtivas={activeOfferCount(details.id)}
-          utilizacoes={
-            data.utilizacoes.filter(
-              (item) => conveniadoDaUtilizacao(data, item)?.id === details.id,
-            ).length
-          }
-          onClose={() => setDetails(undefined)}
-          onEdit={() => {
-            openForm(details);
-            setDetails(undefined);
-          }}
-        />
-      )}
+
+      {/* MODAL DE INATIVAÇÃO */}
+
       {inactivating && (
         <ConfirmModal
           title="Inativar conveniado"
           description={`Deseja inativar ${inactivating.nome_fantasia}? O estabelecimento deixará de registrar resgates. As ofertas e utilizações anteriores serão preservadas.`}
           onClose={() => {
-            if (!submitting) setInactivating(undefined);
+            if (!submitting) {
+              setInactivating(undefined);
+            }
           }}
           onConfirm={inactivate}
           confirming={submitting}
