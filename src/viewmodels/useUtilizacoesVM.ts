@@ -4,6 +4,7 @@ import { useToast } from "./ToastContext";
 import { usePagination } from "../hooks/usePagination";
 import { useUrlFilters } from "../hooks/useUrlFilters";
 import { useAsyncAction } from "../hooks/useAsyncAction";
+import type { DescricaoUtilizacao } from "../components/utilizacoes/descricao";
 import {
   createDataIndexes,
   colaboradorNomeIndexed,
@@ -84,6 +85,32 @@ export function useUtilizacoesVM() {
       };
     });
   }, [data, indexes]);
+
+  const descricao = useMemo<DescricaoUtilizacao>(() => {
+  const porId = new Map(
+    enrichedRows.map((uso) => [uso.id, uso])
+  );
+
+  return {
+    colaborador: (uso) =>
+      porId.get(uso.id)?.colaboradorNome ??
+      "Colaborador",
+
+    beneficio: (uso) =>
+      porId.get(uso.id)?.beneficioItem?.nome,
+
+    conveniado: (uso) => {
+      const parceiro =
+        porId.get(uso.id)?.conveniadoItem;
+
+      return (
+        parceiro?.nome_fantasia ||
+        parceiro?.razao_social ||
+        undefined
+      );
+    },
+  };
+}, [enrichedRows]);
 
   const rows = useMemo(() => {
     if (periodoInvalido) return [];
@@ -200,6 +227,7 @@ export function useUtilizacoesVM() {
     aprovadas,
     currentPage,
     visibleRows,
+    descricao,
     selected,
     setSelected,
     closeDetails,

@@ -8,12 +8,7 @@ import {
 } from "../components/utilizacoes/UtilizacoesFilters";
 import { UtilizacoesStats } from "../components/utilizacoes/UtilizacoesStats";
 import { UtilizacoesTable } from "../components/utilizacoes/UtilizacoesTable";
-import type { DescricaoUtilizacao } from "../components/utilizacoes/descricao";
-import {
-  beneficioDaUtilizacao,
-  colaboradorNome,
-  conveniadoDaUtilizacao,
-} from "../models/selectors";
+import { colaboradorNome } from "../models/selectors";
 import type { Utilizacao } from "../models/types";
 import { useUtilizacoesVM } from "../viewmodels/useUtilizacoesVM";
 
@@ -41,6 +36,7 @@ export default function Utilizacoes() {
     aprovadas,
     currentPage,
     visibleRows,
+    descricao,
     setPage,
     selected,
     setSelected,
@@ -53,14 +49,6 @@ export default function Utilizacoes() {
     estornar,
   } = useUtilizacoesVM();
 
-  const descricao: DescricaoUtilizacao = {
-    colaborador: (uso) => colaboradorNome(data, uso.colaborador_id),
-    beneficio: (uso) => beneficioDaUtilizacao(data, uso)?.nome,
-    conveniado: (uso) => {
-      const item = conveniadoDaUtilizacao(data, uso);
-      return item?.nome_fantasia || item?.razao_social || undefined;
-    },
-  };
 
   const filtros: FiltrosUtilizacao = {
     search,
