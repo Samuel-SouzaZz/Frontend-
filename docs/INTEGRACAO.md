@@ -1,51 +1,55 @@
-# Contrato de integração e limites da entrega
+# Como o portal conversa com a API
 
-## API utilizada
+A API é o repositório [fcv-backend](https://github.com/joaovictorcascardo/fcv-backend). O endereço dela vem de `VITE_API_URL`
+(no `.env.local`). Todas as chamadas ficam em `src/services/api.ts`.
 
-Backend mantido no repositório [joaovictorcascardo/fcv-backend](https://github.com/joaovictorcascardo/fcv-backend). Este repositório contém somente o portal web e seu cliente REST. API, autenticação no servidor, Knex, migrations, seeds e acesso ao banco pertencem ao backend separado.
+## Login e sessão
 
-Base configurável em `VITE_API_URL`; padrão `http://localhost:3333/api/v1` para o serviço backend local. Em outro ambiente, essa variável deve apontar para o endereço publicado do mesmo serviço. O navegador acessa a API por HTTP, sem conexão direta ao banco.
+- `POST /auth/login` com e-mail e senha. O portal só aceita contas ativas com escopo `FCV` (administrador ou operador).
+- O token vai no cabeçalho `Authorization: Bearer <token>` de todas as chamadas e fica no `sessionStorage` (some ao fechar a
+  aba).
+- Ao abrir o portal de novo, `GET /auth/eu` confere se o token ainda vale. Qualquer resposta `401` desconecta.
+- Esqueci a senha: `POST /auth/esqueci-senha` (a resposta é sempre a mesma mensagem, sem o código) e depois `POST
+/auth/redefinir-senha` com e-mail, código e nova senha (mínimo 6 caracteres).
 
-- Autenticação: POST `/auth/login`, GET `/auth/eu`.
-- Cadastros: `/usuarios`, `/perfis`, `/colaboradores`, `/conveniados`, `/beneficios`.
-- Vínculos: `/ofertas`, `/itens-campanha`, `/ofertas-campanha`.
-- Operação: `/campanhas`, `/utilizacoes`.
+## Rotas usadas
 
-GET carrega as listas. POST cria e PUT envia os campos de atualização. O portal não usa DELETE para utilizações ou cadastros; utiliza inativação, descontinuação e cancelamento por status, preservando as relações e o histórico. O estorno envia `status: ESTORNADA` e `observacoes` com o motivo ao PUT da utilização, sem alterar valor, colaborador ou data original.
+| Rota                                                 | Tela                                                                                     |
+| ---------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| `/usuarios`, `/perfis`                               | Perfis e usuários. Criar, alterar e excluir é só do administrador (a API também confere) |
+| `/colaboradores`                                     | Colaboradores e detalhe do colaborador                                                   |
+| `/conveniados`                                       | Conveniados, detalhe e aprovação do parceiro                                             |
+| `/beneficios`, `/ofertas`                            | Benefícios e onde cada um é aceito                                                       |
+| `/campanhas`, `/itens-campanha`, `/ofertas-campanha` | Campanhas e eventos, Calendário                                                          |
+| `/utilizacoes`                                       | Utilizações, Dashboard, Relatórios, Pendências e o sino de avisos                        |
 
-Nomes de colaboradores são compostos com usuário vinculado. Os vínculos de utilização distinguem benefício regular e item promocional, mesmo quando os IDs coincidem. Categorias nos relatórios são do conveniado; não foi inventado campo de categoria em benefício ou CPF em colaborador.
+Ao entrar, o portal faz `GET` de todas as listas de uma vez e guarda em memória (`PortalContext`). Filtros, busca, paginação,
+Dashboard, Relatórios, Calendário e Pendências são calculados no próprio portal com essas listas. A API não tem rota de dashboard nem de pendências.
 
-## Dependências do backend, fora da alteração deste front-end
+## Como cada ação vira chamada
 
-1. RF37/RNF03: a API atual verifica escopo FCV em usuários/perfis. Ainda precisa diferenciar administrador de operador no servidor. O portal faz a restrição de interface e comandos, mas isso não substitui a autorização na API.
-2. RF03: o backend deve validar status do usuário, perfil e colaborador/conveniado quando aplicável. A verificação atual do login observado cobre o usuário.
-3. RF43/RNF17: a API deve proteger utilizações decididas contra edição/exclusão e controlar estornos concorrentes. O portal só oferece estorno com motivo para APROVADA e não exclui histórico.
-4. RNF08: as listas atuais da API retornam tudo. Filtros e paginação do portal são locais; para escala, o backend precisa de consultas paginadas/filtradas.
-5. Criar colaborador/conveniado pressupõe uma conta existente do escopo correspondente, ainda sem vínculo. Contas são criadas pelo administrador em Perfis e usuários. O operador pode vincular contas disponibilizadas pelo administrador.
-6. A lista de permissões dos perfis é metadado persistido. O backend deve aplicá-la; o front-end não apresenta a edição dessa lista como autorização suficiente no servidor.
+| Ação na tela                              | Chamada                                                                                             |
+| ----------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| Cadastrar                                 | `POST /<rota>`                                                                                      |
+| Editar                                    | `PUT /<rota>/:id` só com os campos alterados                                                        |
+| Inativar, descontinuar, cancelar campanha | `PUT` mudando o `status`. Nada é apagado, o histórico continua                                      |
+| Aprovar parceiro                          | `PUT /conveniados/:id` com `status: ATIVO`                                                          |
+| Estornar utilização                       | `PUT /utilizacoes/:id` com o motivo em `observacoes` e depois `DELETE /utilizacoes/:id` (a API muda |
+| APROVADA para ESTORNADA)                  |
 
-## Indicadores
+## O que depende da API (pedidos ao grupo da API)
 
-Os indicadores usam apenas APROVADA para contagens/valor, excluindo reprovações, pendências e estornos. Os registros continuam disponíveis no histórico e CSV.
+1. **Estorno em uma chamada só.** Hoje são duas. Se a segunda falhar, fica o motivo sem o estorno. O certo é o `DELETE` aceitar
+   o motivo.
+2. **Cancelar campanha não desativa os itens dela.** A API precisa fazer isso junto.
+3. **Permissões dos perfis.** A lista de permissões é salva, mas ninguém confere. Hoje só vale a diferença entre administrador e
+   operador.
+4. **Auditoria.** O protótipo tem a tela, mas não existe tabela nem rota na API.
+5. **Listas grandes.** O portal busca tudo de uma vez. Com muitos registros, vai precisar usar a paginação da API (`?
+pagina=&limite=`).
 
-Adesão observada por benefício usa colaboradores atualmente ativos com uso aprovado dividido pela base de colaboradores atualmente ativos. Custo médio usa valor aplicado dividido por participantes únicos. A página informa as fórmulas e a limitação da base atual. Esses indicadores não demonstram elegibilidade passada, custo contábil ou aprovação de fórmulas finais pelo Grupo 2.
+## Testar com a API
 
-## Autenticação
-
-Frontend: somente FCV ativo, Bearer JWT, sessão no `sessionStorage`, consulta `/auth/eu`, saída em 401 e logout. Não há refresh porque o backend analisado não o fornece. A recuperação de senha que devolve o código na resposta não foi apresentada como fluxo definitivo na interface.
-
-Para um ambiente publicado, usar HTTPS, origens CORS adequadas e validação de permissões no servidor. Credenciais de banco/JWT permanecem exclusivamente no backend com Knex. Para a execução local, foi configurada uma instância MySQL separada e executadas as migrations e seeds existentes, sem alterar seu código. Dados e credenciais locais não pertencem a este repositório.
-
-## Escopo visual
-
-A identidade segue a referência FCV com azul, superfícies claras, sidebar, cartões, filtros, tabelas, badges e modais. Layout adaptado para 1366 px e telas menores, português brasileiro, rótulos de ação, navegação por teclado, estados vazio/erro/carregamento e preferência por movimento reduzido.
-
-Auditoria geral RF38 e PDF de exportação RF36 não foram implementados. São Could; o CSV foi incluído. A proteção do histórico de utilizações, distinta da trilha geral, foi preservada no front-end.
-
-## Verificação real versus simulada
-
-A versão atual usa exclusivamente a API. A compilação e os testes de seletores foram executados. A verificação do navegador com o backend e MySQL locais inclui login, senha incorreta, as dez listas autenticadas, restauração por `/auth/eu`, token inválido, logout, restrição de administrador, busca e edição de benefício persistida no banco. O valor editado foi restaurado ao final. Essa verificação não intercepta requisições e não substitui a homologação do ambiente publicado pelo Grupo 2.
-
-O login, a marca, a fotografia e os componentes visuais seguem o WEB.pdf fornecido. A foto preserva sua proporção completa e não é ampliada acima da resolução original do PDF. Telas de até 800 px priorizam o formulário sem foto lateral. Busca e aviso de utilizações pendentes usam registros recebidos da API; não há notificações ou trilha de auditoria inventadas.
-
-O modal de notificações deriva seus avisos exclusivamente das utilizações com `status: PENDENTE`, ordenadas pelas solicitações mais recentes. Mostra até oito registros e permite acessar o detalhe por ID exato (`/utilizacoes?status=PENDENTE&utilizacao=<id>`) ou todas as pendências. O botão Atualizar recarrega os dados pela API existente. Não existe endpoint de notificações, estado de leitura ou envio por push no backend atual; o contador representa pendências, sem persistência fictícia de notificações. Carregamento e erro são tratados antes de apresentar um estado vazio.
+1. Ligue a API num banco de teste (nunca no banco da apresentação) e rode o `db:reset` dela.
+2. Ligue o portal com `npm run dev` e entre com `admin@fcv.org.br` / `123456`.
+3. Para ver a visão do operador, entre com `operador@fcv.org.br` / `123456`: Perfis e usuários fica bloqueado.

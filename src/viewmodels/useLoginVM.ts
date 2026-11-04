@@ -23,7 +23,6 @@ export function useLoginVM() {
       setBusy(false);
     }
   }
-<<<<<<< HEAD
   function beginRecovery() {
     setError("");
     setRecovering(true);
@@ -31,7 +30,6 @@ export function useLoginVM() {
   return {
     user,
     restoring,
-    loginLocal,
     email,
     setEmail,
     senha,
@@ -45,8 +43,4 @@ export function useLoginVM() {
     submit,
     beginRecovery,
   };
-=======
-  function beginRecovery() { setError(""); setRecovering(true); }
-  return { user, restoring, email, setEmail, senha, setSenha, visible, setVisible, busy, error, recovering, setRecovering, submit, beginRecovery };
->>>>>>> ed3f53ce7b7d6265d67990207a16cfa8cc8a4ee0
 }

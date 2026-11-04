@@ -11,7 +11,8 @@ const content: Record<
 > = {
   email: {
     title: "Esqueci minha senha",
-    description: "Informe o e-mail da sua conta para receber um código de redefinição.",
+    description:
+      "Informe o e-mail da sua conta para receber um código de redefinição.",
     action: "Enviar código",
     back: "Voltar ao login",
   },
@@ -62,11 +63,7 @@ export function usePasswordRecoveryVM({
         setStep("done");
       }
     } catch (cause) {
-      setError(
-        cause instanceof Error
-          ? cause.message
-          : "Não foi possível redefinir a senha.",
-      );
+      setError(errorMessage(cause, "Não foi possível redefinir a senha."));
     } finally {
       setBusy(false);
     }
