@@ -13,6 +13,7 @@ import Beneficios from "./pages/Beneficios";
 import Utilizacoes from "./pages/Utilizacoes";
 import Campanhas from "./pages/Campanhas";
 import Calendario from "./pages/Calendario";
+import Pendencias from "./pages/Pendencias";
 import Relatorios from "./pages/Relatorios";
 import Perfis from "./pages/Perfis";
 import MeuPerfil from "./pages/MeuPerfil";
