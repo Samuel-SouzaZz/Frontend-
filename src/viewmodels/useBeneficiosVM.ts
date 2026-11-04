@@ -1,300 +1,132 @@
-import { useState, type FormEvent } from "react";
+import { useSearchParams } from "react-router-dom";
 import { usePortal } from "./PortalContext";
-import { formatMoney } from "../models/selectors";
-import type { Beneficio } from "../models/types";
-import { usePagination } from "../hooks/usePagination";
-import { useUrlFilters } from "../hooks/useUrlFilters";
 import { useAsyncAction } from "../hooks/useAsyncAction";
+import { usePagination } from "../hooks/usePagination";
+import { colaboradorNome, conveniadoNome } from "../models/selectors";
+import type { Beneficio } from "../models/types";
 
-const PAGE_SIZE = 8;
-const FILTER_KEYS = ["buscar", "status", "renovacao"] as const;
-
-export type BeneficioForm = {
-  nome: string;
-  descricao: string;
-  status: Beneficio["status"];
-  tipo_beneficio: Beneficio["tipo_beneficio"];
-  valor: string;
-  quantidade_maxima_utilizacoes: string;
-  tipo_janela: Beneficio["tipo_janela"];
-  unidade_ciclo: NonNullable<Beneficio["unidade_ciclo"]>;
-  dia_reset: string;
-  intervalo_valor: string;
-  intervalo_unidade: NonNullable<Beneficio["intervalo_unidade"]>;
-  referencia_contagem: NonNullable<Beneficio["referencia_contagem"]>;
+export type ResumoBeneficio = {
+  beneficio: Beneficio;
+  parceiros: string[];
+  usosAprovados: number;
+  colaboradores: number;
+  usos: { id: number; quem: string; onde: string; quando: string; status: string }[];
 };
 
-const blankForm = (): BeneficioForm => ({
-  nome: "",
-  descricao: "",
-  status: "ATIVO",
-  tipo_beneficio: "PERCENTUAL",
-  valor: "",
-  quantidade_maxima_utilizacoes: "1",
-  tipo_janela: "CALENDARIO_FIXO",
-  unidade_ciclo: "MES",
-  dia_reset: "",
-  intervalo_valor: "30",
-  intervalo_unidade: "DIA",
-  referencia_contagem: "ULTIMA_UTILIZACAO",
-});
+const PAGE_SIZE = 10;
 
-export function ruleSummary(item: Beneficio) {
-  const count = `${item.quantidade_maxima_utilizacoes} ${item.quantidade_maxima_utilizacoes === 1 ? "utilização" : "utilizações"}`;
-  if (item.tipo_janela === "CALENDARIO_FIXO")
-    return `${count} por ${item.unidade_ciclo === "ANO" ? "ano" : item.unidade_ciclo === "SEMANA" ? "semana" : "mês"}`;
-  const unit =
-    item.intervalo_unidade === "MES"
-      ? item.intervalo_valor === 1
-        ? "mês"
-        : "meses"
-      : item.intervalo_valor === 1
-        ? "dia"
-        : "dias";
-  return `${count} a cada ${item.intervalo_valor} ${unit}`;
-}
+const ORDEM: Record<Beneficio["status"], number> = { ATIVO: 0, INATIVO: 1, DESCONTINUADO: 2 };
 
-export function valueSummary(item: Beneficio) {
-  return item.tipo_beneficio === "PERCENTUAL"
-    ? `${Number(item.valor).toLocaleString("pt-BR")}%`
-    : formatMoney(Number(item.valor));
-}
+const normalizar = (texto: string) =>
+  texto
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .toLocaleLowerCase("pt-BR");
+
+const MENSAGEM: Record<Beneficio["status"], string> = {
+  ATIVO: "Benefício reativado.",
+  INATIVO: "Benefício pausado. Ele some do app até ser reativado.",
+  DESCONTINUADO: "Benefício encerrado. O histórico foi guardado.",
+};
 
 export function useBeneficiosVM() {
   const { data, save, loading } = usePortal();
-  const { running: submitting, run } = useAsyncAction();
-  const { values: filters, setter } = useUrlFilters(FILTER_KEYS);
-  const { buscar: search, status, renovacao: windowType } = filters;
-  const setSearch = setter("buscar");
-  const setStatus = setter("status");
-  const setWindowType = setter("renovacao");
-  const [formOpen, setFormOpen] = useState(false);
-  const [editing, setEditing] = useState<Beneficio>();
-  const [details, setDetails] = useState<Beneficio>();
-  const [discontinuing, setDiscontinuing] = useState<Beneficio>();
-  const [linking, setLinking] = useState<Beneficio>();
-  const [selectedPartner, setSelectedPartner] = useState("");
-  const [form, setForm] = useState<BeneficioForm>(blankForm);
-  const [formError, setFormError] = useState("");
+  const { running: salvando, run } = useAsyncAction();
+  const [params, setParams] = useSearchParams();
 
-  const filtered = data.beneficios.filter(
-    (item) =>
-      (!status || item.status === status) &&
-      (!windowType || item.tipo_janela === windowType) &&
-      `${item.nome} ${item.descricao ?? ""}`
-        .toLocaleLowerCase("pt-BR")
-        .includes(search.trim().toLocaleLowerCase("pt-BR")),
-  );
+  const abrirId = Number(params.get("abrir")) || undefined;
+  const editarId = Number(params.get("editar")) || undefined;
+  const criando = params.get("novo") === "1";
+  const busca = params.get("buscar") ?? "";
+  const situacao = params.get("situacao") ?? "";
 
-  const {
-    page: currentPage,
-    setPage,
-    start,
-    end,
-  } = usePagination(
-    filtered.length,
-    PAGE_SIZE,
-    JSON.stringify([search, status, windowType]),
-  );
-
-  const visibleRows = filtered.slice(start, end);
-
-  const activeOffers = (id: number) =>
-    data.ofertas.filter(
-      (item) => item.beneficio_id === id && item.status === "ATIVO",
-    );
-
-  const linkedOffers = linking
-    ? data.ofertas.filter((item) => item.beneficio_id === linking.id)
-    : [];
-
-  const availablePartners = data.conveniados.filter(
-    (partner) =>
-      partner.status === "ATIVO" &&
-      !linkedOffers.some(
-        (item) => item.conveniado_id === partner.id && item.status === "ATIVO",
-      ),
-  );
-
-  function openForm(item?: Beneficio) {
-    setEditing(item);
-    setForm(
-      item
-        ? {
-            nome: item.nome,
-            descricao: item.descricao ?? "",
-            status: item.status,
-            tipo_beneficio: item.tipo_beneficio,
-            valor: String(item.valor),
-            quantidade_maxima_utilizacoes: String(
-              item.quantidade_maxima_utilizacoes,
-            ),
-            tipo_janela: item.tipo_janela,
-            unidade_ciclo: item.unidade_ciclo ?? "MES",
-            dia_reset: item.dia_reset?.slice(0, 10) ?? "",
-            intervalo_valor: String(item.intervalo_valor ?? 30),
-            intervalo_unidade: item.intervalo_unidade ?? "DIA",
-            referencia_contagem:
-              item.referencia_contagem ?? "ULTIMA_UTILIZACAO",
-          }
-        : blankForm(),
-    );
-    setFormError("");
-    setFormOpen(true);
-  }
-
-  async function submit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setFormError("");
-    const value = Number(form.valor);
-    const count = Number(form.quantidade_maxima_utilizacoes);
-    const interval = Number(form.intervalo_valor);
-    if (!form.nome.trim()) {
-      setFormError("Informe o nome do benefício.");
-      return;
-    }
-    if (
-      !Number.isFinite(value) ||
-      value <= 0 ||
-      (form.tipo_beneficio === "PERCENTUAL" && value > 100)
-    ) {
-      setFormError(
-        "Informe um valor maior que zero. O desconto percentual deve ser de até 100%.",
-      );
-      return;
-    }
-    if (!Number.isInteger(count) || count < 1) {
-      setFormError(
-        "O limite de utilizações deve ser um número inteiro maior que zero.",
-      );
-      return;
-    }
-    if (
-      form.tipo_janela === "JANELA_MOVEL" &&
-      (!Number.isInteger(interval) || interval < 1)
-    ) {
-      setFormError(
-        "O intervalo de renovação deve ser um número inteiro maior que zero.",
-      );
-      return;
-    }
-    const fixed = form.tipo_janela === "CALENDARIO_FIXO";
-    await run(
-      () =>
-        save("beneficios", editing?.id, {
-          nome: form.nome.trim(),
-          descricao: form.descricao.trim() || null,
-          status: form.status,
-          tipo_beneficio: form.tipo_beneficio,
-          valor: value,
-          quantidade_maxima_utilizacoes: count,
-          tipo_janela: form.tipo_janela,
-          unidade_ciclo: fixed ? form.unidade_ciclo : null,
-          dia_reset: fixed && form.dia_reset ? form.dia_reset : null,
-          intervalo_valor: fixed ? null : interval,
-          intervalo_unidade: fixed ? null : form.intervalo_unidade,
-          referencia_contagem: fixed ? null : form.referencia_contagem,
-        }),
-      {
-        success: editing
-          ? "Benefício atualizado."
-          : "Benefício cadastrado. Vincule os conveniados para disponibilizar as ofertas.",
-        fallbackError: "Não foi possível salvar o benefício.",
-        onSuccess: () => setFormOpen(false),
-        onError: setFormError,
+  function mudar(patch: Record<string, string | undefined>) {
+    setParams(
+      (atual) => {
+        const proximo = new URLSearchParams(atual);
+        for (const [chave, valor] of Object.entries(patch)) {
+          if (valor) proximo.set(chave, valor);
+          else proximo.delete(chave);
+        }
+        return proximo;
       },
+      { replace: true },
     );
   }
 
-  async function discontinue() {
-    if (!discontinuing) return;
-    await run(
-      () =>
-        save("beneficios", discontinuing.id, { status: "DESCONTINUADO" }),
-      {
-        success:
-          "Benefício descontinuado. As ofertas e o histórico foram preservados.",
-        fallbackError: "Não foi possível descontinuar.",
-        onSuccess: () => setDiscontinuing(undefined),
-      },
-    );
+  function resumir(beneficio: Beneficio): ResumoBeneficio {
+    const ofertas = data.ofertas.filter((oferta) => oferta.beneficio_id === beneficio.id);
+    const usos = data.utilizacoes
+      .filter((uso) => ofertas.some((oferta) => oferta.id === uso.beneficio_conveniado_id))
+      .sort((a, b) => b.data_solicitacao.localeCompare(a.data_solicitacao));
+    const aprovados = usos.filter((uso) => uso.status === "APROVADA");
+    return {
+      beneficio,
+      parceiros: ofertas
+        .filter((oferta) => oferta.status === "ATIVO")
+        .map((oferta) => conveniadoNome(data, oferta.conveniado_id)),
+      usosAprovados: aprovados.length,
+      colaboradores: new Set(aprovados.map((uso) => uso.colaborador_id)).size,
+      usos: usos.slice(0, 5).map((uso) => {
+        const oferta = ofertas.find((item) => item.id === uso.beneficio_conveniado_id);
+        return {
+          id: uso.id,
+          quem: colaboradorNome(data, uso.colaborador_id),
+          onde: oferta ? conveniadoNome(data, oferta.conveniado_id) : "",
+          quando: uso.data_solicitacao,
+          status: uso.status,
+        };
+      }),
+    };
   }
 
-  async function linkPartner(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (!linking || !selectedPartner) return;
-    setFormError("");
-    const existing = linkedOffers.find(
-      (item) => item.conveniado_id === Number(selectedPartner),
+  const termo = normalizar(busca.trim());
+  const todos = data.beneficios.map(resumir);
+  const linhas = todos
+    .filter((item) => !situacao || item.beneficio.status === situacao)
+    .filter((item) => normalizar(`${item.beneficio.nome} ${item.beneficio.descricao ?? ""}`).includes(termo))
+    .sort(
+      (a, b) =>
+        ORDEM[a.beneficio.status] - ORDEM[b.beneficio.status] ||
+        a.beneficio.nome.localeCompare(b.beneficio.nome, "pt-BR"),
     );
-    await run(
-      () =>
-        save("ofertas", existing?.id, {
-          beneficio_id: linking.id,
-          conveniado_id: Number(selectedPartner),
-          status: "ATIVO",
-        }),
-      {
-        success: existing
-          ? "Oferta reativada para o conveniado."
-          : "Conveniado vinculado ao benefício.",
-        fallbackError: "Não foi possível vincular o conveniado.",
-        onSuccess: () => setSelectedPartner(""),
-        onError: setFormError,
-      },
-    );
-  }
 
-  async function changeOffer(id: number, nextStatus: "ATIVO" | "INATIVO") {
-    setFormError("");
-    await run(() => save("ofertas", id, { status: nextStatus }), {
-      success:
-        nextStatus === "ATIVO"
-          ? "Oferta reativada."
-          : "Conveniado desvinculado. O histórico da oferta foi preservado.",
-      fallbackError: "Não foi possível atualizar a oferta.",
-      onError: setFormError,
+  const contagem = (status: Beneficio["status"]) => todos.filter((item) => item.beneficio.status === status).length;
+
+  const paginacao = usePagination(linhas.length, PAGE_SIZE, `${termo}|${situacao}`);
+
+  async function mudarStatus(id: number, status: Beneficio["status"]) {
+    await run(() => save("beneficios", id, { status }), {
+      success: MENSAGEM[status],
+      fallbackError: "Não foi possível mudar a situação.",
     });
   }
 
+  const fechar = { novo: undefined, editar: undefined, abrir: undefined };
+
   return {
-    data,
-    loading,
+    carregando: loading,
+    busca,
+    setBusca: (valor: string) => mudar({ buscar: valor }),
+    situacao,
+    setSituacao: (valor: string) => mudar({ situacao: valor }),
+    contagem,
+    total: data.beneficios.length,
+    linhas: linhas.slice(paginacao.start, paginacao.end),
+    totalFiltrado: linhas.length,
+    pagina: paginacao.page,
+    setPagina: paginacao.setPage,
     PAGE_SIZE,
-    search,
-    setSearch,
-    status,
-    setStatus,
-    windowType,
-    setWindowType,
-    page: currentPage,
-    setPage,
-    filtered,
-    currentPage,
-    visibleRows,
-    activeOffers,
-    linkedOffers,
-    availablePartners,
-    formOpen,
-    setFormOpen,
-    editing,
-    form,
-    setForm,
-    formError,
-    setFormError,
-    submitting,
-    openForm,
-    submit,
-    details,
-    setDetails,
-    discontinuing,
-    setDiscontinuing,
-    discontinue,
-    linking,
-    setLinking,
-    selectedPartner,
-    setSelectedPartner,
-    linkPartner,
-    changeOffer,
+    aberto: abrirId && !editarId ? data.beneficios.find((item) => item.id === abrirId) : undefined,
+    resumir,
+    emEdicao: editarId ? data.beneficios.find((item) => item.id === editarId) : undefined,
+    criando,
+    abrir: (id: number) => mudar({ ...fechar, abrir: String(id) }),
+    novo: () => mudar({ ...fechar, novo: "1" }),
+    editar: (id: number) => mudar({ ...fechar, editar: String(id) }),
+    fecharPainel: () => mudar(fechar),
+    aoSalvar: (id: number) => mudar({ ...fechar, abrir: String(id) }),
+    mudarStatus,
+    salvando,
   };
 }

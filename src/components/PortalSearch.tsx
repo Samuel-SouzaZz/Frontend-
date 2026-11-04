@@ -26,9 +26,6 @@ export default function PortalSearch() {
   // PREPARAR OS REGISTROS DA BUSCA
 
   const records = useMemo(() => {
-    const buscar = (lista: string, nome: string) =>
-      `${lista}?buscar=${encodeURIComponent(nome)}`;
-
     const usuariosMap = new Map(
       data.usuarios.map((u) => [u.id, u.nome])
     );
@@ -45,7 +42,7 @@ export default function PortalSearch() {
       ...data.beneficios.map((item) => ({
         name: item.nome,
         type: "Benefício",
-        path: buscar("/beneficios", item.nome),
+        path: `/beneficios?abrir=${item.id}`,
       })),
 
       ...data.conveniados.map((item) => ({
@@ -59,7 +56,7 @@ export default function PortalSearch() {
       ...data.campanhas.map((item) => ({
         name: item.nome,
         type: "Campanha / evento",
-        path: buscar("/campanhas", item.nome),
+        path: `/campanhas?abrir=${item.id}`,
       })),
     ];
   }, [data]);

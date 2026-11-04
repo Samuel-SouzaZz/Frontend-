@@ -1,363 +1,151 @@
-import { useMemo, useState, type FormEvent } from "react";
+import { useSearchParams } from "react-router-dom";
 import { usePortal } from "./PortalContext";
-import { toLocalDateString } from "../models/selectors";
-import { usePagination } from "../hooks/usePagination";
-import { useUrlFilters } from "../hooks/useUrlFilters";
 import { useAsyncAction } from "../hooks/useAsyncAction";
+import { usePagination } from "../hooks/usePagination";
+import { toLocalDateString } from "../models/formatters";
+import { statusEfetivo } from "../models/campanhaDraft";
+import { colaboradorNome, conveniadoNome } from "../models/selectors";
+import { descreverValor } from "../models/valorBeneficio";
+import type { Campanha, CampanhaStatus } from "../models/types";
 
-export type PortalData = ReturnType<typeof usePortal>["data"];
-export type Campanha = PortalData["campanhas"][number];
-export type Item = PortalData["itensCampanha"][number];
-export type OfertaCampanha = PortalData["ofertasCampanha"][number];
-
-export const TIPOS: Record<string, string> = {
-  CAMPANHA: "Campanha",
-  EVENTO_INTERNO: "Evento interno",
-  EVENTO_PATROCINADO: "Evento patrocinado",
-  VOUCHER: "Voucher",
-  CORTESIA: "Cortesia",
+export type ResumoCampanha = {
+  campanha: Campanha;
+  status: ReturnType<typeof statusEfetivo>;
+  beneficios: { id: number; nome: string; valor: string; parceiros: string[] }[];
+  participantes: number;
+  usos: { id: number; quem: string; oque: string; onde: string; quando: string; status: string }[];
 };
 
-const EMPTY = {
-  nome: "",
-  tipo: "CAMPANHA",
-  descricao: "",
-  data_inicio: "",
-  data_fim: "",
-  criterio_elegibilidade: "",
-  patrocinador: "",
-  status: "PLANEJADA",
+const PAGE_SIZE = 10;
+
+const ORDEM: Record<CampanhaStatus, number> = {
+  ATIVA: 0,
+  PLANEJADA: 1,
+  ENCERRADA: 2,
+  CANCELADA: 3,
 };
 
-const EMPTY_ITEM = {
-  nome: "",
-  descricao: "",
-  tipo_beneficio: "PERCENTUAL",
-  valor: "",
-  quantidade_maxima_utilizacoes: "",
-  status: "ATIVO",
-};
-
-const PAGE_SIZE = 6;
-const FILTER_KEYS = ["buscar", "tipo", "status", "inicio", "fim"] as const;
+const normalizar = (texto: string) =>
+  texto
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .toLocaleLowerCase("pt-BR");
 
 export function useCampanhasVM() {
-  const { data, save } = usePortal();
-  const { running: saving, run } = useAsyncAction();
-  const { values: filters, setter } = useUrlFilters(FILTER_KEYS);
-  const { buscar: search, tipo, status, inicio, fim } = filters;
-  const setSearch = setter("buscar");
-  const setTipo = setter("tipo");
-  const setStatus = setter("status");
-  const setInicio = setter("inicio");
-  const setFim = setter("fim");
-  const [selectedId, setSelectedId] = useState<number | null>(null);
-  const [editing, setEditing] = useState<Campanha | null>(null);
-  const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState({ ...EMPTY });
-  const [itemEditing, setItemEditing] = useState<Item | null>(null);
-  const [showItemForm, setShowItemForm] = useState(false);
-  const [itemForm, setItemForm] = useState({ ...EMPTY_ITEM });
-  const [linkItem, setLinkItem] = useState<Item | null>(null);
-  const [partnerId, setPartnerId] = useState("");
-  const [cancelTarget, setCancelTarget] = useState<Campanha | null>(null);
-  const [formError, setFormError] = useState("");
+  const { data, save, loading } = usePortal();
+  const { running: salvando, run } = useAsyncAction();
+  const [params, setParams] = useSearchParams();
+  const hoje = toLocalDateString();
 
-  const selected = data.campanhas.find((item) => item.id === selectedId);
-  const periodoInvalido = !!inicio && !!fim && fim < inicio;
+  const abrirId = Number(params.get("abrir")) || undefined;
+  const editarId = Number(params.get("editar")) || undefined;
+  const criando = params.get("novo") === "1";
+  const busca = params.get("buscar") ?? "";
+  const situacao = params.get("situacao") ?? "";
 
-  const rows = useMemo(
-    () =>
-      data.campanhas.filter(
-        (item) =>
-          !periodoInvalido &&
-          `${item.nome} ${item.descricao ?? ""} ${item.patrocinador ?? ""}`
-            .toLocaleLowerCase("pt-BR")
-            .includes(search.trim().toLocaleLowerCase("pt-BR")) &&
-          (!tipo || item.tipo === tipo) &&
-          (!status || item.status === status) &&
-          (!inicio || item.data_fim.slice(0, 10) >= inicio) &&
-          (!fim || item.data_inicio.slice(0, 10) <= fim),
-      ),
-    [data.campanhas, search, tipo, status, inicio, fim, periodoInvalido],
-  );
-
-  const campaigns = rows
-    .filter((item) => !item.tipo.startsWith("EVENTO"))
-    .sort((a, b) => b.data_inicio.localeCompare(a.data_inicio));
-  const events = rows
-    .filter((item) => item.tipo.startsWith("EVENTO"))
-    .sort((a, b) => b.data_inicio.localeCompare(a.data_inicio));
-
-  const filterKey = JSON.stringify([search, tipo, status, inicio, fim]);
-  const campaignPagination = usePagination(
-    campaigns.length,
-    PAGE_SIZE,
-    filterKey,
-  );
-  const eventPagination = usePagination(events.length, PAGE_SIZE, filterKey);
-
-  const campaignList = {
-    current: campaignPagination.page,
-    rows: campaigns.slice(campaignPagination.start, campaignPagination.end),
-  };
-  const eventList = {
-    current: eventPagination.page,
-    rows: events.slice(eventPagination.start, eventPagination.end),
-  };
-
-  const campanhaItems = data.itensCampanha.filter(
-    (item) => item.campanha_id === selectedId,
-  );
-
-  const usosCampanha = data.utilizacoes.filter(
-    (uso) =>
-      uso.status === "APROVADA" &&
-      data.ofertasCampanha.some(
-        (oferta) =>
-          oferta.id === uso.beneficio_campanha_conveniado_id &&
-          data.itensCampanha.some(
-            (item) =>
-              item.id === oferta.beneficio_campanha_id &&
-              item.campanha_id === selectedId,
-          ),
-      ),
-  );
-
-  const participantes = new Set(
-    data.utilizacoes
-      .filter(
-        (uso) =>
-          uso.status === "APROVADA" && uso.beneficio_campanha_conveniado_id,
-      )
-      .map((uso) => uso.colaborador_id),
-  ).size;
-
-  const today = toLocalDateString();
-
-  function abrirForm(item?: Campanha) {
-    setFormError("");
-    setEditing(item ?? null);
-    setForm(
-      item
-        ? {
-            nome: item.nome,
-            tipo: item.tipo,
-            descricao: item.descricao ?? "",
-            data_inicio: item.data_inicio.slice(0, 10),
-            data_fim: item.data_fim.slice(0, 10),
-            criterio_elegibilidade: item.criterio_elegibilidade ?? "",
-            patrocinador: item.patrocinador ?? "",
-            status: item.status,
-          }
-        : { ...EMPTY },
+  function mudar(patch: Record<string, string | undefined>) {
+    setParams(
+      (atual) => {
+        const proximo = new URLSearchParams(atual);
+        for (const [chave, valor] of Object.entries(patch)) {
+          if (valor) proximo.set(chave, valor);
+          else proximo.delete(chave);
+        }
+        return proximo;
+      },
+      { replace: true },
     );
-    setShowForm(true);
   }
 
-  function abrirItem(item?: Item) {
-    setFormError("");
-    setItemEditing(item ?? null);
-    setItemForm(
-      item
-        ? {
-            nome: item.nome,
-            descricao: item.descricao ?? "",
-            tipo_beneficio: item.tipo_beneficio,
-            valor: String(item.valor),
-            quantidade_maxima_utilizacoes:
-              item.quantidade_maxima_utilizacoes == null
-                ? ""
-                : String(item.quantidade_maxima_utilizacoes),
-            status: item.status,
-          }
-        : { ...EMPTY_ITEM },
+  function resumir(campanha: Campanha): ResumoCampanha {
+    const itens = data.itensCampanha.filter((item) => item.campanha_id === campanha.id);
+    const ofertas = data.ofertasCampanha.filter((oferta) =>
+      itens.some((item) => item.id === oferta.beneficio_campanha_id),
     );
-    setShowItemForm(true);
+    const usos = data.utilizacoes
+      .filter((uso) => ofertas.some((oferta) => oferta.id === uso.beneficio_campanha_conveniado_id))
+      .sort((a, b) => b.data_solicitacao.localeCompare(a.data_solicitacao));
+    return {
+      campanha,
+      status: statusEfetivo(campanha, hoje),
+      beneficios: itens
+        .filter((item) => item.status === "ATIVO")
+        .map((item) => ({
+          id: item.id,
+          nome: item.nome,
+          valor: descreverValor(item.tipo_beneficio, item.valor),
+          parceiros: ofertas
+            .filter((oferta) => oferta.beneficio_campanha_id === item.id && oferta.status === "ATIVO")
+            .map((oferta) => conveniadoNome(data, oferta.conveniado_id)),
+        })),
+      participantes: new Set(usos.filter((uso) => uso.status === "APROVADA").map((uso) => uso.colaborador_id)).size,
+      usos: usos.slice(0, 5).map((uso) => {
+        const oferta = ofertas.find((item) => item.id === uso.beneficio_campanha_conveniado_id);
+        const item = itens.find((atual) => atual.id === oferta?.beneficio_campanha_id);
+        return {
+          id: uso.id,
+          quem: colaboradorNome(data, uso.colaborador_id),
+          oque: item?.nome ?? "Benefício",
+          onde: oferta ? conveniadoNome(data, oferta.conveniado_id) : "",
+          quando: uso.data_solicitacao,
+          status: uso.status,
+        };
+      }),
+    };
   }
 
-  function execute(
-    action: () => Promise<unknown>,
-    message: string,
-    after?: () => void,
-    onError?: (message: string) => void,
-  ) {
-    return run(action, {
-      success: message,
-      fallbackError: "Não foi possível salvar. Tente novamente.",
-      onSuccess: after,
-      onError,
+  const termo = normalizar(busca.trim());
+  const todas = data.campanhas.map(resumir);
+  const linhas = todas
+    .filter((item) => !situacao || item.status === situacao)
+    .filter((item) =>
+      normalizar(`${item.campanha.nome} ${item.campanha.descricao ?? ""} ${item.campanha.patrocinador ?? ""}`).includes(termo),
+    )
+    .sort(
+      (a, b) =>
+        ORDEM[a.status] - ORDEM[b.status] ||
+        (a.status === "ENCERRADA" || a.status === "CANCELADA"
+          ? b.campanha.data_fim.localeCompare(a.campanha.data_fim)
+          : a.campanha.data_inicio.localeCompare(b.campanha.data_inicio)),
+    );
+
+  const contagem = (status: CampanhaStatus) => todas.filter((item) => item.status === status).length;
+
+  const paginacao = usePagination(linhas.length, PAGE_SIZE, `${termo}|${situacao}`);
+
+  async function cancelar(id: number) {
+    await run(() => save("campanhas", id, { status: "CANCELADA" }), {
+      success: "Cancelada. O histórico foi guardado.",
+      fallbackError: "Não foi possível cancelar.",
     });
   }
 
-  function toggleOfertaCampanha(oferta: OfertaCampanha) {
-    const ativa = oferta.status === "ATIVO";
-    return execute(
-      () =>
-        save("ofertasCampanha", oferta.id, {
-          status: ativa ? "INATIVO" : "ATIVO",
-        }),
-      ativa ? "Vínculo inativado. Histórico preservado." : "Vínculo reativado.",
-    );
-  }
-
-  function cancelarCampanha() {
-    if (!cancelTarget) return;
-    const alvo = cancelTarget;
-    return execute(
-      () => save("campanhas", alvo.id, { status: "CANCELADA" }),
-      "Iniciativa cancelada. Histórico preservado.",
-      () => setCancelTarget(null),
-    );
-  }
-
-  async function submitCampanha(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setFormError("");
-    if (form.data_fim < form.data_inicio) {
-      setFormError("A data final deve ser igual ou posterior à inicial.");
-      return;
-    }
-    if (!form.nome.trim()) {
-      setFormError("Informe o nome da campanha ou evento.");
-      return;
-    }
-    await execute(
-      () =>
-        save("campanhas", editing?.id, {
-          ...form,
-          tipo: form.tipo as Campanha["tipo"],
-          status: form.status as Campanha["status"],
-          nome: form.nome.trim(),
-          descricao: form.descricao.trim() || null,
-          criterio_elegibilidade: form.criterio_elegibilidade.trim() || null,
-          patrocinador: form.patrocinador.trim() || null,
-        }),
-      editing
-        ? "Campanha ou evento atualizado."
-        : "Campanha ou evento cadastrado.",
-      () => setShowForm(false),
-      setFormError,
-    );
-  }
-
-  async function submitItem(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setFormError("");
-    if (!selected) return;
-    if (!itemForm.nome.trim()) {
-      setFormError("Informe o nome do item promocional.");
-      return;
-    }
-    const valor = Number(itemForm.valor);
-    if (
-      valor <= 0 ||
-      (itemForm.tipo_beneficio === "PERCENTUAL" && valor > 100)
-    ) {
-      setFormError("Informe um valor válido. Percentuais devem ficar entre 0 e 100.");
-      return;
-    }
-    await execute(
-      () =>
-        save("itensCampanha", itemEditing?.id, {
-          ...itemForm,
-          tipo_beneficio: itemForm.tipo_beneficio as Item["tipo_beneficio"],
-          status: itemForm.status as Item["status"],
-          nome: itemForm.nome.trim(),
-          campanha_id: selected.id,
-          descricao: itemForm.descricao.trim() || null,
-          valor,
-          quantidade_maxima_utilizacoes: itemForm.quantidade_maxima_utilizacoes
-            ? Number(itemForm.quantidade_maxima_utilizacoes)
-            : null,
-        }),
-      itemEditing ? "Item atualizado." : "Item adicionado à campanha.",
-      () => setShowItemForm(false),
-      setFormError,
-    );
-  }
-
-  async function submitLink(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setFormError("");
-    if (!linkItem || !partnerId) return;
-    const existing = data.ofertasCampanha.find(
-      (item) =>
-        item.beneficio_campanha_id === linkItem.id &&
-        item.conveniado_id === Number(partnerId),
-    );
-    await execute(
-      () =>
-        save("ofertasCampanha", existing?.id, {
-          beneficio_campanha_id: linkItem.id,
-          conveniado_id: Number(partnerId),
-          status: "ATIVO",
-        }),
-      "Conveniado vinculado ao item.",
-      () => {
-        setLinkItem(null);
-        setPartnerId("");
-      },
-      setFormError,
-    );
-  }
+  const fechar = { novo: undefined, editar: undefined, abrir: undefined };
 
   return {
-    data,
+    carregando: loading,
+    hoje,
+    busca,
+    setBusca: (valor: string) => mudar({ buscar: valor }),
+    situacao,
+    setSituacao: (valor: string) => mudar({ situacao: valor }),
+    contagem,
+    total: data.campanhas.length,
+    linhas: linhas.slice(paginacao.start, paginacao.end),
+    totalFiltrado: linhas.length,
+    pagina: paginacao.page,
+    setPagina: paginacao.setPage,
     PAGE_SIZE,
-    TIPOS,
-    search,
-    setSearch,
-    tipo,
-    setTipo,
-    status,
-    setStatus,
-    inicio,
-    setInicio,
-    fim,
-    setFim,
-    campaignPage: campaignPagination.page,
-    setCampaignPage: campaignPagination.setPage,
-    eventPage: eventPagination.page,
-    setEventPage: eventPagination.setPage,
-    periodoInvalido,
-    rows,
-    campaigns,
-    events,
-    campaignList,
-    eventList,
-    selected,
-    selectedId,
-    setSelectedId,
-    campanhaItems,
-    usosCampanha,
-    participantes,
-    today,
-    editing,
-    showForm,
-    setShowForm,
-    form,
-    setForm,
-    abrirForm,
-    submitCampanha,
-    itemEditing,
-    showItemForm,
-    setShowItemForm,
-    itemForm,
-    setItemForm,
-    abrirItem,
-    submitItem,
-    linkItem,
-    setLinkItem,
-    partnerId,
-    setPartnerId,
-    submitLink,
-    cancelTarget,
-    setCancelTarget,
-    cancelarCampanha,
-    toggleOfertaCampanha,
-    saving,
-    formError,
-    setFormError,
+    aberta: abrirId && !editarId ? data.campanhas.find((item) => item.id === abrirId) : undefined,
+    resumir,
+    emEdicao: editarId ? data.campanhas.find((item) => item.id === editarId) : undefined,
+    criando,
+    abrir: (id: number) => mudar({ ...fechar, abrir: String(id) }),
+    novo: () => mudar({ ...fechar, novo: "1" }),
+    editar: (id: number) => mudar({ ...fechar, editar: String(id) }),
+    fecharPainel: () => mudar(fechar),
+    aoSalvar: (id: number) => mudar({ ...fechar, abrir: String(id) }),
+    cancelar,
+    salvando,
   };
 }
