@@ -190,17 +190,16 @@ export function useUtilizacoesVM() {
   }
 
   function limparFiltros() {
-    update({
-      buscar: "",
-      status: "",
-      inicio: "",
-      fim: "",
-      colaborador: "",
-      conveniado: "",
-      beneficio: "",
-    });
-    setPage(1);
-  }
+  update({
+    buscar: "",
+    status: "",
+    inicio: "",
+    fim: "",
+    colaborador: "",
+    conveniado: "",
+    beneficio: "",
+  });
+}
 
   return {
     data,

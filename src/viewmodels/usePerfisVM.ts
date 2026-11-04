@@ -137,11 +137,10 @@ export function usePerfisVM() {
       profile.status === "ATIVO" || profile.id === editingUser?.perfil_id,
   );
 
-  function changeTab(next: "perfis" | "usuarios") {
-    setTab(next);
-    clearFilters();
-    setPage(1);
-  }
+ function changeTab(next: "perfis" | "usuarios") {
+  setTab(next);
+  clearFilters();
+}
 
   function tabKey(event: KeyboardEvent<HTMLButtonElement>) {
     if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key))
