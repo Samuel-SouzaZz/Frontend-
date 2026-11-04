@@ -10,8 +10,8 @@ import {
   ShieldCheck,
   LogOut,
   HelpCircle,
+  ChevronsLeft,
   Menu,
-  X,
   CheckCircle2,
   AlertCircle,
 } from "lucide-react";
@@ -82,6 +82,19 @@ export default function Layout() {
       window.matchMedia("(min-width: 801px)").matches,
     );
   const menuButtonRef = useRef<HTMLButtonElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const moveFocus = useRef(false);
+  const sidebarVisible = desktop ? !collapsed : open;
+  useEffect(() => {
+    if (!moveFocus.current) return;
+    moveFocus.current = false;
+    (sidebarVisible ? closeButtonRef : menuButtonRef).current?.focus();
+  }, [sidebarVisible]);
+  const toggleSidebar = (show: boolean) => {
+    moveFocus.current = true;
+    if (desktop) setCollapsed(!show);
+    else setOpen(show);
+  };
   useEffect(() => {
     const media = window.matchMedia("(min-width: 801px)");
     const updateDesktop = () => setDesktop(media.matches);
@@ -136,9 +149,18 @@ export default function Layout() {
                 )}
               </NavLink>
             ))}
+          <button
+            type="button"
+            className={`nav-link nav-help${help ? " is-open" : ""}`}
+            aria-expanded={help}
+            aria-controls="page-help"
+            onClick={() => setHelp(!help)}
+          >
+            <HelpCircle size={20} />
+            <span>Ajuda</span>
+          </button>
         </nav>
         <div className="sidebar-bottom">
-          <button className="sidebar-help" type="button" aria-expanded={help} aria-controls="page-help" onClick={() => setHelp(!help)}><HelpCircle size={20} />Ajuda</button>
           <div className="sidebar-user">
             <Link to="/meu-perfil" className="sidebar-profile-link" aria-label="Abrir meu perfil" aria-current={location.pathname === "/meu-perfil" ? "page" : undefined} onClick={() => { setOpen(false); setHelp(false); }}>
               <span className="avatar" aria-hidden="true">{initials(user.nome)}</span>
@@ -154,38 +176,40 @@ export default function Layout() {
           </div>
         </div>
       </aside>
+      {sidebarVisible && (
+        <button
+          ref={closeButtonRef}
+          type="button"
+          className="sidebar-close"
+          aria-label="Recolher menu lateral"
+          aria-controls="main-sidebar"
+          onClick={() => toggleSidebar(false)}
+        >
+          <ChevronsLeft size={16} aria-hidden="true" />
+          <span className="menu-toggle-tooltip" aria-hidden="true">
+            Recolher menu
+          </span>
+        </button>
+      )}
       <div className="main-shell">
         <header className="topbar">
           <div className="topbar-left">
-            <button
-              ref={menuButtonRef}
-              className="icon-button menu-toggle"
-              aria-label={
-                desktop
-                  ? collapsed
-                    ? "Abrir menu lateral"
-                    : "Fechar menu lateral"
-                  : open
-                    ? "Fechar menu lateral"
-                    : "Abrir menu lateral"
-              }
-              aria-controls="main-sidebar"
-              aria-expanded={desktop ? !collapsed : open}
-              onClick={() => {
-                if (desktop) {
-                  setCollapsed(!collapsed);
-                } else {
-                  setOpen(!open);
-                }
-              }}
-            >
-              {(desktop ? !collapsed : open) ? <X /> : <Menu />}
-              <span className="menu-toggle-tooltip" aria-hidden="true">
-                {(desktop ? !collapsed : open)
-                  ? "Fechar menu lateral"
-                  : "Abrir menu lateral"}
-              </span>
-            </button>
+            {!sidebarVisible && (
+              <button
+                ref={menuButtonRef}
+                type="button"
+                className="icon-button menu-toggle"
+                aria-label="Mostrar menu lateral"
+                aria-controls="main-sidebar"
+                aria-expanded={false}
+                onClick={() => toggleSidebar(true)}
+              >
+                <Menu />
+                <span className="menu-toggle-tooltip" aria-hidden="true">
+                  Mostrar menu lateral
+                </span>
+              </button>
+            )}
             <PortalSearch />
           </div>
           <div className="topbar-right">
