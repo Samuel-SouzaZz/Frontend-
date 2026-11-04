@@ -1,69 +1,72 @@
-# Portal de benefícios FCV - Grupo 3
 
-Portal da Fundação Cristiano Varella em React, TypeScript, Vite e CSS convencional. O repositório recebido continha somente o README; por isso esta entrega inclui a base de login, visão geral e conveniados, além das seis páginas solicitadas.
+# Portal web FCV
 
-Este repositório é exclusivo do **frontend web**. O backend é mantido separadamente em [joaovictorcascardo/fcv-backend](https://github.com/joaovictorcascardo/fcv-backend), responsável pela API, autenticação, regras do servidor e acesso ao MySQL com Knex. O portal consome essa API por HTTP; os dois projetos são executados e versionados separadamente.
+Portal da equipe da Fundação Cristiano Varella para gerenciar benefícios, conveniados, campanhas e o uso dos benefícios pelos colaboradores. Feito em React 19, TypeScript, Vite e CSS.
 
-## As seis páginas adicionadas
+O portal só mostra e altera dados pela API, que fica em outro repositório: [fcv-backend](https://github.com/joaovictorcascardo/fcv-backend). Sem a API ligada, o login não funciona.
 
-- **Colaboradores** (`/colaboradores`): pesquisa, filtros, paginação, cadastro, detalhes, edição e inativação, com vínculo a uma conta de colaborador.
-- **Benefícios e ofertas** (`/beneficios`): cadastro, regras de ciclo/janela, edição, descontinuação e vínculos ativos/inativos com conveniados.
-- **Utilizações** (`/utilizacoes`): filtros completos, detalhes e estorno de aprovação com motivo obrigatório. O registro continua no histórico.
-- **Campanhas e eventos** (`/campanhas`): criação, edição, cancelamento, itens promocionais e conveniados vinculados.
-- **Relatórios** (`/relatorios`): períodos, comparação, rankings, adesão, sazonalidade e exportação de utilizações em CSV.
-- **Perfis e usuários** (`/perfis`): consulta, criação, edição e inativação de contas/perfis, com acesso exclusivo do administrador FCV.
+## Rodar na máquina
 
-Telas de base: Login (`/login`), Visão geral (`/`) e Conveniados (`/conveniados`). Não há Tailwind ou Prisma neste front-end; a API existente permanece com Knex e MySQL.
+Precisa do Node.js 22 ou mais novo.
 
-O avatar no cabeçalho e na barra lateral abre **Meu perfil** (`/meu-perfil`), com nome, e-mail, perfil de acesso, status e data de criação da conta conectada, recebidos da API. A consulta está disponível para administrador e operador; a gestão de todas as contas continua restrita ao administrador em `/perfis`.
+1. Ligue a API seguindo o README do `fcv-backend`. Ela fica em `http://localhost:3333`.
+2. Neste repositório, copie o arquivo `.env.example` para `.env.local`. Ele já aponta para a API local:
 
-## Executar localmente
+   ```
+   VITE_API_URL=http://localhost:3333/api/v1
+   ```
 
-Requer Node.js 22.12 ou mais recente e npm.
+3. Instale e ligue o portal:
 
-```bash
-npm ci
-npm run dev
-```
+   ```bash
+   npm install
+   npm run dev
+   ```
 
-Abra o endereço exibido no terminal (por padrão `http://127.0.0.1:5173`). Para usar contas e dados reais, mantenha o backend em execução.
+4. Abra `http://127.0.0.1:5173` e entre com `admin@fcv.org.br` e senha `123456` (conta de teste da API).
 
-Sem backend, use **Acessar perfil local de demonstração** na tela de login. Esse acesso de administrador aparece somente em `npm run dev`, usa dados fictícios para navegar pelas páginas e mantém alterações apenas na memória da sessão; atualizar a página restaura os dados de exemplo. Ele não está disponível na versão de produção.
+Se mudar o `.env.local`, pare o `npm run dev` e ligue de novo.
 
-## Conectar à API real
+## Telas
 
-Execute o serviço do repositório `fcv-backend` em seu próprio ambiente, seguindo o README dele. Neste frontend, copie `.env.example` para `.env.local` e configure `VITE_API_URL` com o endereço desse serviço, por exemplo `http://localhost:3333/api/v1`. Reinicie o servidor Vite após alterar variáveis.
+| Tela | Endereço | O que faz |
+| --- | --- | --- |
+| Login | `/login` | Entrar e recuperar a senha |
+| Dashboard | `/` | Resumo das utilizações e atalhos para Pendências e Calendário |
+| Colaboradores | `/colaboradores` | Lista, cadastro, edição e inativação |
+| Detalhe do colaborador | `/colaboradores/:id` | Histórico de uso, dados e números do colaborador |
+| Benefícios | `/beneficios` | Cadastro, regras de uso e onde cada benefício é aceito |
+| Conveniados | `/conveniados` | Lista, cadastro, edição e inativação dos parceiros |
+| Detalhe do conveniado | `/conveniados/:id` | Histórico, benefícios oferecidos e aprovação do parceiro |
+| Utilizações | `/utilizacoes` | Histórico com filtros e estorno com motivo |
+| Campanhas e eventos | `/campanhas` | Campanhas, eventos, itens e parceiros |
+| Calendário | `/calendario` | Campanhas e eventos de cada dia do mês |
+| Pendências | `/pendencias` | O que precisa de atenção: parceiros em análise, utilizações paradas, cadastros incompletos |
+| Relatórios | `/relatorios` | Indicadores por período e exportação em CSV |
+| Perfis e usuários | `/perfis` | Contas e perfis de acesso (só administrador) |
+| Meu perfil | `/meu-perfil` | Dados da conta conectada |
 
-O botão Entrar envia e-mail/senha a `/auth/login`. O portal aceita somente usuário ativo com escopo FCV; usa Bearer JWT nas requisições, guarda a sessão em `sessionStorage`, restaura via `/auth/eu` e limpa a sessão ao receber 401. Logout apaga o token. Nunca copie `JWT_SEGREDO`, senha do MySQL ou outra credencial do servidor para uma variável `VITE_*`.
+## Organização (MVVM)
 
-As seeds de desenvolvimento do backend disponibilizam `admin@fcv.org.br` e `operador@fcv.org.br`, com senha `123456`. São contas locais de teste; configure contas próprias antes de publicar o ambiente. O login aceita e-mail, conforme o contrato atual da API.
+| Pasta | O que tem |
+| --- | --- |
+| `src/models/` | Tipos e funções puras: formatação, filtros, cálculos (período, calendário, pendências) |
+| `src/viewmodels/` | Estado e regras de cada tela (`useXxxVM`), sessão e dados carregados da API |
+| `src/pages/` | Uma página por rota. Só desenha o que o ViewModel entrega |
+| `src/components/` | Peças reaproveitadas: `ui/` (tabela, modal, campo, selo), `detail/` (páginas de detalhe) e uma pasta por assunto |
+| `src/services/` | Chamadas HTTP para a API |
+| `src/hooks/` | Hooks comuns: filtros na URL, paginação, ações com carregamento |
+| `src/styles/` | CSS por área |
+| `tests/` | Testes das funções de `models` |
 
-A integração foi verificada com o backend e MySQL locais, incluindo autenticação, consultas e edição persistida. Veja [integração e limites](docs/INTEGRACAO.md).
+## Comandos
 
-## Organização MVVM
+| Comando | Pra que serve |
+| --- | --- |
+| `npm run dev` | Liga o portal em modo de desenvolvimento |
+| `npm test` | Roda os testes |
+| `npm run build` | Confere o TypeScript e gera a versão final em `dist/` |
 
-- `src/pages/` e `src/components/`: View, incluindo formulários e navegação.
-- `src/viewmodels/`: sessão, estado compartilhado, carregamento e comandos de persistência.
-- `src/models/`: contratos de dados, seletores e cálculos puros de indicadores.
-- `src/services/`: comunicação REST com a API central.
-- `src/styles/`: componentes, identidade da referência, notificações, acabamento e layout responsivo em CSS.
+Antes de cada commit: `npm test` e `npm run build` sem erro.
 
-O portal reutiliza componentes de campos, tabelas, modal nativo com foco/teclado, indicadores, status, pesquisa e paginação. Marca e fotografia foram extraídas do WEB.pdf fornecido, em WebP. As imagens preservam a proporção e têm limites de tamanho; a fotografia lateral é ocultada em telas de até 800 px. A resolução disponível é a do PDF: arquivos institucionais originais podem melhorar a nitidez em telas de alta densidade.
-
-O sino no topo abre um modal com as utilizações pendentes, contador e atalhos para cada registro ou para a lista filtrada. O botão Atualizar consulta novamente a API; o contador representa pendências atuais. O acabamento visual e as animações de entrada/transições usam apenas CSS, sem novas dependências, respeitando `prefers-reduced-motion`.
-
-## Verificações
-
-```bash
-npm test
-npm run build
-npm run preview
-```
-
-Os testes de domínio cobrem relatórios por data/status, estornos, vínculos regulares/promocionais, restrição de administrador, filtro de período e integridade das fixtures de teste. Essas fixtures ficam exclusivamente em `tests/`.
-
-A verificação em Chromium usa o backend e MySQL reais: login, senha incorreta, restauração de sessão, rejeição de token inválido, logout, restrição do operador, busca e edição de benefício persistida no banco, com restauração do valor original. As oito telas internas foram conferidas em 320, 390, 768, 1024 e 1440 px. O login foi conferido também em 1920 px. Não foram usadas respostas de API interceptadas nessa verificação.
-
-O modal de notificações foi verificado com pendências reais: contador, atualização, links, detalhe por ID exato, teclado e retorno do foco ao sino. Estados vazio e erro foram simulados apenas em sessões isoladas do navegador, sem alterar o banco. Também foram conferidos os layouts de desktop/celular e a desativação das animações com movimento reduzido.
-
-Referências consideradas: WEB.pdf, MOBILE.pdf, documento de arquitetura, requisitos do Grupo 2 e atribuições dos grupos. A instrução atual do usuário é o desenvolvimento das seis telas web do Grupo 3; o documento de atribuições recebido também descreve uma fase anterior de banco de dados. CSS e Knex são as escolhas confirmadas pelo usuário.
+Mais detalhes de como o portal conversa com a API em [docs/INTEGRACAO.md](docs/INTEGRACAO.md).
