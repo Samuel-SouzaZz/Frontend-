@@ -8,18 +8,10 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import type {
-  PortalData,
-  Resource,
-  Entity,
-  Utilizacao,
-} from "../models/types";
+import type { PortalData, Resource, Entity, Utilizacao } from "../models/types";
 import { canEstornar, isAdministrador } from "../models/selectors";
-import {
-  cancelUtilizacao,
-  listResource,
-  saveResource,
-} from "../services/api";
+import { errorMessage } from "../hooks/useAsyncAction";
+import { cancelUtilizacao, listResource, saveResource } from "../services/api";
 import {
   createLocalDemoData,
   isLocalDemoUser,
@@ -60,10 +52,6 @@ interface Portal {
 }
 
 const Context = createContext<Portal | null>(null);
-
-function failureMessage(reason: unknown) {
-  return reason instanceof Error ? reason.message : "Falha ao carregar dados.";
-}
 
 export function PortalProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
@@ -107,7 +95,10 @@ export function PortalProvider({ children }: { children: ReactNode }) {
       if (result.status === "fulfilled") {
         Object.assign(next, { [resource]: result.value });
       } else {
-        errors[resource] = failureMessage(result.reason);
+        errors[resource] = errorMessage(
+          result.reason,
+          "Falha ao carregar dados.",
+        );
       }
     });
     const failures = Object.values(errors);
@@ -204,16 +195,7 @@ export function PortalProvider({ children }: { children: ReactNode }) {
       save,
       estornar,
     }),
-    [
-      data,
-      loading,
-      refreshing,
-      error,
-      resourceErrors,
-      reload,
-      save,
-      estornar,
-    ],
+    [data, loading, refreshing, error, resourceErrors, reload, save, estornar],
   );
   return <Context.Provider value={value}>{children}</Context.Provider>;
 }
