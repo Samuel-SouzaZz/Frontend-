@@ -8,15 +8,10 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import type { PortalData, Resource, Entity, Utilizacao } from "../models/types";
+import type { Colaborador, PortalData, Resource, Entity, Usuario, Utilizacao } from "../models/types";
 import { canEstornar, isAdministrador } from "../models/selectors";
 import { errorMessage } from "../hooks/useAsyncAction";
-import { cancelUtilizacao, listResource, saveResource } from "../services/api";
-import {
-  createLocalDemoData,
-  isLocalDemoUser,
-  saveLocalDemoEntity,
-} from "../local-demo/localDemo";
+import { cancelUtilizacao, listResource, removeResource, saveResource } from "../services/api";
 import { useAuth } from "./AuthContext";
 
 const empty: PortalData = {
@@ -49,7 +44,10 @@ interface Portal {
     payload: Partial<Entity<K>>,
   ) => Promise<Entity<K>>;
   estornar: (id: number, motivo: string) => Promise<Utilizacao>;
+  cadastrarColaborador: (conta: ContaNova, trabalho: Partial<Colaborador>) => Promise<Colaborador>;
 }
+
+export type ContaNova = { nome: string; email: string; senha: string };
 
 const Context = createContext<Portal | null>(null);
 
@@ -73,16 +71,6 @@ export function PortalProvider({ children }: { children: ReactNode }) {
     if (firstLoad) setLoading(true);
     else setRefreshing(true);
     setError(null);
-    if (isLocalDemoUser(userRef.current)) {
-      const next = createLocalDemoData();
-      dataRef.current = next;
-      loadedRef.current = true;
-      setData(next);
-      setResourceErrors({});
-      setLoading(false);
-      setRefreshing(false);
-      return;
-    }
     const results = await Promise.allSettled(
       resources.map((resource) => listResource(resource)),
     );
@@ -141,9 +129,7 @@ export function PortalProvider({ children }: { children: ReactNode }) {
       throw new Error("O histórico de utilização não pode ser editado.");
     const currentData = dataRef.current;
     const rows = currentData[resource] as Entity<K>[];
-    const result = isLocalDemoUser(u)
-      ? saveLocalDemoEntity(rows, id, payload)
-      : await saveResource(resource, id, payload);
+    const result = await saveResource(resource, id, payload);
     const next = {
       ...currentData,
       [resource]:
@@ -167,13 +153,8 @@ export function PortalProvider({ children }: { children: ReactNode }) {
     const observacoes = [atual.observacoes, `Motivo do estorno: ${texto}`]
       .filter(Boolean)
       .join("\n");
-    let result: Utilizacao;
-    if (isLocalDemoUser(u)) {
-      result = { ...atual, status: "ESTORNADA", observacoes };
-    } else {
-      await saveResource("utilizacoes", id, { observacoes });
-      result = await cancelUtilizacao(id);
-    }
+    await saveResource("utilizacoes", id, { observacoes });
+    const result = await cancelUtilizacao(id);
     const next = {
       ...dataRef.current,
       utilizacoes: dataRef.current.utilizacoes.map((item) =>
@@ -183,6 +164,31 @@ export function PortalProvider({ children }: { children: ReactNode }) {
     dataRef.current = next;
     setData(next);
     return result;
+  }, []);
+  const cadastrarColaborador = useCallback(async (conta: ContaNova, trabalho: Partial<Colaborador>) => {
+    const u = userRef.current;
+    if (!u) throw new Error("Faça login para continuar.");
+    if (!isAdministrador(u, dataRef.current))
+      throw new Error("Somente o administrador pode criar a conta de acesso de um colaborador.");
+    const perfil = dataRef.current.perfis.find((item) => item.escopo === "COLABORADOR" && item.status === "ATIVO");
+    if (!perfil) throw new Error("Não há um perfil de Colaborador ativo em Configurações.");
+    const usuario = await saveResource("usuarios", undefined, { ...conta, perfil_id: perfil.id, status: "ATIVO" });
+    let colaborador: Colaborador;
+    try {
+      colaborador = await saveResource("colaboradores", undefined, { ...trabalho, usuario_id: usuario.id });
+    } catch (erro) {
+      await removeResource("usuarios", usuario.id).catch(() => undefined);
+      throw erro;
+    }
+    const semSenha: Usuario = { ...usuario, senha: undefined };
+    const next = {
+      ...dataRef.current,
+      usuarios: [...dataRef.current.usuarios, semSenha],
+      colaboradores: [...dataRef.current.colaboradores, colaborador],
+    };
+    dataRef.current = next;
+    setData(next);
+    return colaborador;
   }, []);
   const value = useMemo<Portal>(
     () => ({
@@ -194,8 +200,9 @@ export function PortalProvider({ children }: { children: ReactNode }) {
       reload,
       save,
       estornar,
+      cadastrarColaborador,
     }),
-    [data, loading, refreshing, error, resourceErrors, reload, save, estornar],
+    [data, loading, refreshing, error, resourceErrors, reload, save, estornar, cadastrarColaborador],
   );
   return <Context.Provider value={value}>{children}</Context.Provider>;
 }

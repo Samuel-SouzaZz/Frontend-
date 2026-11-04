@@ -3,7 +3,7 @@ import { useAuth } from "./AuthContext";
 import { errorMessage } from "../hooks/useAsyncAction";
 
 export function useLoginVM() {
-  const { user, restoring, login, loginLocal } = useAuth();
+  const { user, restoring, login } = useAuth();
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
   const [visible, setVisible] = useState(false);
@@ -23,6 +23,7 @@ export function useLoginVM() {
       setBusy(false);
     }
   }
+<<<<<<< HEAD
   function beginRecovery() {
     setError("");
     setRecovering(true);
@@ -44,4 +45,8 @@ export function useLoginVM() {
     submit,
     beginRecovery,
   };
+=======
+  function beginRecovery() { setError(""); setRecovering(true); }
+  return { user, restoring, email, setEmail, senha, setSenha, visible, setVisible, busy, error, recovering, setRecovering, submit, beginRecovery };
+>>>>>>> ed3f53ce7b7d6265d67990207a16cfa8cc8a4ee0
 }

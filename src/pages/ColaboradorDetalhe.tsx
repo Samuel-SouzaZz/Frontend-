@@ -247,6 +247,8 @@ export default function ColaboradorDetalhe() {
           form={vm.form}
           onChange={vm.setForm}
           availableUsers={vm.availableUsers}
+          podeCriarConta={vm.podeCriarConta}
+          contaAtual={vm.contaAtual}
           editing={Boolean(vm.editing)}
           submitting={vm.submitting}
           error={vm.formError}

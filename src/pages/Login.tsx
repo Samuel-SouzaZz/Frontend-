@@ -10,14 +10,12 @@ import {
 import { useLoginVM } from "../viewmodels/useLoginVM";
 import PasswordRecovery from "./PasswordRecovery";
 import Brand from "../components/Brand";
-import LocalDemoAccessButton from "../local-demo/LocalDemoAccessButton";
 import loginIllustration from "../images/login/Ilustraçãofcv.svg";
 
 export default function Login() {
   const {
     user,
     restoring,
-    loginLocal,
     email,
     setEmail,
     senha,
@@ -128,7 +126,6 @@ export default function Login() {
                 >
                   Esqueci minha senha
                 </button>
-                <LocalDemoAccessButton disabled={busy} onAccess={loginLocal} />
               </>
             )}
             <div className="login-security">

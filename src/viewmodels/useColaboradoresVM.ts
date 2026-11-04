@@ -4,11 +4,19 @@ import type { Colaborador } from "../models/types";
 import { usePagination } from "../hooks/usePagination";
 import { useUrlFilters } from "../hooks/useUrlFilters";
 import { useAsyncAction } from "../hooks/useAsyncAction";
+import { useSessionUser } from "../hooks/useSessionUser";
+import { isAdministrador, SENHA_MINIMA } from "../models/rules";
 
 const PAGE_SIZE = 8;
 const FILTER_KEYS = ["buscar", "status", "setor"] as const;
 
+export type ModoConta = "nova" | "existente";
+
 export type ColaboradorForm = {
+  modo: ModoConta;
+  nome: string;
+  email: string;
+  senha: string;
   usuario_id: string;
   matricula: string;
   setor: string;
@@ -18,7 +26,13 @@ export type ColaboradorForm = {
   status: Colaborador["status"];
 };
 
-const blankForm = (): ColaboradorForm => ({
+const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+const blankForm = (modo: ModoConta): ColaboradorForm => ({
+  modo,
+  nome: "",
+  email: "",
+  senha: "",
   usuario_id: "",
   matricula: "",
   setor: "",
@@ -29,7 +43,9 @@ const blankForm = (): ColaboradorForm => ({
 });
 
 export function useColaboradoresVM() {
-  const { data, save, loading } = usePortal();
+  const { data, save, cadastrarColaborador, loading } = usePortal();
+  const sessao = useSessionUser();
+  const podeCriarConta = isAdministrador(sessao, data);
   const { running: submitting, run } = useAsyncAction();
   const { values: filters, setter } = useUrlFilters(FILTER_KEYS);
   const { buscar: search, status, setor } = filters;
@@ -39,7 +55,7 @@ export function useColaboradoresVM() {
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<Colaborador>();
   const [inactivating, setInactivating] = useState<Colaborador>();
-  const [form, setForm] = useState<ColaboradorForm>(blankForm);
+  const [form, setForm] = useState<ColaboradorForm>(() => blankForm("existente"));
   const [formError, setFormError] = useState("");
 
   const sectors = useMemo(
@@ -106,6 +122,10 @@ export function useColaboradoresVM() {
     setForm(
       item
         ? {
+            modo: "existente",
+            nome: "",
+            email: "",
+            senha: "",
             usuario_id: String(item.usuario_id),
             matricula: item.matricula,
             setor: item.setor,
@@ -114,7 +134,7 @@ export function useColaboradoresVM() {
             telefone: item.telefone ?? "",
             status: item.status,
           }
-        : blankForm(),
+        : blankForm(podeCriarConta ? "nova" : "existente"),
     );
     setFormError("");
     setFormOpen(true);
@@ -123,7 +143,16 @@ export function useColaboradoresVM() {
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setFormError("");
-    if (!form.usuario_id) {
+    const contaNova = !editing && form.modo === "nova";
+    if (contaNova) {
+      const email = form.email.trim().toLocaleLowerCase("pt-BR");
+      if (!form.nome.trim()) return setFormError("Informe o nome completo.");
+      if (!EMAIL.test(email)) return setFormError("Informe um e-mail válido.");
+      if (data.usuarios.some((user) => user.email.toLocaleLowerCase("pt-BR") === email))
+        return setFormError("Já existe uma conta com este e-mail. Use a opção Já tem conta.");
+      if (form.senha.length < SENHA_MINIMA)
+        return setFormError(`A senha inicial precisa ter pelo menos ${SENHA_MINIMA} caracteres.`);
+    } else if (!form.usuario_id) {
       setFormError("Selecione um usuário para vincular ao colaborador.");
       return;
     }
@@ -144,16 +173,22 @@ export function useColaboradoresVM() {
       setFormError("Esta matrícula já está cadastrada.");
       return;
     }
+    const trabalho = {
+      matricula: form.matricula.trim(),
+      setor: form.setor.trim(),
+      cargo: form.cargo.trim(),
+      data_admissao: form.data_admissao,
+      telefone: form.telefone.trim() || null,
+      status: form.status,
+    };
     await run(
       () =>
-        save("colaboradores", editing?.id, {
-          ...form,
-          usuario_id: Number(form.usuario_id),
-          matricula: form.matricula.trim(),
-          setor: form.setor.trim(),
-          cargo: form.cargo.trim(),
-          telefone: form.telefone.trim() || null,
-        }),
+        contaNova
+          ? cadastrarColaborador(
+              { nome: form.nome.trim(), email: form.email.trim().toLocaleLowerCase("pt-BR"), senha: form.senha },
+              trabalho,
+            )
+          : save("colaboradores", editing?.id, { ...trabalho, usuario_id: Number(form.usuario_id) }),
       {
         success: editing ? "Colaborador atualizado." : "Colaborador cadastrado.",
         fallbackError: "Não foi possível salvar o colaborador.",
@@ -192,6 +227,8 @@ export function useColaboradoresVM() {
     currentPage,
     visibleRows,
     availableUsers,
+    podeCriarConta,
+    contaAtual: editing ? usuariosMap.get(editing.usuario_id) : undefined,
     formOpen,
     setFormOpen,
     editing,

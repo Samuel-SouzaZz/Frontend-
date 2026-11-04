@@ -127,6 +127,8 @@ export default function Colaboradores() {
           form={vm.form}
           onChange={vm.setForm}
           availableUsers={vm.availableUsers}
+          podeCriarConta={vm.podeCriarConta}
+          contaAtual={vm.contaAtual}
           editing={Boolean(vm.editing)}
           submitting={vm.submitting}
           error={vm.formError}

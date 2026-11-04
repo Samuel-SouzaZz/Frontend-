@@ -1,6 +1,8 @@
 import {
+  useCallback,
   useEffect,
   useId,
+  useLayoutEffect,
   useRef,
   useState,
   type KeyboardEvent,
@@ -38,6 +40,7 @@ export function Select({
 }: SelectProps) {
   const field = useFieldState();
   const wrapperRef = useRef<HTMLDivElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
   const listId = useId();
   const [open, setOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
@@ -46,15 +49,50 @@ export function Select({
   const invalid = Boolean(field?.invalid);
   const isRequired = required ?? Boolean(field?.required);
 
+  const placeMenu = useCallback(() => {
+    const trigger = wrapperRef.current?.querySelector("button");
+    const menu = menuRef.current;
+    if (!trigger || !menu) return;
+    const area = trigger.getBoundingClientRect();
+    const width = Math.max(area.width, menu.scrollWidth > area.width ? Math.min(menu.scrollWidth, 320) : 0);
+    menu.style.width = `${width}px`;
+    const real = menu.offsetWidth;
+    const alignRight = area.left + real > window.innerWidth - 8;
+    const left = Math.max(8, alignRight ? area.right - real : area.left);
+    const below = window.innerHeight - area.bottom - 15;
+    const above = area.top - 15;
+    const height = Math.min(menu.scrollHeight, 280);
+    const upward = height > below && above > below;
+    menu.style.left = `${left}px`;
+    menu.style.maxHeight = `${Math.max(120, Math.min(280, upward ? above : below))}px`;
+    menu.style.top = upward ? "auto" : `${area.bottom + 7}px`;
+    menu.style.bottom = upward ? `${window.innerHeight - area.top + 7}px` : "auto";
+  }, []);
+
+  useLayoutEffect(() => {
+    const menu = menuRef.current;
+    if (!open || !menu) return;
+    if (!menu.matches(":popover-open")) menu.showPopover();
+    placeMenu();
+    return () => {
+      if (menu.matches(":popover-open")) menu.hidePopover();
+    };
+  }, [open, placeMenu]);
+
   useEffect(() => {
     if (!open) return;
     const closeOnOutsidePointer = (event: PointerEvent) => {
       if (!wrapperRef.current?.contains(event.target as Node)) setOpen(false);
     };
     document.addEventListener("pointerdown", closeOnOutsidePointer);
-    return () =>
+    window.addEventListener("resize", placeMenu);
+    window.addEventListener("scroll", placeMenu, true);
+    return () => {
       document.removeEventListener("pointerdown", closeOnOutsidePointer);
-  }, [open]);
+      window.removeEventListener("resize", placeMenu);
+      window.removeEventListener("scroll", placeMenu, true);
+    };
+  }, [open, placeMenu]);
 
   const enabledIndexes = options
     .map((option, index) => (option.disabled ? -1 : index))
@@ -149,6 +187,8 @@ export function Select({
       </button>
       {open && (
         <div
+          ref={menuRef}
+          popover="manual"
           id={`${listId}-options`}
           className="field-select-menu"
           role="listbox"

@@ -107,8 +107,8 @@
   transition: background-color 160ms, border-color 160ms, box-shadow 160ms, transform 160ms var(--motion-ease, ease);
 }
 .modal .btn-primary {
-  background: #075cc6;
-  box-shadow: 0 3px 8px #0759c71c;
+  background: var(--primary);
+  box-shadow: 0 3px 8px #2837721f;
 }
 .modal .btn-secondary {
   border-color: #d8e4f0;
@@ -169,7 +169,7 @@
   margin-top: 18px;
 }
 .modal::backdrop {
-  background: #102b4f60;
+  background: #0f2a5c8c;
   backdrop-filter: none;
 }
 .modal .field > span {

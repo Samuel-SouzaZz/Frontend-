@@ -17,7 +17,6 @@ import { PerfisTable } from "../components/perfis/PerfisTable";
 import { UsuarioDetailsModal } from "../components/perfis/UsuarioDetailsModal";
 import { UsuarioFormModal } from "../components/perfis/UsuarioFormModal";
 import { UsuariosTable } from "../components/perfis/UsuariosTable";
-import { isLocalDemoUser } from "../local-demo/localDemo";
 import { capitalizeFirstLetter } from "../models/selectors";
 import { usePerfisVM } from "../viewmodels/usePerfisVM";
 
@@ -113,13 +112,6 @@ export default function Perfis() {
           </button>
         }
       />
-      {isLocalDemoUser(user) && (
-        <p className="inline-notice" role="status">
-          Você está usando a demonstração local. Cadastros feitos aqui não são
-          enviados à API nem gravados no banco de dados; eles são reiniciados
-          quando a página é atualizada.
-        </p>
-      )}
       <PerfisStats
         perfis={data.perfis}
         usuarios={data.usuarios}
