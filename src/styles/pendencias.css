@@ -137,3 +137,14 @@
         flex-wrap: wrap;
     }
 }
+
+.atalho-contador {
+    min-width: 20px;
+    padding: 1px 6px;
+    border-radius: 999px;
+    background: #d9455f;
+    color: white;
+    font-size: 11.5px;
+    font-weight: 700;
+    text-align: center;
+}

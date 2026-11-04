@@ -66,6 +66,7 @@ function Routing() {
         <Route path="utilizacoes" element={<Utilizacoes />} />
         <Route path="campanhas" element={<Campanhas />} />
         <Route path="calendario" element={<Calendario />} />
+        <Route path="pendencias" element={<Pendencias />} />
         <Route path="relatorios" element={<Relatorios />} />
         <Route path="perfis" element={<AdminPage />} />
         <Route path="meu-perfil" element={<MeuPerfil />} />
