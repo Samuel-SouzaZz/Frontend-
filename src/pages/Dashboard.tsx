@@ -1,4 +1,5 @@
 import { PageHeader } from "../components/ui";
+import { Atalhos } from "../components/dashboard/Atalhos";
 import { BenefitColumns } from "../components/dashboard/BenefitColumns";
 import { CategoryChart } from "../components/dashboard/CategoryChart";
 import { DashboardStats } from "../components/dashboard/DashboardStats";
@@ -14,6 +15,7 @@ import {
   conveniadoDaUtilizacao,
 } from "../models/selectors";
 import { useDashboardVM } from "../viewmodels/useDashboardVM";
+import { usePendenciasVM } from "../viewmodels/usePendenciasVM";
 
 export default function Dashboard() {
   const {
@@ -35,6 +37,7 @@ export default function Dashboard() {
     maxMonth,
     chartPoints,
   } = useDashboardVM();
+  const { total: pendencias } = usePendenciasVM();
 
   const primeiroNome = capitalizeFirstLetter(user?.nome ?? "")
     .split(" ")
@@ -46,8 +49,14 @@ export default function Dashboard() {
       <PageHeader
         title={`Olá, ${primeiroNome}!`}
         description="Aqui está um resumo das utilizações e dos benefícios da Fundação."
-        actions={<PeriodSelect days={days} onChange={setDays} />}
+        actions={
+          <>
+            <Atalhos pendencias={pendencias} />
+            <PeriodSelect days={days} onChange={setDays} />
+          </>
+        }
       />
+
       <DashboardStats
         aprovadas={approved.length}
         beneficiosUtilizados={beneficiosUtilizados}
