@@ -62,12 +62,7 @@ export default function Conveniados() {
 
   const navigate = useNavigate();
 
-  const filtrar =
-    (setter: (value: string) => void) =>
-    (value: string) => {
-      setter(value);
-      setPage(1);
-    };
+
 
   return (
     <>
@@ -106,7 +101,7 @@ export default function Conveniados() {
         <FilterBar>
           <SearchField
             value={search}
-            onChange={filtrar(setSearch)}
+            onChange={setSearch}
             placeholder="Buscar por nome, CNPJ, categoria ou endereço..."
           />
 
@@ -114,13 +109,13 @@ export default function Conveniados() {
             aria-label="Filtrar conveniados por status"
             value={status}
             options={STATUS_FILTRO}
-            onChange={filtrar(setStatus)}
+            onChange={setStatus}
           />
 
           <Select
             aria-label="Filtrar conveniados por categoria"
             value={category}
-            onChange={filtrar(setCategory)}
+            onChange={setCategory}
             options={[
               {
                 value: "",

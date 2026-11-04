@@ -35,12 +35,7 @@ export default function Colaboradores() {
   const nomeDe = (item: Colaborador) =>
     colaboradorNome(vm.data, item.id);
 
-  const filtrar =
-    (setter: (value: string) => void) =>
-    (value: string) => {
-      setter(value);
-      vm.setPage(1);
-    };
+
 
   return (
     <>
@@ -73,7 +68,7 @@ export default function Colaboradores() {
         <FilterBar>
           <SearchField
             value={vm.search}
-            onChange={filtrar(vm.setSearch)}
+            onChange={vm.setSearch}
             placeholder="Buscar por nome, matrícula, setor ou cargo..."
           />
 
@@ -81,13 +76,13 @@ export default function Colaboradores() {
             aria-label="Filtrar colaboradores por status"
             value={vm.status}
             options={STATUS_FILTRO}
-            onChange={filtrar(vm.setStatus)}
+            onChange={vm.setStatus}
           />
 
           <Select
             aria-label="Filtrar por setor"
             value={vm.setor}
-            onChange={filtrar(vm.setSetor)}
+            onChange={vm.setSetor}
             options={[
               { value: "", label: "Todos os setores" },
               ...vm.sectors.map((value) => ({

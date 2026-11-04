@@ -84,10 +84,7 @@ export default function Perfis() {
     submitting,
   } = usePerfisVM();
 
-  const filtrar = (setter: (value: string) => void) => (value: string) => {
-    setter(value);
-    setPage(1);
-  };
+
   const usuariosDoPerfil = (perfilId: number) =>
     data.usuarios.filter((item) => item.perfil_id === perfilId).length;
   const pagina = <T,>(rows: T[]) => rows.slice(start, start + PAGE_SIZE);
@@ -149,7 +146,7 @@ export default function Perfis() {
         <FilterBar>
           <SearchField
             value={search}
-            onChange={filtrar(setSearch)}
+            onChange={setSearch}
             placeholder={
               tab === "perfis"
                 ? "Buscar por nome ou descrição do perfil..."
@@ -160,13 +157,13 @@ export default function Perfis() {
             aria-label="Filtrar por status"
             value={status}
             options={STATUS_FILTRO}
-            onChange={filtrar(setStatus)}
+            onChange={setStatus}
           />
           <Select
             aria-label="Filtrar por escopo de acesso"
             value={scope}
             options={ESCOPO_FILTRO}
-            onChange={filtrar(setScope)}
+            onChange={setScope}
           />
         </FilterBar>
         {tab === "perfis" ? (

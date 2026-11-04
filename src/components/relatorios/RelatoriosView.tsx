@@ -31,11 +31,6 @@ export default function RelatoriosView(
     exportar,
   } = props;
 
-  const mudarPeriodo = (setter: (value: string) => void) => (value: string) => {
-    setter(value);
-    setPage(1);
-  };
-
   return (
     <>
       <PageHeader
@@ -58,8 +53,8 @@ export default function RelatoriosView(
         inicio={inicio}
         fim={fim}
         valid={report.valid}
-        onInicioChange={mudarPeriodo(setInicio)}
-        onFimChange={mudarPeriodo(setFim)}
+        onInicioChange={setInicio}
+        onFimChange={setFim}
       />
       <ReportStats report={report} delta={delta} />
       <ReportTabs tab={tab} onChange={changeTab} />
