@@ -48,24 +48,29 @@ export function AbaAdesao({ report, campaignPage, onPageChange }: AbaAdesaoProps
           <DataTable
             rows={campaignPage.rows}
             getRowKey={(row) => row.id}
+            ordenacao={campaignPage.ordenacao}
             columns={[
               {
                 key: "campanha",
+                ordenavel: true,
                 label: "Iniciativa",
                 render: (row) => <span className="cell-title">{row.nome}</span>,
               },
               {
                 key: "resgates",
+                ordenavel: true,
                 label: "Resgates aprovados",
                 render: (row) => row.count,
               },
               {
                 key: "participantes",
+                ordenavel: true,
                 label: "Participantes únicos",
                 render: (row) => row.participantes,
               },
               {
                 key: "taxa",
+                ordenavel: true,
                 label: "Adesão da base ativa",
                 render: (row) => formatPercent(row.taxa),
               },

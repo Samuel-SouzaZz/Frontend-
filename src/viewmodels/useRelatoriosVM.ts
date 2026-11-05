@@ -7,6 +7,7 @@ import { useOrdenacao } from "../hooks/useOrdenacao";
 import type { Ordenadores } from "../models/ordenacao";
 import type {
   BenefitReportItem,
+  CampaignReportItem,
   PartnerReportItem,
   PeriodReportItem,
 } from "../models/types";
@@ -69,6 +70,13 @@ const ORDENAR_PERIODOS: Ordenadores<PeriodReportItem> = {
   valor: (row) => row.valor,
 };
 
+const ORDENAR_CAMPANHAS: Ordenadores<CampaignReportItem> = {
+  campanha: (row) => row.nome,
+  resgates: (row) => row.count,
+  participantes: (row) => row.participantes,
+  taxa: (row) => row.taxa,
+};
+
 export function useRelatoriosVM() {
   const { data } = usePortal();
   const { notify } = useToast();
@@ -101,10 +109,11 @@ export function useRelatoriosVM() {
     REPORT_PAGE_SIZE,
     filterKey + ordemPeriodos.chave,
   );
+  const ordemCampanhas = useOrdenacao(report.campaigns, ORDENAR_CAMPANHAS);
   const campaignPagination = usePagination(
     report.campaigns.length,
     REPORT_PAGE_SIZE,
-    filterKey,
+    filterKey + ordemCampanhas.chave,
   );
   const paginationByTab: Record<
     string,
@@ -124,7 +133,7 @@ export function useRelatoriosVM() {
   const benefitPage = paginaOrdenada(ordemBeneficios, benefitPagination);
   const partnerPage = paginaOrdenada(ordemConveniados, partnerPagination);
   const periodPage = paginaOrdenada(ordemPeriodos, periodPagination);
-  const campaignPage = slicePage(report.campaigns, campaignPagination);
+  const campaignPage = paginaOrdenada(ordemCampanhas, campaignPagination);
   const delta = report.previous.length
     ? ((report.approved.length - report.previous.length) /
         report.previous.length) *
