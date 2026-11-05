@@ -17,6 +17,7 @@ export default function Campanhas() {
   const colunas: Column<ResumoCampanha>[] = [
     {
       key: "nome",
+      ordenavel: true,
       label: "Nome",
       render: ({ campanha }) => (
         <span className="t-nome">
@@ -29,6 +30,7 @@ export default function Campanhas() {
     },
     {
       key: "tipo",
+      ordenavel: true,
       label: "Tipo",
       render: ({ campanha }) => (
         <span className="t-tipo">
@@ -39,6 +41,7 @@ export default function Campanhas() {
     },
     {
       key: "periodo",
+      ordenavel: true,
       label: "Período",
       render: ({ campanha, status }) => {
         const inicio = campanha.data_inicio.slice(0, 10);
@@ -58,6 +61,7 @@ export default function Campanhas() {
     },
     {
       key: "beneficios",
+      ordenavel: true,
       label: "Benefícios",
       render: ({ campanha, beneficios, status }) =>
         beneficios.length ? (
@@ -113,6 +117,7 @@ export default function Campanhas() {
           getRowKey={(linha) => linha.campanha.id}
           onRowClick={(linha) => vm.abrir(linha.campanha.id)}
           rowLabel={(linha) => `Abrir ${linha.campanha.nome}`}
+          ordenacao={vm.ordenacao}
         />
         {vm.totalFiltrado > vm.PAGE_SIZE && (
           <Pagination page={vm.pagina} total={vm.totalFiltrado} pageSize={vm.PAGE_SIZE} onChange={vm.setPagina} />

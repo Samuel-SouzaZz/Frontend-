@@ -2,8 +2,9 @@ import { useSearchParams } from "react-router-dom";
 import { usePortal } from "./PortalContext";
 import { useAsyncAction } from "../hooks/useAsyncAction";
 import { usePagination } from "../hooks/usePagination";
+import { useOrdenacao } from "../hooks/useOrdenacao";
 import { toLocalDateString } from "../models/formatters";
-import { statusEfetivo } from "../models/campanhaDraft";
+import { nomeDoTipo, statusEfetivo } from "../models/campanhaDraft";
 import { colaboradorNome, conveniadoNome } from "../models/selectors";
 import { descreverValor } from "../models/valorBeneficio";
 import type { Campanha, CampanhaStatus } from "../models/types";
@@ -109,9 +110,16 @@ export function useCampanhasVM() {
           : a.campanha.data_inicio.localeCompare(b.campanha.data_inicio)),
     );
 
+  const { ordenadas, ordem, alternar, chave } = useOrdenacao(linhas, {
+    nome: (item) => item.campanha.nome,
+    tipo: (item) => nomeDoTipo(item.campanha.tipo),
+    periodo: (item) => item.campanha.data_inicio,
+    beneficios: (item) => item.beneficios.length,
+  });
+
   const contagem = (status: CampanhaStatus) => todas.filter((item) => item.status === status).length;
 
-  const paginacao = usePagination(linhas.length, PAGE_SIZE, `${termo}|${situacao}`);
+  const paginacao = usePagination(linhas.length, PAGE_SIZE, `${termo}|${situacao}|${chave}`);
 
   async function cancelar(id: number) {
     await run(() => save("campanhas", id, { status: "CANCELADA" }), {
@@ -131,7 +139,8 @@ export function useCampanhasVM() {
     setSituacao: (valor: string) => mudar({ situacao: valor }),
     contagem,
     total: data.campanhas.length,
-    linhas: linhas.slice(paginacao.start, paginacao.end),
+    linhas: ordenadas.slice(paginacao.start, paginacao.end),
+    ordenacao: { ordem, alternar },
     totalFiltrado: linhas.length,
     pagina: paginacao.page,
     setPagina: paginacao.setPage,
