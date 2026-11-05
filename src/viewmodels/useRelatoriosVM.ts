@@ -5,7 +5,7 @@ import { buildReport } from "../models/reportSelectors";
 import { usePagination } from "../hooks/usePagination";
 import { useOrdenacao } from "../hooks/useOrdenacao";
 import type { Ordenadores } from "../models/ordenacao";
-import type { BenefitReportItem } from "../models/types";
+import type { BenefitReportItem, PartnerReportItem } from "../models/types";
 import { canalValidacaoLabel } from "../components/utilizacoes/descricao";
 import {
   createDataIndexes,
@@ -49,6 +49,14 @@ const ORDENAR_BENEFICIOS: Ordenadores<BenefitReportItem> = {
   valor: (row) => row.valor,
 };
 
+const ORDENAR_CONVENIADOS: Ordenadores<PartnerReportItem> = {
+  nome: (row) => row.nome,
+  count: (row) => row.count,
+  participantes: (row) => row.participantes,
+  valor: (row) => row.valor,
+  medio: (row) => (row.count ? row.valor / row.count : 0),
+};
+
 export function useRelatoriosVM() {
   const { data } = usePortal();
   const { notify } = useToast();
@@ -69,10 +77,11 @@ export function useRelatoriosVM() {
     REPORT_PAGE_SIZE,
     filterKey + ordemBeneficios.chave,
   );
+  const ordemConveniados = useOrdenacao(report.partners, ORDENAR_CONVENIADOS);
   const partnerPagination = usePagination(
     report.partners.length,
     REPORT_PAGE_SIZE,
-    filterKey,
+    filterKey + ordemConveniados.chave,
   );
   const periodPagination = usePagination(
     report.periods.length,
@@ -100,7 +109,7 @@ export function useRelatoriosVM() {
   const changeTab = (value: string) => setTab(value);
 
   const benefitPage = paginaOrdenada(ordemBeneficios, benefitPagination);
-  const partnerPage = slicePage(report.partners, partnerPagination);
+  const partnerPage = paginaOrdenada(ordemConveniados, partnerPagination);
   const periodPage = slicePage(report.periods, periodPagination);
   const campaignPage = slicePage(report.campaigns, campaignPagination);
   const delta = report.previous.length

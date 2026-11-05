@@ -29,9 +29,11 @@ export function AbaConveniados({
           <DataTable
             rows={partnerPage.rows}
             getRowKey={(row) => row.id}
+            ordenacao={partnerPage.ordenacao}
             columns={[
               {
                 key: "nome",
+                ordenavel: true,
                 label: "Conveniado",
                 render: (row) => (
                   <>
@@ -42,21 +44,25 @@ export function AbaConveniados({
               },
               {
                 key: "count",
+                ordenavel: true,
                 label: "Resgates aprovados",
                 render: (row) => row.count,
               },
               {
                 key: "participantes",
+                ordenavel: true,
                 label: "Participantes únicos",
                 render: (row) => row.participantes,
               },
               {
                 key: "valor",
+                ordenavel: true,
                 label: "Valor aplicado",
                 render: (row) => formatMoney(row.valor),
               },
               {
                 key: "medio",
+                ordenavel: true,
                 label: "Valor médio por resgate",
                 render: (row) =>
                   formatMoney(row.count ? row.valor / row.count : 0),
