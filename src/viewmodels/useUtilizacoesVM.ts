@@ -2,6 +2,7 @@ import { useMemo, useState, type FormEvent } from "react";
 import { usePortal } from "./PortalContext";
 import { useToast } from "./ToastContext";
 import { usePagination } from "../hooks/usePagination";
+import { useOrdenacao } from "../hooks/useOrdenacao";
 import { useUrlFilters } from "../hooks/useUrlFilters";
 import { useAsyncAction } from "../hooks/useAsyncAction";
 import type { DescricaoUtilizacao } from "../components/utilizacoes/descricao";
@@ -141,6 +142,23 @@ export function useUtilizacoesVM() {
     periodoInvalido,
   ]);
 
+  const maisRecentes = useMemo(
+    () =>
+      [...rows].sort((a, b) =>
+        b.data_solicitacao.localeCompare(a.data_solicitacao),
+      ),
+    [rows],
+  );
+
+  const { ordenadas, ordem, alternar, chave } = useOrdenacao(maisRecentes, {
+    data: (uso) => uso.data_solicitacao,
+    colaborador: (uso) => uso.colaboradorNome,
+    beneficio: (uso) => uso.beneficioItem?.nome,
+    parceiro: (uso) =>
+      uso.conveniadoItem?.nome_fantasia || uso.conveniadoItem?.razao_social,
+    valor: (uso) => Number(uso.valor_aplicado),
+  });
+
   const aprovadas = rows.filter((uso) => uso.status === "APROVADA");
   const {
     page: currentPage,
@@ -158,15 +176,14 @@ export function useUtilizacoesVM() {
       colaborador,
       conveniado,
       beneficio,
+      chave,
     ]),
   );
 
   const visibleRows = useMemo(
     () =>
-      [...rows]
-        .sort((a, b) => b.data_solicitacao.localeCompare(a.data_solicitacao))
-        .slice(start, end),
-    [rows, start, end],
+      ordenadas.slice(start, end),
+    [ordenadas, start, end],
   );
 
   async function estornar(event: FormEvent<HTMLFormElement>) {
@@ -226,6 +243,7 @@ export function useUtilizacoesVM() {
     aprovadas,
     currentPage,
     visibleRows,
+    ordenacao: { ordem, alternar },
     descricao,
     selected,
     setSelected,

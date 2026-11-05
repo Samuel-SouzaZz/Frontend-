@@ -36,6 +36,7 @@ export default function Utilizacoes() {
     aprovadas,
     currentPage,
     visibleRows,
+    ordenacao,
     descricao,
     setPage,
     selected,
@@ -126,6 +127,7 @@ export default function Utilizacoes() {
             descricao={descricao}
             onView={setSelected}
             onReverse={abrirEstorno}
+            ordenacao={ordenacao}
           />
         ) : (
           <EmptyState

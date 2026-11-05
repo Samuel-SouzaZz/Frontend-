@@ -2,6 +2,7 @@ import { Eye, RotateCcw } from "lucide-react";
 import { Badge, DataTable, IconAction, RowActions } from "../ui";
 import { formatDate, formatMoney } from "../../models/formatters";
 import type { Utilizacao } from "../../models/types";
+import type { Ordenacao } from "../../hooks/useOrdenacao";
 import { referenciaUtilizacao, type DescricaoUtilizacao } from "./descricao";
 
 type UtilizacoesTableProps<T extends Utilizacao> = {
@@ -9,6 +10,7 @@ type UtilizacoesTableProps<T extends Utilizacao> = {
   descricao: DescricaoUtilizacao;
   onView: (uso: T) => void;
   onReverse: (uso: T) => void;
+  ordenacao: Ordenacao;
 };
 
 export function UtilizacoesTable<T extends Utilizacao>({
@@ -16,14 +18,17 @@ export function UtilizacoesTable<T extends Utilizacao>({
   descricao,
   onView,
   onReverse,
+  ordenacao,
 }: UtilizacoesTableProps<T>) {
   return (
     <DataTable
       rows={rows}
       getRowKey={(row) => row.id}
+      ordenacao={ordenacao}
       columns={[
         {
           key: "data",
+          ordenavel: true,
           label: "Data e registro",
           render: (row) => (
             <>
@@ -38,6 +43,7 @@ export function UtilizacoesTable<T extends Utilizacao>({
         },
         {
           key: "colaborador",
+          ordenavel: true,
           label: "Colaborador",
           render: (row) => (
             <span className="cell-title">{descricao.colaborador(row)}</span>
@@ -45,6 +51,7 @@ export function UtilizacoesTable<T extends Utilizacao>({
         },
         {
           key: "beneficio",
+          ordenavel: true,
           label: "Benefício",
           render: (row) => (
             <>
@@ -61,11 +68,13 @@ export function UtilizacoesTable<T extends Utilizacao>({
         },
         {
           key: "parceiro",
+          ordenavel: true,
           label: "Conveniado",
           render: (row) => descricao.conveniado(row) ?? "Não encontrado",
         },
         {
           key: "valor",
+          ordenavel: true,
           label: "Valor aplicado",
           render: (row) => formatMoney(Number(row.valor_aplicado)),
         },
