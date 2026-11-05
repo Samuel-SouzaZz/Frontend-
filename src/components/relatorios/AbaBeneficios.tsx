@@ -40,9 +40,11 @@ export function AbaBeneficios({
           <DataTable
             rows={benefitPage.rows}
             getRowKey={(row) => row.key}
+            ordenacao={benefitPage.ordenacao}
             columns={[
               {
                 key: "nome",
+                ordenavel: true,
                 label: "Benefício",
                 render: (row) => (
                   <>
@@ -53,21 +55,25 @@ export function AbaBeneficios({
               },
               {
                 key: "count",
+                ordenavel: true,
                 label: "Resgates aprovados",
                 render: (row) => row.count,
               },
               {
                 key: "participantes",
+                ordenavel: true,
                 label: "Participantes únicos",
                 render: (row) => row.participantes,
               },
               {
                 key: "taxa",
+                ordenavel: true,
                 label: "Adesão da base ativa",
                 render: (row) => formatPercent(row.taxa),
               },
               {
                 key: "valor",
+                ordenavel: true,
                 label: "Valor aplicado",
                 render: (row) => formatMoney(row.valor),
               },

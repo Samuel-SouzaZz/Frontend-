@@ -3,6 +3,9 @@ import { usePortal } from "./PortalContext";
 import { useToast } from "./ToastContext";
 import { buildReport } from "../models/reportSelectors";
 import { usePagination } from "../hooks/usePagination";
+import { useOrdenacao } from "../hooks/useOrdenacao";
+import type { Ordenadores } from "../models/ordenacao";
+import type { BenefitReportItem } from "../models/types";
 import { canalValidacaoLabel } from "../components/utilizacoes/descricao";
 import {
   createDataIndexes,
@@ -28,6 +31,24 @@ function slicePage<T>(rows: T[], pagination: ReturnType<typeof usePagination>) {
   };
 }
 
+function paginaOrdenada<T>(
+  ordenacao: ReturnType<typeof useOrdenacao<T>>,
+  pagination: ReturnType<typeof usePagination>,
+) {
+  return {
+    ...slicePage(ordenacao.ordenadas, pagination),
+    ordenacao: { ordem: ordenacao.ordem, alternar: ordenacao.alternar },
+  };
+}
+
+const ORDENAR_BENEFICIOS: Ordenadores<BenefitReportItem> = {
+  nome: (row) => row.nome,
+  count: (row) => row.count,
+  participantes: (row) => row.participantes,
+  taxa: (row) => row.taxa,
+  valor: (row) => row.valor,
+};
+
 export function useRelatoriosVM() {
   const { data } = usePortal();
   const { notify } = useToast();
@@ -42,10 +63,11 @@ export function useRelatoriosVM() {
     [data, inicio, fim],
   );
   const filterKey = JSON.stringify([inicio, fim, tab]);
+  const ordemBeneficios = useOrdenacao(report.benefits, ORDENAR_BENEFICIOS);
   const benefitPagination = usePagination(
     report.benefits.length,
     REPORT_PAGE_SIZE,
-    filterKey,
+    filterKey + ordemBeneficios.chave,
   );
   const partnerPagination = usePagination(
     report.partners.length,
@@ -77,7 +99,7 @@ export function useRelatoriosVM() {
 
   const changeTab = (value: string) => setTab(value);
 
-  const benefitPage = slicePage(report.benefits, benefitPagination);
+  const benefitPage = paginaOrdenada(ordemBeneficios, benefitPagination);
   const partnerPage = slicePage(report.partners, partnerPagination);
   const periodPage = slicePage(report.periods, periodPagination);
   const campaignPage = slicePage(report.campaigns, campaignPagination);
