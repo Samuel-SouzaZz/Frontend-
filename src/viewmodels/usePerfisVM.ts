@@ -131,13 +131,22 @@ export function usePerfisVM() {
       data.usuarios.filter((usuario) => usuario.perfil_id === item.id).length,
   });
 
+  const ordenacaoUsuarios = useOrdenacao(filteredUsers, {
+    nome: (item) => item.nome,
+    perfil: (item) => profileFor(item.perfil_id)?.nome,
+    escopo: (item) => {
+      const perfil = profileFor(item.perfil_id);
+      return perfil ? scopeLabels[perfil.escopo] : undefined;
+    },
+  });
+
   const total =
   tab === "perfis" ? filteredProfiles.length : filteredUsers.length;
 
   const { page: currentPage, setPage, start } = usePagination(
     total,
     PAGE_SIZE,
-    JSON.stringify([tab, search, status, scope, ordenacaoPerfis.chave]),
+    JSON.stringify([tab, search, status, scope, ordenacaoPerfis.chave, ordenacaoUsuarios.chave]),
   );
 
   const availableProfiles = data.perfis.filter(
@@ -386,6 +395,11 @@ export function usePerfisVM() {
       alternar: ordenacaoPerfis.alternar,
     },
     filteredUsers,
+    usuariosOrdenados: ordenacaoUsuarios.ordenadas,
+    ordenacaoUsuarios: {
+      ordem: ordenacaoUsuarios.ordem,
+      alternar: ordenacaoUsuarios.alternar,
+    },
     total,
     currentPage,
     start,

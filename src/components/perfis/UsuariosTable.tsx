@@ -2,6 +2,7 @@ import { Eye, Pencil, Power } from "lucide-react";
 import { Badge, CellStack, DataTable, IconAction, RowActions } from "../ui";
 import { capitalizeFirstLetter } from "../../models/formatters";
 import type { Perfil, Usuario } from "../../models/types";
+import type { Ordenacao } from "../../hooks/useOrdenacao";
 import { scopeLabels } from "../../viewmodels/usePerfisVM";
 
 type UsuariosTableProps = {
@@ -11,6 +12,7 @@ type UsuariosTableProps = {
   onView: (item: Usuario) => void;
   onEdit: (item: Usuario) => void;
   onInactivate: (item: Usuario) => void;
+  ordenacao: Ordenacao;
 };
 
 export function UsuariosTable({
@@ -20,14 +22,17 @@ export function UsuariosTable({
   onView,
   onEdit,
   onInactivate,
+  ordenacao,
 }: UsuariosTableProps) {
   return (
     <DataTable
       rows={rows}
       getRowKey={(item) => item.id}
+      ordenacao={ordenacao}
       columns={[
         {
           key: "nome",
+          ordenavel: true,
           label: "Usuário",
           render: (item) => (
             <CellStack
@@ -38,6 +43,7 @@ export function UsuariosTable({
         },
         {
           key: "perfil",
+          ordenavel: true,
           label: "Perfil de acesso",
           render: (item) => (
             <span className="cell-title">
@@ -47,6 +53,7 @@ export function UsuariosTable({
         },
         {
           key: "escopo",
+          ordenavel: true,
           label: "Escopo",
           render: (item) => {
             const profile = profileFor(item.perfil_id);

@@ -53,6 +53,8 @@ export default function Perfis() {
     perfisOrdenados,
     ordenacaoPerfis,
     filteredUsers,
+    usuariosOrdenados,
+    ordenacaoUsuarios,
     total,
     currentPage,
     start,
@@ -178,12 +180,13 @@ export default function Perfis() {
           )
         ) : filteredUsers.length ? (
           <UsuariosTable
-            rows={pagina(filteredUsers)}
+            rows={pagina(usuariosOrdenados)}
             currentUserId={user?.id}
             profileFor={profileFor}
             onView={setUserDetails}
             onEdit={openUser}
             onInactivate={(item) => setInactivating({ type: "usuario", item })}
+            ordenacao={ordenacaoUsuarios}
           />
         ) : (
           <EmptyState
