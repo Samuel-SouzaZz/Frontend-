@@ -44,6 +44,7 @@ export default function Conveniados() {
     filtered,
     currentPage,
     visibleRows,
+    ordenacao,
     availableUsers,
     podeCriarConta,
     contaAtual,
@@ -142,6 +143,7 @@ export default function Conveniados() {
             }
             onEdit={openForm}
             onInactivate={setInactivating}
+            ordenacao={ordenacao}
           />
         ) : (
           <EmptyState

@@ -3,6 +3,7 @@ import { usePortal } from "./PortalContext";
 import { formatCnpj } from "../models/selectors";
 import type { Conveniado } from "../models/types";
 import { usePagination } from "../hooks/usePagination";
+import { useOrdenacao } from "../hooks/useOrdenacao";
 import { useUrlFilters } from "../hooks/useUrlFilters";
 import { useAsyncAction } from "../hooks/useAsyncAction";
 import { useSessionUser } from "../hooks/useSessionUser";
@@ -81,6 +82,19 @@ export function useConveniadosVM() {
     );
   });
 
+  const activeOfferCount = (id: number) =>
+    data.ofertas.filter(
+      (item) => item.conveniado_id === id && item.status === "ATIVO",
+    ).length;
+
+  const { ordenadas, ordem, alternar, chave } = useOrdenacao(filtered, {
+    nome: (item) => item.nome_fantasia,
+    cnpj: (item) => item.cnpj,
+    categoria: (item) => item.categoria,
+    endereco: (item) => item.endereco,
+    ofertas: (item) => activeOfferCount(item.id),
+  });
+
   const {
     page: currentPage,
     setPage,
@@ -89,15 +103,11 @@ export function useConveniadosVM() {
   } = usePagination(
     filtered.length,
     PAGE_SIZE,
-    JSON.stringify([search, status, category]),
+    JSON.stringify([search, status, category, chave]),
   );
 
-  const visibleRows = filtered.slice(start, end);
+  const visibleRows = ordenadas.slice(start, end);
 
-  const activeOfferCount = (id: number) =>
-    data.ofertas.filter(
-      (item) => item.conveniado_id === id && item.status === "ATIVO",
-    ).length;
 
   function openForm(item?: Conveniado) {
     setEditing(item);
@@ -207,6 +217,7 @@ export function useConveniadosVM() {
     filtered,
     currentPage,
     visibleRows,
+    ordenacao: { ordem, alternar },
     availableUsers,
     podeCriarConta,
     contaAtual: editing ? data.usuarios.find((user) => user.id === editing.usuario_id) : undefined,

@@ -2,6 +2,7 @@ import { Eye, Pencil, Power } from "lucide-react";
 import { Badge, CellStack, DataTable, IconAction, RowActions } from "../ui";
 import { formatCnpj } from "../../models/formatters";
 import type { Conveniado } from "../../models/types";
+import type { Ordenacao } from "../../hooks/useOrdenacao";
 
 type ConveniadosTableProps = {
   rows: Conveniado[];
@@ -9,6 +10,7 @@ type ConveniadosTableProps = {
   onView: (item: Conveniado) => void;
   onEdit: (item: Conveniado) => void;
   onInactivate: (item: Conveniado) => void;
+  ordenacao: Ordenacao;
 };
 
 export function ConveniadosTable({
@@ -17,6 +19,7 @@ export function ConveniadosTable({
   onView,
   onEdit,
   onInactivate,
+  ordenacao,
 }: ConveniadosTableProps) {
   return (
     <DataTable
@@ -24,9 +27,11 @@ export function ConveniadosTable({
      getRowKey={(item) => item.id}
 onRowClick={onView}
 rowLabel={(item) => `Abrir ${item.nome_fantasia}`}
+      ordenacao={ordenacao}
 columns={[
         {
           key: "nome",
+          ordenavel: true,
           label: "Conveniado",
           render: (item) => (
             <CellStack title={item.nome_fantasia} subtitle={item.razao_social} />
@@ -34,16 +39,19 @@ columns={[
         },
         {
           key: "cnpj",
+          ordenavel: true,
           label: "CNPJ",
           render: (item) => formatCnpj(item.cnpj),
         },
         {
           key: "categoria",
+          ordenavel: true,
           label: "Categoria",
           render: (item) => item.categoria,
         },
         {
           key: "endereco",
+          ordenavel: true,
           label: "Endereço",
           render: (item) => (
             <span className="cell-subtitle">{item.endereco}</span>
@@ -51,6 +59,7 @@ columns={[
         },
         {
           key: "ofertas",
+          ordenavel: true,
           label: "Ofertas ativas",
           render: (item) => activeOfferCount(item.id),
         },
