@@ -102,6 +102,7 @@ export default function Colaboradores() {
             }
             onEdit={vm.openForm}
             onInactivate={vm.setInactivating}
+            ordenacao={vm.ordenacao}
           />
         ) : (
           <EmptyState

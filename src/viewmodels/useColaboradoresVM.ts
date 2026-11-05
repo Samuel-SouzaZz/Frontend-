@@ -2,6 +2,8 @@ import { useMemo, useState, type FormEvent } from "react";
 import { usePortal } from "./PortalContext";
 import type { Colaborador } from "../models/types";
 import { usePagination } from "../hooks/usePagination";
+import { useOrdenacao } from "../hooks/useOrdenacao";
+import type { Ordenadores } from "../models/ordenacao";
 import { useUrlFilters } from "../hooks/useUrlFilters";
 import { useAsyncAction } from "../hooks/useAsyncAction";
 import { useSessionUser } from "../hooks/useSessionUser";
@@ -98,6 +100,22 @@ export function useColaboradoresVM() {
     [data.colaboradores, usuariosMap, status, setor, search],
   );
 
+  const ordenadores = useMemo<Ordenadores<Colaborador>>(
+    () => ({
+      nome: (item) =>
+        usuariosMap.get(item.usuario_id)?.nome ?? `Colaborador #${item.id}`,
+      matricula: (item) => item.matricula,
+      setor: (item) => item.setor,
+      admissao: (item) => item.data_admissao,
+    }),
+    [usuariosMap],
+  );
+
+  const { ordenadas, ordem, alternar, chave } = useOrdenacao(
+    filtered,
+    ordenadores,
+  );
+
   const {
     page: currentPage,
     setPage,
@@ -106,12 +124,12 @@ export function useColaboradoresVM() {
   } = usePagination(
     filtered.length,
     PAGE_SIZE,
-    JSON.stringify([search, status, setor]),
+    JSON.stringify([search, status, setor, chave]),
   );
 
   const visibleRows = useMemo(
-    () => filtered.slice(start, end),
-    [filtered, start, end],
+    () => ordenadas.slice(start, end),
+    [ordenadas, start, end],
   );
 
   function openForm(item?: Colaborador) {
@@ -214,6 +232,7 @@ export function useColaboradoresVM() {
     filtered,
     currentPage,
     visibleRows,
+    ordenacao: { ordem, alternar },
     availableUsers,
     podeCriarConta,
     contaAtual: editing ? usuariosMap.get(editing.usuario_id) : undefined,

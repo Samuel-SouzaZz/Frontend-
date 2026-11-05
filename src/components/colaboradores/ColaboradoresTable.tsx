@@ -2,6 +2,7 @@ import { Eye, Pencil, UserMinus } from "lucide-react";
 import { Badge, CellStack, DataTable, IconAction, RowActions } from "../ui";
 import { formatDate } from "../../models/formatters";
 import type { Colaborador } from "../../models/types";
+import type { Ordenacao } from "../../hooks/useOrdenacao";
 
 type ColaboradoresTableProps = {
   rows: Colaborador[];
@@ -9,6 +10,7 @@ type ColaboradoresTableProps = {
   onView: (item: Colaborador) => void;
   onEdit: (item: Colaborador) => void;
   onInactivate: (item: Colaborador) => void;
+  ordenacao: Ordenacao;
 };
 
 export function ColaboradoresTable({
@@ -17,6 +19,7 @@ export function ColaboradoresTable({
   onView,
   onEdit,
   onInactivate,
+  ordenacao,
 }: ColaboradoresTableProps) {
   return (
     <DataTable
@@ -24,9 +27,11 @@ export function ColaboradoresTable({
      getRowKey={(item) => item.id}
      onRowClick={onView}
      rowLabel={(item) => `Abrir ${nomeDe(item)}`}
+      ordenacao={ordenacao}
      columns={[
         {
           key: "nome",
+          ordenavel: true,
           label: "Colaborador",
           render: (item) => (
             <CellStack title={nomeDe(item)} subtitle={item.cargo} />
@@ -34,14 +39,21 @@ export function ColaboradoresTable({
         },
         {
           key: "matricula",
+          ordenavel: true,
           label: "Matrícula",
           render: (item) => (
             <span className="cell-title">{item.matricula}</span>
           ),
         },
-        { key: "setor", label: "Setor", render: (item) => item.setor },
+        {
+          key: "setor",
+          ordenavel: true,
+          label: "Setor",
+          render: (item) => item.setor,
+        },
         {
           key: "admissao",
+          ordenavel: true,
           label: "Admissão",
           render: (item) => formatDate(item.data_admissao),
         },
