@@ -28,25 +28,35 @@ export function AbaPeriodo({ report, periodPage, onPageChange }: AbaPeriodoProps
           <DataTable
             rows={periodPage.rows}
             getRowKey={(row) => row.key}
+            ordenacao={periodPage.ordenacao}
             columns={[
               {
                 key: "mes",
+                ordenavel: true,
                 label: "Mês",
                 render: (row) => <span className="cell-title">{row.nome}</span>,
               },
               {
                 key: "registros",
+                ordenavel: true,
                 label: "Solicitações",
                 render: (row) => row.registros,
               },
-              { key: "count", label: "Aprovadas", render: (row) => row.count },
+              {
+                key: "count",
+                ordenavel: true,
+                label: "Aprovadas",
+                render: (row) => row.count,
+              },
               {
                 key: "participantes",
+                ordenavel: true,
                 label: "Participantes únicos",
                 render: (row) => row.participantes,
               },
               {
                 key: "valor",
+                ordenavel: true,
                 label: "Valor aplicado",
                 render: (row) => formatMoney(row.valor),
               },

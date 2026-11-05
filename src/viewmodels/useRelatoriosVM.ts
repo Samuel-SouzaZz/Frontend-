@@ -5,7 +5,11 @@ import { buildReport } from "../models/reportSelectors";
 import { usePagination } from "../hooks/usePagination";
 import { useOrdenacao } from "../hooks/useOrdenacao";
 import type { Ordenadores } from "../models/ordenacao";
-import type { BenefitReportItem, PartnerReportItem } from "../models/types";
+import type {
+  BenefitReportItem,
+  PartnerReportItem,
+  PeriodReportItem,
+} from "../models/types";
 import { canalValidacaoLabel } from "../components/utilizacoes/descricao";
 import {
   createDataIndexes,
@@ -57,6 +61,14 @@ const ORDENAR_CONVENIADOS: Ordenadores<PartnerReportItem> = {
   medio: (row) => (row.count ? row.valor / row.count : 0),
 };
 
+const ORDENAR_PERIODOS: Ordenadores<PeriodReportItem> = {
+  mes: (row) => row.key,
+  registros: (row) => row.registros,
+  count: (row) => row.count,
+  participantes: (row) => row.participantes,
+  valor: (row) => row.valor,
+};
+
 export function useRelatoriosVM() {
   const { data } = usePortal();
   const { notify } = useToast();
@@ -83,10 +95,11 @@ export function useRelatoriosVM() {
     REPORT_PAGE_SIZE,
     filterKey + ordemConveniados.chave,
   );
+  const ordemPeriodos = useOrdenacao(report.periods, ORDENAR_PERIODOS);
   const periodPagination = usePagination(
     report.periods.length,
     REPORT_PAGE_SIZE,
-    filterKey,
+    filterKey + ordemPeriodos.chave,
   );
   const campaignPagination = usePagination(
     report.campaigns.length,
@@ -110,7 +123,7 @@ export function useRelatoriosVM() {
 
   const benefitPage = paginaOrdenada(ordemBeneficios, benefitPagination);
   const partnerPage = paginaOrdenada(ordemConveniados, partnerPagination);
-  const periodPage = slicePage(report.periods, periodPagination);
+  const periodPage = paginaOrdenada(ordemPeriodos, periodPagination);
   const campaignPage = slicePage(report.campaigns, campaignPagination);
   const delta = report.previous.length
     ? ((report.approved.length - report.previous.length) /
