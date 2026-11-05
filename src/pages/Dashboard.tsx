@@ -46,16 +46,18 @@ export default function Dashboard() {
 
   return (
     <>
-      <PageHeader
-        title={`Olá, ${primeiroNome}!`}
-        description="Aqui está um resumo das utilizações e dos benefícios da Fundação."
-        actions={
-          <>
-            <Atalhos pendencias={pendencias} />
-            <PeriodSelect days={days} onChange={setDays} />
-          </>
-        }
-      />
+      <section className="dash-hero">
+        <PageHeader
+          title={`Olá, ${primeiroNome}!`}
+          description="Aqui está um resumo das utilizações e dos benefícios da Fundação."
+          actions={
+            <>
+              <Atalhos pendencias={pendencias} />
+              <PeriodSelect days={days} onChange={setDays} />
+            </>
+          }
+        />
+      </section>
 
       <DashboardStats
         aprovadas={approved.length}

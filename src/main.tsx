@@ -13,6 +13,7 @@ import "./styles/board.css";
 import "./styles/seletor-data.css";
 import "./styles/tabela.css";
 import "./styles/detail.css";
+import "./styles/dash-hero.css";
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <App />

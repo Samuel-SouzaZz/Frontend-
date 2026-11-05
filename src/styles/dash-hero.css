@@ -1,0 +1,48 @@
+.dash-hero {
+  position: relative;
+  overflow: hidden;
+  margin: 24px 0 20px;
+  padding: 26px 30px;
+  border-radius: 16px;
+  background:
+    radial-gradient(circle at 88% 20%, #3f63b866 0, transparent 38%),
+    radial-gradient(circle at 12% 120%, #5fd3bf33 0, transparent 40%),
+    linear-gradient(180deg, #1d2a57 0%, #24356f 100%);
+}
+.dash-hero .page-heading {
+  margin: 0;
+}
+.dash-hero .page-title {
+  color: #fff;
+  font-size: 30px;
+  font-weight: 800;
+}
+.dash-hero .page-description {
+  color: #ffffffcc;
+}
+.dash-hero .heading-actions .btn-secondary,
+.dash-hero .period-control {
+  background: #ffffff14;
+  border-color: #ffffff33;
+  color: #fff;
+  box-shadow: none;
+}
+.dash-hero .heading-actions .btn-secondary:hover,
+.dash-hero .period-control:hover {
+  background: #ffffff24;
+  border-color: #ffffff59;
+}
+.dash-hero .period-control .field-select-trigger {
+  background: transparent;
+  border: 0;
+  color: #fff;
+}
+.dash-hero .heading-actions svg {
+  color: currentColor;
+}
+@media (max-width: 800px) {
+  .dash-hero {
+    margin: 18px 0 16px;
+    padding: 20px 18px;
+  }
+}
