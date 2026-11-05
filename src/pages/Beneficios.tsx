@@ -17,6 +17,7 @@ export default function Beneficios() {
   const colunas: Column<ResumoBeneficio>[] = [
     {
       key: "nome",
+      ordenavel: true,
       label: "Nome",
       render: ({ beneficio }) => (
         <span className="t-nome">
@@ -27,6 +28,7 @@ export default function Beneficios() {
     },
     {
       key: "valor",
+      ordenavel: true,
       label: "Desconto",
       render: ({ beneficio }) => (
         <span className="t-valor">{descreverValor(beneficio.tipo_beneficio, beneficio.valor)}</span>
@@ -34,11 +36,13 @@ export default function Beneficios() {
     },
     {
       key: "regra",
+      ordenavel: true,
       label: "Cada um pode usar",
       render: ({ beneficio }) => resumoCurto(draftDoBeneficio(beneficio, [])),
     },
     {
       key: "parceiros",
+      ordenavel: true,
       label: "Onde usar",
       render: ({ beneficio, parceiros }) =>
         parceiros.length ? (
@@ -100,6 +104,7 @@ export default function Beneficios() {
           getRowKey={(linha) => linha.beneficio.id}
           onRowClick={(linha) => vm.abrir(linha.beneficio.id)}
           rowLabel={(linha) => `Abrir ${linha.beneficio.nome}`}
+          ordenacao={vm.ordenacao}
         />
         {vm.totalFiltrado > vm.PAGE_SIZE && (
           <Pagination page={vm.pagina} total={vm.totalFiltrado} pageSize={vm.PAGE_SIZE} onChange={vm.setPagina} />

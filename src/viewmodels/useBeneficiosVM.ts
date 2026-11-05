@@ -2,6 +2,8 @@ import { useSearchParams } from "react-router-dom";
 import { usePortal } from "./PortalContext";
 import { useAsyncAction } from "../hooks/useAsyncAction";
 import { usePagination } from "../hooks/usePagination";
+import { useOrdenacao } from "../hooks/useOrdenacao";
+import { draftDoBeneficio, resumoCurto } from "../models/beneficioDraft";
 import { colaboradorNome, conveniadoNome } from "../models/selectors";
 import type { Beneficio } from "../models/types";
 
@@ -91,9 +93,16 @@ export function useBeneficiosVM() {
         a.beneficio.nome.localeCompare(b.beneficio.nome, "pt-BR"),
     );
 
+  const { ordenadas, ordem, alternar, chave } = useOrdenacao(linhas, {
+    nome: (item) => item.beneficio.nome,
+    valor: (item) => Number(item.beneficio.valor),
+    regra: (item) => resumoCurto(draftDoBeneficio(item.beneficio, [])),
+    parceiros: (item) => item.parceiros.join(", "),
+  });
+
   const contagem = (status: Beneficio["status"]) => todos.filter((item) => item.beneficio.status === status).length;
 
-  const paginacao = usePagination(linhas.length, PAGE_SIZE, `${termo}|${situacao}`);
+  const paginacao = usePagination(linhas.length, PAGE_SIZE, `${termo}|${situacao}|${chave}`);
 
   async function mudarStatus(id: number, status: Beneficio["status"]) {
     await run(() => save("beneficios", id, { status }), {
@@ -112,7 +121,8 @@ export function useBeneficiosVM() {
     setSituacao: (valor: string) => mudar({ situacao: valor }),
     contagem,
     total: data.beneficios.length,
-    linhas: linhas.slice(paginacao.start, paginacao.end),
+    linhas: ordenadas.slice(paginacao.start, paginacao.end),
+    ordenacao: { ordem, alternar },
     totalFiltrado: linhas.length,
     pagina: paginacao.page,
     setPagina: paginacao.setPage,
