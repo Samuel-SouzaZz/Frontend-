@@ -50,6 +50,8 @@ export default function Perfis() {
     setScope,
     setPage,
     filteredProfiles,
+    perfisOrdenados,
+    ordenacaoPerfis,
     filteredUsers,
     total,
     currentPage,
@@ -161,11 +163,12 @@ export default function Perfis() {
         {tab === "perfis" ? (
           filteredProfiles.length ? (
             <PerfisTable
-              rows={pagina(filteredProfiles)}
+              rows={pagina(perfisOrdenados)}
               userCount={usuariosDoPerfil}
               onView={setProfileDetails}
               onEdit={openProfile}
               onInactivate={(item) => setInactivating({ type: "perfil", item })}
+              ordenacao={ordenacaoPerfis}
             />
           ) : (
             <EmptyState

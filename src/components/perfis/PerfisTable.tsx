@@ -1,6 +1,7 @@
 import { Eye, LockKeyhole, Pencil, Power } from "lucide-react";
 import { Badge, CellStack, DataTable, IconAction, RowActions } from "../ui";
 import type { Perfil } from "../../models/types";
+import type { Ordenacao } from "../../hooks/useOrdenacao";
 import {
   permissionLabel,
   protectedProfile,
@@ -13,6 +14,7 @@ type PerfisTableProps = {
   onView: (item: Perfil) => void;
   onEdit: (item: Perfil) => void;
   onInactivate: (item: Perfil) => void;
+  ordenacao: Ordenacao;
 };
 
 export function PerfisTable({
@@ -21,14 +23,17 @@ export function PerfisTable({
   onView,
   onEdit,
   onInactivate,
+  ordenacao,
 }: PerfisTableProps) {
   return (
     <DataTable
       rows={rows}
       getRowKey={(item) => item.id}
+      ordenacao={ordenacao}
       columns={[
         {
           key: "nome",
+          ordenavel: true,
           label: "Perfil de acesso",
           render: (item) => (
             <CellStack
@@ -39,11 +44,13 @@ export function PerfisTable({
         },
         {
           key: "escopo",
+          ordenavel: true,
           label: "Escopo",
           render: (item) => scopeLabels[item.escopo],
         },
         {
           key: "usuarios",
+          ordenavel: true,
           label: "Usuários vinculados",
           render: (item) => userCount(item.id),
         },

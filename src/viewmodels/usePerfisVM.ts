@@ -5,6 +5,7 @@ import { isAdministrador } from "../models/selectors";
 import { PERFIL_ADMINISTRADOR, SENHA_MINIMA } from "../models/rules";
 import type { Escopo, Perfil, Usuario } from "../models/types";
 import { usePagination } from "../hooks/usePagination";
+import { useOrdenacao } from "../hooks/useOrdenacao";
 import { useUrlFilters } from "../hooks/useUrlFilters";
 import { useAsyncAction } from "../hooks/useAsyncAction";
 import { useSessionUser } from "../hooks/useSessionUser";
@@ -123,13 +124,20 @@ export function usePerfisVM() {
         .includes(search.trim().toLocaleLowerCase("pt-BR")),
   );
 
+  const ordenacaoPerfis = useOrdenacao(filteredProfiles, {
+    nome: (item) => item.nome,
+    escopo: (item) => scopeLabels[item.escopo],
+    usuarios: (item) =>
+      data.usuarios.filter((usuario) => usuario.perfil_id === item.id).length,
+  });
+
   const total =
   tab === "perfis" ? filteredProfiles.length : filteredUsers.length;
 
   const { page: currentPage, setPage, start } = usePagination(
     total,
     PAGE_SIZE,
-    JSON.stringify([tab, search, status, scope]),
+    JSON.stringify([tab, search, status, scope, ordenacaoPerfis.chave]),
   );
 
   const availableProfiles = data.perfis.filter(
@@ -372,6 +380,11 @@ export function usePerfisVM() {
     page: currentPage,
     setPage,
     filteredProfiles,
+    perfisOrdenados: ordenacaoPerfis.ordenadas,
+    ordenacaoPerfis: {
+      ordem: ordenacaoPerfis.ordem,
+      alternar: ordenacaoPerfis.alternar,
+    },
     filteredUsers,
     total,
     currentPage,
