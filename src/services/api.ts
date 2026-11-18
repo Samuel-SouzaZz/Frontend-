@@ -1,8 +1,9 @@
 import type {
   Resource,
   SessionUser,
-  Entity,
-  Utilizacao,
+ Entity,
+ Entrada,
+ Utilizacao,
 } from "../models/types";
 const configured =
   import.meta.env.VITE_API_URL || "http://localhost:3333/api/v1";
@@ -121,7 +122,7 @@ export function removeResource(resource: Resource, id: number) {
 export function saveResource<K extends Resource>(
   resource: K,
   id: number | undefined,
-  payload: Partial<Entity<K>>,
+payload: Entrada<K>,
 ) {
   return request<Entity<K>>(
     `/${endpoints[resource]}${id !== undefined ? `/${id}` : ""}`,

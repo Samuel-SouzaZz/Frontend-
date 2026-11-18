@@ -1,4 +1,5 @@
 import type { PortalData, ReportResult, Utilizacao } from "./types";
+import { nomesCategorias } from "./categorias";
 import {
   beneficioDaUtilizacao,
   createDataIndexes,
@@ -93,8 +94,14 @@ export function buildReport(data: PortalData, inicio: string, fim: string): Repo
       } else {
         usosPorConveniadoId.set(parceiro.id, [uso]);
       }
-      const categoria = parceiro.categoria || "Sem categoria";
-      categoriaContagem[categoria] = (categoriaContagem[categoria] ?? 0) + 1;
+      const nomes = parceiro.categorias.length
+  ? parceiro.categorias.map((categoria) => categoria.nome)
+  : ["Sem categoria"];
+
+for (const categoria of nomes) {
+  categoriaContagem[categoria] =
+    (categoriaContagem[categoria] ?? 0) + 1;
+}
     } else {
       categoriaContagem["Sem categoria"] = (categoriaContagem["Sem categoria"] ?? 0) + 1;
     }
@@ -142,8 +149,8 @@ export function buildReport(data: PortalData, inicio: string, fim: string): Repo
       return {
         id: item.id,
         nome: item.nome_fantasia,
-        categoria: item.categoria,
-        count: usos.length,
+categoria: nomesCategorias(item),
+count: usos.length,
         participantes: new Set(usos.map((uso) => uso.colaborador_id)).size,
         valor: usos.reduce(
           (total, uso) => total + Number(uso.valor_aplicado),

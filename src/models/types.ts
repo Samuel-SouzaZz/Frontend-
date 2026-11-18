@@ -64,7 +64,7 @@ export interface Conveniado {
   usuario_id: number;
   nome_fantasia: string;
   razao_social: string;
-  categoria: string;
+  categorias: Categoria[];
   cnpj: string;
   endereco: string;
   status: ConveniadoStatus;
@@ -153,6 +153,13 @@ export interface PortalData {
 
 export type Resource = keyof PortalData;
 export type Entity<K extends Resource> = PortalData[K][number];
+
+export type Entrada<K extends Resource> =
+  K extends "conveniados"
+    ? Omit<Partial<Conveniado>, "categorias"> & {
+        categorias?: number[];
+      }
+    : Partial<Entity<K>>;
 
 export interface SessionUser extends Usuario {
   perfil: string;

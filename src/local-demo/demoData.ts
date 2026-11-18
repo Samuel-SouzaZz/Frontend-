@@ -149,15 +149,10 @@ export function createFixtureData(): PortalData {
       usuario_id: i + 13,
       nome_fantasia: nome,
       razao_social: `${nome} Ltda.`,
-      categoria: [
-        "Alimentação",
-        "Saúde",
-        "Esporte e lazer",
-        "Saúde",
-        "Cultura e lazer",
-        "Educação",
-      ][i],
-      cnpj: [
+categorias: [[1], [2], [3], [2], [4], [5]][i].map(
+  (id) => categorias[id - 1]
+),
+cnpj: [
         "12345678000190",
         "98765432000110",
         "66777888000155",

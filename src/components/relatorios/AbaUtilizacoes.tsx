@@ -47,7 +47,7 @@ export function AbaUtilizacoes({
         </Panel>
         <Panel
           title="Por categoria de conveniado"
-          description="Resgates aprovados por categoria do parceiro."
+          description="Resgates aprovados por categoria do parceiro. Um parceiro com duas categorias conta nas duas."
         >
           <ReportBars items={report.categories} tone="purple" />
         </Panel>

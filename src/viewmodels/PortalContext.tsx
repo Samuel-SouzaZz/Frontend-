@@ -8,7 +8,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import type { PortalData, Resource, Entity, Usuario, Utilizacao } from "../models/types";
+import type { PortalData, Resource, Entity, Entrada, Usuario, Utilizacao } from "../models/types";
 import type { ContaNova } from "../models/contaNova";
 import { canEstornar, isAdministrador } from "../models/selectors";
 import { errorMessage } from "../hooks/useAsyncAction";
@@ -43,10 +43,10 @@ interface Portal {
   save: <K extends Resource>(
     resource: K,
     id: number | undefined,
-    payload: Partial<Entity<K>>,
+    payload: Entrada<K>,
   ) => Promise<Entity<K>>;
   estornar: (id: number, motivo: string) => Promise<Utilizacao>;
-  cadastrarComConta: <K extends ComConta>(recurso: K, conta: ContaNova, dados: Partial<Entity<K>>) => Promise<Entity<K>>;
+  cadastrarComConta: <K extends ComConta>(recurso: K, conta: ContaNova, dados: Entrada<K>) => Promise<Entity<K>>;
 }
 
 type ComConta = "colaboradores" | "conveniados";
@@ -121,7 +121,7 @@ export function PortalProvider({ children }: { children: ReactNode }) {
   const save = useCallback(async function save<K extends Resource>(
     resource: K,
     id: number | undefined,
-    payload: Partial<Entity<K>>,
+    payload: Entrada<K>,
   ): Promise<Entity<K>> {
     const u = userRef.current;
     if (!u) throw new Error("Faça login para continuar.");
@@ -175,7 +175,7 @@ export function PortalProvider({ children }: { children: ReactNode }) {
   const cadastrarComConta = useCallback(async function cadastrarComConta<K extends ComConta>(
     recurso: K,
     conta: ContaNova,
-    dados: Partial<Entity<K>>,
+    dados: Entrada<K>
   ): Promise<Entity<K>> {
     const u = userRef.current;
     if (!u) throw new Error("Faça login para continuar.");
@@ -187,7 +187,11 @@ export function PortalProvider({ children }: { children: ReactNode }) {
     const usuario = await saveResource("usuarios", undefined, { ...conta, perfil_id: perfil.id, status: "ATIVO" });
     let criado: Entity<K>;
     try {
-      criado = await saveResource(recurso, undefined, { ...dados, usuario_id: usuario.id } as Partial<Entity<K>>);
+      criado = await saveResource(
+  recurso,
+  undefined,
+  { ...dados, usuario_id: usuario.id } as Entrada<K>
+);
     } catch (erro) {
       await removeResource("usuarios", usuario.id).catch(() => undefined);
       throw erro;

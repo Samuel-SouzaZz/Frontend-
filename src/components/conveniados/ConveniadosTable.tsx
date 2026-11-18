@@ -1,6 +1,7 @@
 import { Eye, Pencil, Power } from "lucide-react";
 import { Badge, CellStack, DataTable, IconAction, RowActions } from "../ui";
 import { formatCnpj } from "../../models/formatters";
+import { nomesCategorias } from "../../models/categorias";
 import type { Conveniado } from "../../models/types";
 
 type ConveniadosTableProps = {
@@ -39,8 +40,8 @@ columns={[
         },
         {
           key: "categoria",
-          label: "Categoria",
-          render: (item) => item.categoria,
+          label: "Categorias",
+          render: (item) => nomesCategorias(item),
         },
         {
           key: "endereco",

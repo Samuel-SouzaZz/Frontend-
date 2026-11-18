@@ -29,6 +29,7 @@ import {
 } from "../models/formatters";
 
 import { descreverValor } from "../models/valorBeneficio";
+import { nomesCategorias } from "../models/categorias";
 
 import { useConveniadoDetalheVM } from "../viewmodels/useConveniadoDetalheVM";
 
@@ -87,9 +88,11 @@ export default function ConveniadoDetalhe() {
         titulo={nome}
         etiquetas={
           <>
-            <span className="tag">
-              {conveniado.categoria}
-            </span>
+            {conveniado.categorias.map((categoria) => (
+  <span className="tag" key={categoria.id}>
+    {categoria.nome}
+  </span>
+))}
 
             <Badge status={conveniado.status} />
           </>
@@ -292,9 +295,9 @@ export default function ConveniadoDetalhe() {
               </div>
 
               <div>
-                <dt>Categoria</dt>
-                <dd>{conveniado.categoria}</dd>
-              </div>
+  <dt>Categorias</dt>
+  <dd>{nomesCategorias(conveniado)}</dd>
+</div>
 
               <div>
                 <dt>Endereço</dt>

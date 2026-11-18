@@ -123,10 +123,10 @@ export default function Conveniados() {
                 value: "",
                 label: "Todas as categorias",
               },
-              ...categories.map((value) => ({
-                value,
-                label: value,
-              })),
+              ...categories.map((categoria) => ({
+  value: String(categoria.id),
+  label: categoria.nome,
+})),
             ]}
           />
         </FilterBar>

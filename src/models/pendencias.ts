@@ -5,6 +5,7 @@ import {
   conveniadoDaUtilizacao,
 } from "./selectors";
 import type { PortalData } from "./types";
+import { nomesCategorias } from "./categorias";
 export type Pendencia = {
   chave: string;
   titulo: string;
@@ -26,7 +27,7 @@ function parceirosEmAnalise(data: PortalData): Pendencia[] {
     .map((item) => ({
       chave: `conveniado-${item.id}`,
       titulo: item.nome_fantasia || item.razao_social,
-      descricao: `${item.categoria} · cadastro aguardando aprovação`,
+      descricao: `${nomesCategorias(item)} · cadastro aguardando aprovação`,
       link: `/conveniados/${item.id}`,
       acao: "Analisar",
     }));
