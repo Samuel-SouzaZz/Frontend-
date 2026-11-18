@@ -53,6 +53,12 @@ export interface Colaborador {
   status: ColaboradorStatus;
 }
 
+export interface Categoria {
+  id: number;
+  nome: string;
+  status: Status;
+}
+
 export interface Conveniado {
   id: number;
   usuario_id: number;
@@ -132,6 +138,7 @@ export interface Utilizacao {
 }
 
 export interface PortalData {
+  categorias: Categoria[];
   usuarios: Usuario[];
   perfis: Perfil[];
   colaboradores: Colaborador[];

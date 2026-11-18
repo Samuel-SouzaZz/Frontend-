@@ -23,6 +23,7 @@ export class ApiError extends Error {
   }
 }
 export const endpoints: Record<Resource, string> = {
+  categorias: "categorias",
   usuarios: "usuarios",
   perfis: "perfis",
   colaboradores: "colaboradores",

@@ -16,6 +16,7 @@ import { cancelUtilizacao, listResource, removeResource, saveResource } from "..
 import { useAuth } from "./AuthContext";
 
 const empty: PortalData = {
+  categorias: [],
   usuarios: [],
   perfis: [],
   colaboradores: [],

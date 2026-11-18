@@ -40,6 +40,7 @@ const navigation = [
   { to: "/perfis", label: "Configurações", icon: ShieldCheck },
 ];
 const resourceLabels: Record<Resource, string> = {
+  categorias: "Categorias",
   usuarios: "Usuários",
   perfis: "Perfis",
   colaboradores: "Colaboradores",
