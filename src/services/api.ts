@@ -122,7 +122,7 @@ export function removeResource(resource: Resource, id: number) {
 export function saveResource<K extends Resource>(
   resource: K,
   id: number | undefined,
-payload: Entrada<K>,
+  payload: Entrada<K>,
 ) {
   return request<Entity<K>>(
     `/${endpoints[resource]}${id !== undefined ? `/${id}` : ""}`,
