@@ -8,7 +8,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import type { PortalData, Resource, Entity, Entrada, Usuario, Utilizacao } from "../models/types";
+import type { Categoria, PortalData, Resource, Entity, Entrada, Usuario, Utilizacao } from "../models/types";
 import type { ContaNova } from "../models/contaNova";
 import { canEstornar, isAdministrador } from "../models/selectors";
 import { errorMessage } from "../hooks/useAsyncAction";
@@ -46,6 +46,7 @@ interface Portal {
     payload: Entrada<K>,
   ) => Promise<Entity<K>>;
   estornar: (id: number, motivo: string) => Promise<Utilizacao>;
+  excluirCategoria: (id: number) => Promise<void>;
   cadastrarComConta: <K extends ComConta>(recurso: K, conta: ContaNova, dados: Entrada<K>) => Promise<Entity<K>>;
 }
 
@@ -144,6 +145,16 @@ export function PortalProvider({ children }: { children: ReactNode }) {
           ? [...rows, result]
           : rows.map((item) => (item.id === id ? result : item)),
     } as PortalData;
+    if (resource === "categorias" && id !== undefined) {
+  const categoria = result as Categoria;
+
+  next.conveniados = next.conveniados.map((conveniado) => ({
+    ...conveniado,
+    categorias: conveniado.categorias.map((item) =>
+      item.id === id ? categoria : item
+    ),
+  }));
+}
     dataRef.current = next;
     setData(next);
     return result;
@@ -172,6 +183,19 @@ export function PortalProvider({ children }: { children: ReactNode }) {
     setData(next);
     return result;
   }, []);
+  const excluirCategoria = useCallback(async (id: number) => {
+  await removeResource("categorias", id);
+
+  const next = {
+    ...dataRef.current,
+    categorias: dataRef.current.categorias.filter(
+      (categoria) => categoria.id !== id
+    ),
+  };
+
+  dataRef.current = next;
+  setData(next);
+}, []);
   const cadastrarComConta = useCallback(async function cadastrarComConta<K extends ComConta>(
     recurso: K,
     conta: ContaNova,
@@ -216,9 +240,10 @@ export function PortalProvider({ children }: { children: ReactNode }) {
       reload,
       save,
       estornar,
+      excluirCategoria,
       cadastrarComConta,
     }),
-    [data, loading, refreshing, error, resourceErrors, reload, save, estornar, cadastrarComConta],
+    [data, loading, refreshing, error, resourceErrors, reload, save, estornar, excluirCategoria, cadastrarComConta],
   );
   return <Context.Provider value={value}>{children}</Context.Provider>;
 }
