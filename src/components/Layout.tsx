@@ -57,6 +57,7 @@ const helpByPage: Record<string, string> = {
   "/colaboradores": "Consulte colaboradores e mantenha seus dados e vínculos atualizados.",
   "/beneficios": "Cadastre benefícios e confira quais conveniados estão associados.",
   "/conveniados": "Mantenha os dados dos estabelecimentos e seus usuários responsáveis.",
+  "/categorias": "Cadastre as categorias dos conveniados. Categoria com conveniado vinculado não é excluída: inative.",
   "/utilizacoes": "Acompanhe as solicitações e confira os detalhes antes de agir.",
   "/campanhas": "Consulte campanhas e eventos, seus benefícios e respectivos status.",
   "/relatorios": "Use os filtros disponíveis para consultar os dados do período desejado.",
