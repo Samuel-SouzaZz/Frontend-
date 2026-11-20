@@ -1,7 +1,8 @@
 import type { FormEvent } from "react";
 import { Field, FormModal, Select, type SelectOption } from "../ui";
 import { capitalizeFirstLetter } from "../../models/formatters";
-import type { Usuario } from "../../models/types";
+import type { Categoria, Usuario } from "../../models/types";
+import { categoriasParaEscolher } from "../../models/categorias";
 import type { ConveniadoForm } from "../../viewmodels/useConveniadosVM";
 import { ContaNovaCampos } from "../conta/ContaNovaCampos";
 
@@ -16,7 +17,7 @@ const CNPJ_PATTERN = "(\\D*\\d){14}\\D*";
 type ConveniadoFormModalProps = {
   form: ConveniadoForm;
   onChange: (form: ConveniadoForm) => void;
-  categories: string[];
+  categories: Categoria[];
   availableUsers: Usuario[];
   podeCriarConta: boolean;
   contaAtual?: Usuario;
@@ -44,6 +45,12 @@ export function ConveniadoFormModal({
     onChange({ ...form, ...patch });
   const semUsuarios = !availableUsers.length;
   const contaNova = !editing && form.modo === "nova";
+  const alternarCategoria = (id: number, marcada: boolean) =>
+  update({
+    categorias: marcada
+      ? [...form.categorias, id]
+      : form.categorias.filter((item) => item !== id),
+  });
   return (
     <FormModal
       title={editing ? "Editar conveniado" : "Cadastrar conveniado"}
@@ -110,21 +117,39 @@ export function ConveniadoFormModal({
           placeholder="00.000.000/0000-00"
         />
       </Field>
-      <Field label="Categoria" required>
-        <input
-          required
-          maxLength={60}
-          list="categorias-conveniados"
-          value={form.categoria}
-          onChange={(event) => update({ categoria: event.target.value })}
-          placeholder="Ex.: Alimentação"
-        />
-        <datalist id="categorias-conveniados">
-          {categories.map((value) => (
-            <option key={value} value={value} />
-          ))}
-        </datalist>
-      </Field>
+      <fieldset className="permissions-fieldset full-width">
+  <legend>Categorias *</legend>
+
+  <div className="permissions-grid">
+    {categoriasParaEscolher(categories, form.categorias).map(
+      (categoria) => (
+        <label
+          className="permission-option"
+          key={categoria.id}
+        >
+          <input
+            type="checkbox"
+            checked={form.categorias.includes(categoria.id)}
+            onChange={(event) =>
+              alternarCategoria(
+                categoria.id,
+                event.target.checked
+              )
+            }
+          />
+          <span>{categoria.nome}</span>
+        </label>
+      )
+    )}
+  </div>
+
+  {!categories.length && (
+    <p className="text-muted">
+      Nenhuma categoria cadastrada. Cadastre em
+      Conveniados → Categorias.
+    </p>
+  )}
+</fieldset>
       {!editing && !contaNova && (
         <Field
           label="Usuário responsável"

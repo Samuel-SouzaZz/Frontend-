@@ -2,7 +2,7 @@ import { useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import { DrawerContext } from "../board/Drawer";
 import { Check, ChevronDown, Search } from "lucide-react";
 import type { Conveniado, TipoBeneficio } from "../../models/types";
-
+import { nomesCategorias } from "../../models/categorias";
 export function SimpleHeader({
   titulo,
   descricao,
@@ -245,8 +245,10 @@ export function PartnerChips({
     (parceiro) => parceiro.status === "ATIVO" || selecionados.includes(parceiro.id),
   );
   const filtrados = visiveis.filter((parceiro) =>
-    normalizar(`${parceiro.nome_fantasia} ${parceiro.categoria}`).includes(normalizar(busca.trim())),
-  );
+  normalizar(
+    `${parceiro.nome_fantasia} ${nomesCategorias(parceiro)}`
+  ).includes(normalizar(busca.trim())),
+);
   const limite = 10;
   const mostrados = todos || busca ? filtrados : filtrados.slice(0, limite);
   if (!visiveis.length) return <p className="s-muted">Nenhum parceiro ativo cadastrado.</p>;

@@ -9,6 +9,7 @@ import { useAsyncAction } from "../hooks/useAsyncAction";
 import { useSessionUser } from "../hooks/useSessionUser";
 import { isAdministrador } from "../models/rules";
 import { contaLimpa, erroDaContaNova, type ModoConta } from "../models/contaNova";
+import { nomesCategorias, temCategoria } from "../models/categorias";
 
 const PAGE_SIZE = 8;
 const FILTER_KEYS = ["buscar", "status", "categoria"] as const;
@@ -21,7 +22,7 @@ export type ConveniadoForm = {
   usuario_id: string;
   nome_fantasia: string;
   razao_social: string;
-  categoria: string;
+  categorias: number[];
   cnpj: string;
   endereco: string;
   status: Conveniado["status"];
@@ -35,7 +36,7 @@ const blankForm = (modo: ModoConta): ConveniadoForm => ({
   usuario_id: "",
   nome_fantasia: "",
   razao_social: "",
-  categoria: "",
+  categorias: [],
   cnpj: "",
   endereco: "",
   status: "EM_ANALISE",
@@ -56,9 +57,9 @@ export function useConveniadosVM() {
   const [inactivating, setInactivating] = useState<Conveniado>();
   const [form, setForm] = useState<ConveniadoForm>(() => blankForm("existente"));
   const [formError, setFormError] = useState("");
-  const categories = [
-    ...new Set(data.conveniados.map((item) => item.categoria)),
-  ].sort();
+  const categories = [...data.categorias].sort((a, b) =>
+  a.nome.localeCompare(b.nome, "pt-BR")
+);
 
   const availableUsers = data.usuarios.filter(
     (user) =>
@@ -71,16 +72,17 @@ export function useConveniadosVM() {
   );
 
   const filtered = data.conveniados.filter((item) => {
-    const text =
-      `${item.nome_fantasia} ${item.razao_social} ${item.cnpj} ${formatCnpj(item.cnpj)} ${item.categoria} ${item.endereco}`.toLocaleLowerCase(
-        "pt-BR",
-      );
-    return (
-      (!status || item.status === status) &&
-      (!category || item.categoria === category) &&
-      text.includes(search.trim().toLocaleLowerCase("pt-BR"))
+  const text =
+    `${item.nome_fantasia} ${item.razao_social} ${item.cnpj} ${formatCnpj(item.cnpj)} ${nomesCategorias(item)} ${item.endereco}`.toLocaleLowerCase(
+      "pt-BR",
     );
-  });
+
+  return (
+    (!status || item.status === status) &&
+    (!category || temCategoria(item, Number(category))) &&
+    text.includes(search.trim().toLocaleLowerCase("pt-BR"))
+  );
+});
 
   const activeOfferCount = (id: number) =>
     data.ofertas.filter(
@@ -90,7 +92,7 @@ export function useConveniadosVM() {
   const { ordenadas, ordem, alternar, chave } = useOrdenacao(filtered, {
     nome: (item) => item.nome_fantasia,
     cnpj: (item) => item.cnpj,
-    categoria: (item) => item.categoria,
+    categoria: (item) => nomesCategorias(item),
     endereco: (item) => item.endereco,
     ofertas: (item) => activeOfferCount(item.id),
   });
@@ -121,7 +123,7 @@ export function useConveniadosVM() {
             usuario_id: String(item.usuario_id),
             nome_fantasia: item.nome_fantasia,
             razao_social: item.razao_social,
-            categoria: item.categoria,
+            categorias: item.categorias.map((categoria) => categoria.id),
             cnpj: formatCnpj(item.cnpj),
             endereco: item.endereco,
             status: item.status,
@@ -148,16 +150,20 @@ export function useConveniadosVM() {
       return;
     }
     if (
-      [
-        form.nome_fantasia,
-        form.razao_social,
-        form.categoria,
-        form.endereco,
-      ].some((value) => !value.trim())
-    ) {
-      setFormError("Preencha os campos obrigatórios com dados válidos.");
-      return;
-    }
+  [
+    form.nome_fantasia,
+    form.razao_social,
+    form.endereco,
+  ].some((value) => !value.trim())
+) {
+  setFormError("Preencha os campos obrigatórios com dados válidos.");
+  return;
+}
+
+if (!form.categorias.length) {
+  setFormError("Escolha ao menos uma categoria para o conveniado.");
+  return;
+}
     if (
       data.conveniados.some(
         (item) =>
@@ -168,13 +174,13 @@ export function useConveniadosVM() {
       return;
     }
     const estabelecimento = {
-      nome_fantasia: form.nome_fantasia.trim(),
-      razao_social: form.razao_social.trim(),
-      categoria: form.categoria.trim(),
-      cnpj,
-      endereco: form.endereco.trim(),
-      status: form.status,
-    };
+  nome_fantasia: form.nome_fantasia.trim(),
+  razao_social: form.razao_social.trim(),
+  categorias: form.categorias,
+  cnpj,
+  endereco: form.endereco.trim(),
+  status: form.status,
+};
     await run(
       () =>
         contaNova

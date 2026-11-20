@@ -8,7 +8,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import type { PortalData, Resource, Entity, Usuario, Utilizacao } from "../models/types";
+import type { Categoria, PortalData, Resource, Entity, Entrada, Usuario, Utilizacao } from "../models/types";
 import type { ContaNova } from "../models/contaNova";
 import { canEstornar, isAdministrador } from "../models/selectors";
 import { errorMessage } from "../hooks/useAsyncAction";
@@ -16,6 +16,7 @@ import { cancelUtilizacao, listResource, removeResource, saveResource } from "..
 import { useAuth } from "./AuthContext";
 
 const empty: PortalData = {
+  categorias: [],
   usuarios: [],
   perfis: [],
   colaboradores: [],
@@ -42,10 +43,11 @@ interface Portal {
   save: <K extends Resource>(
     resource: K,
     id: number | undefined,
-    payload: Partial<Entity<K>>,
+    payload: Entrada<K>,
   ) => Promise<Entity<K>>;
   estornar: (id: number, motivo: string) => Promise<Utilizacao>;
-  cadastrarComConta: <K extends ComConta>(recurso: K, conta: ContaNova, dados: Partial<Entity<K>>) => Promise<Entity<K>>;
+  excluirCategoria: (id: number) => Promise<void>;
+  cadastrarComConta: <K extends ComConta>(recurso: K, conta: ContaNova, dados: Entrada<K>) => Promise<Entity<K>>;
 }
 
 type ComConta = "colaboradores" | "conveniados";
@@ -120,7 +122,7 @@ export function PortalProvider({ children }: { children: ReactNode }) {
   const save = useCallback(async function save<K extends Resource>(
     resource: K,
     id: number | undefined,
-    payload: Partial<Entity<K>>,
+    payload: Entrada<K>,
   ): Promise<Entity<K>> {
     const u = userRef.current;
     if (!u) throw new Error("Faça login para continuar.");
@@ -143,6 +145,16 @@ export function PortalProvider({ children }: { children: ReactNode }) {
           ? [...rows, result]
           : rows.map((item) => (item.id === id ? result : item)),
     } as PortalData;
+    if (resource === "categorias" && id !== undefined) {
+  const categoria = result as Categoria;
+
+  next.conveniados = next.conveniados.map((conveniado) => ({
+    ...conveniado,
+    categorias: conveniado.categorias.map((item) =>
+      item.id === id ? categoria : item
+    ),
+  }));
+}
     dataRef.current = next;
     setData(next);
     return result;
@@ -171,10 +183,23 @@ export function PortalProvider({ children }: { children: ReactNode }) {
     setData(next);
     return result;
   }, []);
+  const excluirCategoria = useCallback(async (id: number) => {
+  await removeResource("categorias", id);
+
+  const next = {
+    ...dataRef.current,
+    categorias: dataRef.current.categorias.filter(
+      (categoria) => categoria.id !== id
+    ),
+  };
+
+  dataRef.current = next;
+  setData(next);
+}, []);
   const cadastrarComConta = useCallback(async function cadastrarComConta<K extends ComConta>(
     recurso: K,
     conta: ContaNova,
-    dados: Partial<Entity<K>>,
+    dados: Entrada<K>
   ): Promise<Entity<K>> {
     const u = userRef.current;
     if (!u) throw new Error("Faça login para continuar.");
@@ -186,7 +211,11 @@ export function PortalProvider({ children }: { children: ReactNode }) {
     const usuario = await saveResource("usuarios", undefined, { ...conta, perfil_id: perfil.id, status: "ATIVO" });
     let criado: Entity<K>;
     try {
-      criado = await saveResource(recurso, undefined, { ...dados, usuario_id: usuario.id } as Partial<Entity<K>>);
+      criado = await saveResource(
+  recurso,
+  undefined,
+  { ...dados, usuario_id: usuario.id } as Entrada<K>
+);
     } catch (erro) {
       await removeResource("usuarios", usuario.id).catch(() => undefined);
       throw erro;
@@ -211,9 +240,10 @@ export function PortalProvider({ children }: { children: ReactNode }) {
       reload,
       save,
       estornar,
+      excluirCategoria,
       cadastrarComConta,
     }),
-    [data, loading, refreshing, error, resourceErrors, reload, save, estornar, cadastrarComConta],
+    [data, loading, refreshing, error, resourceErrors, reload, save, estornar, excluirCategoria, cadastrarComConta],
   );
   return <Context.Provider value={value}>{children}</Context.Provider>;
 }

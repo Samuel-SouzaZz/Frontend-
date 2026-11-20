@@ -1,9 +1,23 @@
 import type { PortalData } from "../models/types";
+
 const date = (offset: number) => {
   const d = new Date();
   d.setDate(d.getDate() + offset);
   return d.toISOString().slice(0, 10);
 };
+
+const categorias = [
+  "Alimentação",
+  "Saúde",
+  "Esporte e lazer",
+  "Cultura e lazer",
+  "Educação",
+].map((nome, i) => ({
+  id: i + 1,
+  nome,
+  status: "ATIVO" as const,
+}));
+
 export function createFixtureData(): PortalData {
   const nomes = [
     "Ana Carolina Silva",
@@ -71,7 +85,8 @@ export function createFixtureData(): PortalData {
       status: "ATIVO",
     },
   );
-  return {
+   return {
+    categorias,
     usuarios,
     perfis: [
       {
@@ -134,15 +149,10 @@ export function createFixtureData(): PortalData {
       usuario_id: i + 13,
       nome_fantasia: nome,
       razao_social: `${nome} Ltda.`,
-      categoria: [
-        "Alimentação",
-        "Saúde",
-        "Esporte e lazer",
-        "Saúde",
-        "Cultura e lazer",
-        "Educação",
-      ][i],
-      cnpj: [
+categorias: [[1], [2], [3], [2], [4], [5]][i].map(
+  (id) => categorias[id - 1]
+),
+cnpj: [
         "12345678000190",
         "98765432000110",
         "66777888000155",

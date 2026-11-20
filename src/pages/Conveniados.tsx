@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 
-import { Handshake, Plus } from "lucide-react";
+import { Handshake, Plus, Tags } from "lucide-react";
 
 import {
   ConfirmModal,
@@ -77,16 +77,27 @@ export default function Conveniados() {
         title="Conveniados"
         description="Gerencie os estabelecimentos que fazem parte da nossa rede."
         actions={
-          <button
-            type="button"
-            className="btn btn-primary"
-            disabled={loading}
-            onClick={() => openForm()}
-          >
-            <Plus size={18} />
-            Cadastrar conveniado
-          </button>
-        }
+  <>
+    <button
+      type="button"
+      className="btn btn-secondary"
+      onClick={() => navigate("/categorias")}
+    >
+      <Tags size={18} />
+      Categorias
+    </button>
+
+    <button
+      type="button"
+      className="btn btn-primary"
+      disabled={loading}
+      onClick={() => openForm()}
+    >
+      <Plus size={18} />
+      Cadastrar conveniado
+    </button>
+  </>
+}
       />
 
       {/* INDICADORES */}
@@ -124,10 +135,10 @@ export default function Conveniados() {
                 value: "",
                 label: "Todas as categorias",
               },
-              ...categories.map((value) => ({
-                value,
-                label: value,
-              })),
+              ...categories.map((categoria) => ({
+  value: String(categoria.id),
+  label: categoria.nome,
+})),
             ]}
           />
         </FilterBar>

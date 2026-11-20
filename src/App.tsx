@@ -7,6 +7,7 @@ import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Colaboradores from "./pages/Colaboradores";
 import Conveniados from "./pages/Conveniados";
+import Categorias from "./pages/Categorias";
 import ColaboradorDetalhe from "./pages/ColaboradorDetalhe";
 import ConveniadoDetalhe from "./pages/ConveniadoDetalhe";
 import Beneficios from "./pages/Beneficios";
@@ -63,6 +64,7 @@ function Routing() {
         <Route path="beneficios" element={<Beneficios />} />
         <Route path="conveniados" element={<Conveniados />} />
         <Route path="conveniados/:id" element={<ConveniadoDetalhe />} />
+        <Route path="categorias" element={<Categorias />} />
         <Route path="utilizacoes" element={<Utilizacoes />} />
         <Route path="campanhas" element={<Campanhas />} />
         <Route path="calendario" element={<Calendario />} />

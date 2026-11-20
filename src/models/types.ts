@@ -53,12 +53,18 @@ export interface Colaborador {
   status: ColaboradorStatus;
 }
 
+export interface Categoria {
+  id: number;
+  nome: string;
+  status: Status;
+}
+
 export interface Conveniado {
   id: number;
   usuario_id: number;
   nome_fantasia: string;
   razao_social: string;
-  categoria: string;
+  categorias: Categoria[];
   cnpj: string;
   endereco: string;
   status: ConveniadoStatus;
@@ -132,6 +138,7 @@ export interface Utilizacao {
 }
 
 export interface PortalData {
+  categorias: Categoria[];
   usuarios: Usuario[];
   perfis: Perfil[];
   colaboradores: Colaborador[];
@@ -146,6 +153,13 @@ export interface PortalData {
 
 export type Resource = keyof PortalData;
 export type Entity<K extends Resource> = PortalData[K][number];
+
+export type Entrada<K extends Resource> =
+  K extends "conveniados"
+    ? Omit<Partial<Conveniado>, "categorias"> & {
+        categorias?: number[];
+      }
+    : Partial<Entity<K>>;
 
 export interface SessionUser extends Usuario {
   perfil: string;
