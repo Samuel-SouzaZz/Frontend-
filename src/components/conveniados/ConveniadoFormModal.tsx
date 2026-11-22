@@ -1,5 +1,5 @@
 import type { FormEvent } from "react";
-import { Field, FormModal, Select, type SelectOption } from "../ui";
+import { ChipGroup, Field, FormModal, Select, type SelectOption } from "../ui";
 import { capitalizeFirstLetter } from "../../models/formatters";
 import type { Categoria, Usuario } from "../../models/types";
 import { categoriasParaEscolher } from "../../models/categorias";
@@ -45,12 +45,12 @@ export function ConveniadoFormModal({
     onChange({ ...form, ...patch });
   const semUsuarios = !availableUsers.length;
   const contaNova = !editing && form.modo === "nova";
-  const alternarCategoria = (id: number, marcada: boolean) =>
-  update({
-    categorias: marcada
-      ? [...form.categorias, id]
-      : form.categorias.filter((item) => item !== id),
-  });
+  const alternarCategoria = (id: number) =>
+    update({
+      categorias: form.categorias.includes(id)
+        ? form.categorias.filter((item) => item !== id)
+        : [...form.categorias, id],
+    });
   return (
     <FormModal
       title={editing ? "Editar conveniado" : "Cadastrar conveniado"}
@@ -117,39 +117,18 @@ export function ConveniadoFormModal({
           placeholder="00.000.000/0000-00"
         />
       </Field>
-      <fieldset className="permissions-fieldset full-width">
-  <legend>Categorias *</legend>
-
-  <div className="permissions-grid">
-    {categoriasParaEscolher(categories, form.categorias).map(
-      (categoria) => (
-        <label
-          className="permission-option"
-          key={categoria.id}
-        >
-          <input
-            type="checkbox"
-            checked={form.categorias.includes(categoria.id)}
-            onChange={(event) =>
-              alternarCategoria(
-                categoria.id,
-                event.target.checked
-              )
-            }
-          />
-          <span>{categoria.nome}</span>
-        </label>
-      )
-    )}
-  </div>
-
-  {!categories.length && (
-    <p className="text-muted">
-      Nenhuma categoria cadastrada. Cadastre em
-      Conveniados → Categorias.
-    </p>
-  )}
-</fieldset>
+      <ChipGroup
+        label="Categorias"
+        required
+        options={categoriasParaEscolher(categories, form.categorias).map((categoria) => ({
+          value: categoria.id,
+          label: categoria.nome,
+        }))}
+        selected={form.categorias}
+        onToggle={alternarCategoria}
+        hint="Escolha uma ou mais. O aplicativo usa para filtrar os locais."
+        empty={<p className="text-muted">Nenhuma categoria cadastrada. Cadastre em Conveniados → Categorias.</p>}
+      />
       {!editing && !contaNova && (
         <Field
           label="Usuário responsável"

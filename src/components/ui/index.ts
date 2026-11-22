@@ -1,5 +1,6 @@
 export { Badge } from "./Badge";
 export { CellStack } from "./CellStack";
+export { ChipGroup } from "./ChipGroup";
 export { ConfirmModal } from "./ConfirmModal";
 export { DateField } from "./DateField";
 export { DataTable, type Column } from "./DataTable";
