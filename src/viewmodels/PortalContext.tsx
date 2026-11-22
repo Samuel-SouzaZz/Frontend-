@@ -12,6 +12,7 @@ import type { Categoria, PortalData, Resource, Entity, Entrada, Usuario, Utiliza
 import type { ContaNova } from "../models/contaNova";
 import { canEstornar, isAdministrador } from "../models/selectors";
 import { errorMessage } from "../hooks/useAsyncAction";
+import { agoraLocal, comStatusPelaData } from "../models/statusResgate";
 import { cancelUtilizacao, listResource, removeResource, saveResource } from "../services/api";
 import { useAuth } from "./AuthContext";
 
@@ -97,6 +98,7 @@ export function PortalProvider({ children }: { children: ReactNode }) {
         );
       }
     });
+    next.utilizacoes = comStatusPelaData(next.utilizacoes, agoraLocal());
     const failures = Object.values(errors);
     if (failures.length === resources.length && !loadedRef.current) {
       setError(failures[0] ?? "Falha ao carregar dados.");
