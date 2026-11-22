@@ -21,6 +21,7 @@ import { ColaboradorFormModal } from "../components/colaboradores/ColaboradorFor
 import { formatDate } from "../models/formatters";
 
 import { useColaboradorDetalheVM } from "../viewmodels/useColaboradorDetalheVM";
+import { semConveniado } from "../models/statusResgate";
 
 export default function ColaboradorDetalhe() {
   const vm = useColaboradorDetalheVM(
@@ -152,11 +153,11 @@ export default function ColaboradorDetalhe() {
               itens={vm.historico.map((uso) => ({
                 chave: uso.id,
 
-                titulo: `Usou ${uso.beneficio}`,
+                titulo: `${uso.status === "APROVADA" ? "Usou" : "Pediu"} ${uso.beneficio}`,
 
                 descricao: uso.parceiro
                   ? `em ${uso.parceiro}`
-                  : undefined,
+                  : semConveniado(uso),
 
                 data: formatDate(uso.quando, true),
 

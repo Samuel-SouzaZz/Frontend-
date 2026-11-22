@@ -6,6 +6,7 @@ import { useOrdenacao } from "../hooks/useOrdenacao";
 import { useUrlFilters } from "../hooks/useUrlFilters";
 import { useAsyncAction } from "../hooks/useAsyncAction";
 import type { DescricaoUtilizacao } from "../components/utilizacoes/descricao";
+import { semConveniado } from "../models/statusResgate";
 import {
   createDataIndexes,
   colaboradorNomeIndexed,
@@ -73,7 +74,7 @@ export function useUtilizacoesVM() {
         `${uso.id} ${colabNome} ${item?.nome ?? ""} ${parceiro?.nome_fantasia ?? ""} ${parceiro?.razao_social ?? ""}`.toLocaleLowerCase(
           "pt-BR",
         );
-      const beneficioKey = `${uso.beneficio_conveniado_id ? "beneficio" : "campanha"}:${item?.id}`;
+      const beneficioKey = `${uso.beneficio_campanha_conveniado_id ? "campanha" : "beneficio"}:${item?.id}`;
       return {
         ...uso,
         colaboradorNome: colabNome,
@@ -107,7 +108,7 @@ export function useUtilizacoesVM() {
       return (
         parceiro?.nome_fantasia ||
         parceiro?.razao_social ||
-        undefined
+        semConveniado(uso)
       );
     },
   };

@@ -9,6 +9,7 @@ import {
   formatDate,
 } from "../models/selectors";
 import { Modal } from "./ui";
+import { semConveniado } from "../models/statusResgate";
 
 const MAX_VISIBLE = 8;
 
@@ -63,7 +64,7 @@ export default function NotificationCenter() {
                   <div className="notification-copy">
                     <span className="notification-label">Utilização pendente <span>{reference}</span></span>
                     <strong>{benefit?.nome ?? "Benefício não encontrado"}</strong>
-                    <p>{colaboradorNome(data, item.colaborador_id)} · {partner?.nome_fantasia ?? "Conveniado não encontrado"}</p>
+                    <p>{colaboradorNome(data, item.colaborador_id)} · {partner?.nome_fantasia ?? semConveniado(item)}</p>
                     <time dateTime={item.data_solicitacao}>{formatDate(item.data_solicitacao, true)}</time>
                   </div>
                   <ChevronRight size={18} className="notification-chevron" aria-hidden="true" />

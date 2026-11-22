@@ -16,6 +16,7 @@ import {
 } from "../models/selectors";
 import { useDashboardVM } from "../viewmodels/useDashboardVM";
 import { usePendenciasVM } from "../viewmodels/usePendenciasVM";
+import { semConveniado } from "../models/statusResgate";
 
 export default function Dashboard() {
   const {
@@ -88,7 +89,7 @@ export default function Dashboard() {
           usos={latest}
           beneficio={(uso) => beneficioDaUtilizacao(data, uso)?.nome}
           colaborador={(uso) => colaboradorNome(data, uso.colaborador_id)}
-          conveniado={(uso) => conveniadoDaUtilizacao(data, uso)?.nome_fantasia}
+          conveniado={(uso) => conveniadoDaUtilizacao(data, uso)?.nome_fantasia ?? semConveniado(uso)}
         />
       </div>
     </>

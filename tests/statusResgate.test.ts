@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { agoraLocal, comStatusPelaData, venceu } from "../src/models/statusResgate";
+import { agoraLocal, comStatusPelaData, semConveniado, venceu } from "../src/models/statusResgate";
 import type { Utilizacao } from "../src/models/types";
 
 const uso = (status: Utilizacao["status"], data_expiracao: string) =>
@@ -22,4 +22,9 @@ test("comStatusPelaData troca só os pendentes vencidos", () => {
     "2026-11-18 12:00:00",
   );
   assert.deepEqual(lista.map((item) => item.status), ["EXPIRADA", "PENDENTE", "REPROVADA"]);
+});
+
+test("semConveniado explica por que ainda não tem local", () => {
+  assert.equal(semConveniado({ status: "PENDENTE" }), "Aguardando validação");
+  assert.equal(semConveniado({ status: "EXPIRADA" }), "Não validado");
 });

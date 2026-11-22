@@ -14,3 +14,7 @@ export function venceu(uso: Pick<Utilizacao, "status" | "data_expiracao">, agora
 export function comStatusPelaData<T extends Utilizacao>(lista: T[], agora: string): T[] {
   return lista.map((uso) => (venceu(uso, agora) ? { ...uso, status: "EXPIRADA" } : uso));
 }
+
+export function semConveniado(uso: Pick<Utilizacao, "status">): string {
+  return uso.status === "PENDENTE" ? "Aguardando validação" : "Não validado";
+}
