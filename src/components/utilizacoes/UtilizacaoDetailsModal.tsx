@@ -46,6 +46,14 @@ export function UtilizacaoDetailsModal({
             value: formatDate(uso.data_solicitacao, true),
           },
           {
+            label: "Prazo para validar",
+            value: formatDate(uso.data_expiracao, true),
+          },
+          {
+            label: "Código de validação",
+            value: uso.codigo_validacao ?? "Não informado",
+          },
+          {
             label: "Validado em",
             value: uso.data_validacao
               ? formatDate(uso.data_validacao, true)
