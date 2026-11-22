@@ -304,7 +304,8 @@ cnpj: [
         beneficio_campanha_conveniado_id: null,
         token_qrcode: `demonstracao-resgate-${i + 1}`,
         data_solicitacao: `${date(-i * 2 - 1)}T${String(9 + (i % 8)).padStart(2, "0")}:30:00`,
-        data_confirmacao:
+        data_expiracao: `${date(-i * 2 - 1)}T23:59:59`,
+        data_validacao:
           i % 7 === 0
             ? null
             : `${date(-i * 2 - 1)}T${String(9 + (i % 8)).padStart(2, "0")}:31:00`,
@@ -331,7 +332,8 @@ cnpj: [
         beneficio_campanha_conveniado_id: 1,
         token_qrcode: "demonstracao-campanha-37",
         data_solicitacao: `${date(-4)}T10:30:00`,
-        data_confirmacao: `${date(-4)}T10:31:00`,
+        data_expiracao: `${date(-4)}T13:30:00`,
+        data_validacao: `${date(-4)}T10:31:00`,
         valor_aplicado: 30,
         canal_validacao: "APP_CONVENIADO",
         status: "APROVADA",
@@ -343,7 +345,8 @@ cnpj: [
         beneficio_campanha_conveniado_id: 2,
         token_qrcode: "demonstracao-campanha-38",
         data_solicitacao: `${date(-6)}T11:30:00`,
-        data_confirmacao: `${date(-6)}T11:31:00`,
+        data_expiracao: `${date(-6)}T14:30:00`,
+        data_validacao: `${date(-6)}T11:31:00`,
         valor_aplicado: 20,
         canal_validacao: "TERMINAL_IOT",
         status: "APROVADA",

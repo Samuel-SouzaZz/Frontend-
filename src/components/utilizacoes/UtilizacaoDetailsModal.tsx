@@ -46,10 +46,10 @@ export function UtilizacaoDetailsModal({
             value: formatDate(uso.data_solicitacao, true),
           },
           {
-            label: "Decidido em",
-            value: uso.data_confirmacao
-              ? formatDate(uso.data_confirmacao, true)
-              : "Ainda não decidido",
+            label: "Validado em",
+            value: uso.data_validacao
+              ? formatDate(uso.data_validacao, true)
+              : "Ainda não validado",
           },
           {
             label: "Valor aplicado",

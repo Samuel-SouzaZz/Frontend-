@@ -33,6 +33,7 @@ function fixture(): PortalData {
     beneficio_campanha_conveniado_id: campanha ? 1 : null,
     token_qrcode: `fixture-${id}`,
     data_solicitacao: date,
+    data_expiracao: date,
     status,
     valor_aplicado: valor,
     observacoes: status === "ESTORNADA" ? "Solicitação duplicada" : null,
@@ -290,7 +291,7 @@ test("fixtures têm IDs, chaves únicas e referências coerentes", () => {
     assert.ok(conveniadoDaUtilizacao(data, uso));
     assert.ok(Number.isFinite(uso.valor_aplicado) && uso.valor_aplicado >= 0);
     assert.ok(!Number.isNaN(new Date(uso.data_solicitacao).getTime()));
-    if (uso.status === "PENDENTE") assert.equal(uso.data_confirmacao, null);
+    if (uso.status === "PENDENTE") assert.equal(uso.data_validacao, null);
     if (uso.status === "ESTORNADA") assert.ok(uso.observacoes?.trim());
   }
   for (const campanha of data.campanhas)

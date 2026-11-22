@@ -5,7 +5,13 @@ export type ColaboradorStatus = "ATIVO" | "INATIVO" | "AFASTADO";
 export type ConveniadoStatus = "ATIVO" | "INATIVO" | "EM_ANALISE";
 export type BeneficioStatus = "ATIVO" | "INATIVO" | "DESCONTINUADO";
 export type CampanhaStatus = "PLANEJADA" | "ATIVA" | "ENCERRADA" | "CANCELADA";
-export type UtilizacaoStatus = "PENDENTE" | "APROVADA" | "REPROVADA" | "ESTORNADA";
+export type UtilizacaoStatus =
+  | "PENDENTE"
+  | "APROVADA"
+  | "REPROVADA"
+  | "ESTORNADA"
+  | "EXPIRADA"
+  | "CANCELADA";
 
 export type TipoBeneficio = "PERCENTUAL" | "VALOR_FIXO";
 export type TipoJanela = "CALENDARIO_FIXO" | "JANELA_MOVEL";
@@ -126,11 +132,14 @@ export interface OfertaCampanha {
 export interface Utilizacao {
   id: number;
   colaborador_id: number;
+  beneficio_id?: number | null;
   beneficio_conveniado_id?: number | null;
   beneficio_campanha_conveniado_id?: number | null;
   token_qrcode: string;
+  codigo_validacao?: string;
   data_solicitacao: string;
-  data_confirmacao?: string | null;
+  data_expiracao: string;
+  data_validacao?: string | null;
   valor_aplicado: number;
   canal_validacao?: CanalValidacao | null;
   status: UtilizacaoStatus;
