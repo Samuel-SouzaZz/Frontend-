@@ -1,9 +1,5 @@
-import { duracaoEmDias, ehEvento, statusEfetivo } from "./periodo";
-import {
-  beneficioDaUtilizacao,
-  colaboradorNome,
-  conveniadoDaUtilizacao,
-} from "./selectors";
+import { ehEvento, statusEfetivo } from "./periodo";
+import { beneficioDaUtilizacao, colaboradorNome } from "./selectors";
 import type { PortalData } from "./types";
 import { nomesCategorias } from "./categorias";
 export type Pendencia = {
@@ -20,7 +16,6 @@ export type GrupoDePendencias = {
   explicacao: string;
   itens: Pendencia[];
 };
-const DIAS_PARA_URGENTE = 2;
 function parceirosEmAnalise(data: PortalData): Pendencia[] {
   return data.conveniados
     .filter((item) => item.status === "EM_ANALISE")
@@ -32,24 +27,17 @@ function parceirosEmAnalise(data: PortalData): Pendencia[] {
       acao: "Analisar",
     }));
 }
-function usosParados(data: PortalData, hoje: string): Pendencia[] {
+function resgatesAguardando(data: PortalData): Pendencia[] {
   return data.utilizacoes
     .filter((item) => item.status === "PENDENTE")
-    .sort((a, b) => a.data_solicitacao.localeCompare(b.data_solicitacao))
-    .map((item) => {
-      const dias = duracaoEmDias(item.data_solicitacao.slice(0, 10), hoje) - 1;
-      const parceiro = conveniadoDaUtilizacao(data, item);
-      const quando =
-        dias <= 0 ? "pedido hoje" : dias === 1 ? "há 1 dia" : `há ${dias} dias`;
-      return {
-        chave: `utilizacao-${item.id}`,
-        titulo: `${colaboradorNome(data, item.colaborador_id)} · ${beneficioDaUtilizacao(data, item)?.nome ?? "Benefício"}`,
-        descricao: `Esperando ${parceiro?.nome_fantasia ?? "o parceiro"} confirmar · ${quando}`,
-        link: "/utilizacoes?status=PENDENTE",
-        acao: "Ver utilização",
-        urgente: dias >= DIAS_PARA_URGENTE,
-      };
-    });
+    .sort((a, b) => a.data_expiracao.localeCompare(b.data_expiracao))
+    .map((item) => ({
+      chave: `utilizacao-${item.id}`,
+      titulo: `${colaboradorNome(data, item.colaborador_id)} · ${beneficioDaUtilizacao(data, item)?.nome ?? "Benefício"}`,
+      descricao: `Aguardando validação no parceiro · expira às ${item.data_expiracao.slice(11, 16)}`,
+      link: "/utilizacoes?status=PENDENTE",
+      acao: "Ver utilização",
+    }));
 }
 function beneficiosSemParceiro(data: PortalData): Pendencia[] {
   return data.beneficios
@@ -104,10 +92,10 @@ export function montarPendencias(
     },
     {
       id: "utilizacoes",
-      titulo: "Utilizações esperando o parceiro",
+      titulo: "Resgates aguardando validação",
       explicacao:
-        "O colaborador gerou o QR Code e o parceiro ainda não aprovou nem recusou.",
-      itens: usosParados(data, hoje),
+        "O colaborador pediu o resgate e tem até 3 horas para validar no parceiro. Se não validar, ele expira sozinho.",
+      itens: resgatesAguardando(data),
     },
     {
       id: "beneficios",

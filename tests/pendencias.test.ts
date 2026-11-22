@@ -13,12 +13,14 @@ function cenario() {
       id: 1,
       status: "PENDENTE",
       data_solicitacao: "2026-11-10T09:00:00",
+      data_expiracao: "2026-11-10T12:00:00",
     },
     {
       ...data.utilizacoes[0],
       id: 2,
       status: "PENDENTE",
-      data_solicitacao: "2026-11-05T09:00:00",
+      data_solicitacao: "2026-11-10T07:00:00",
+      data_expiracao: "2026-11-10T10:00:00",
     },
     {
       ...data.utilizacoes[0],
@@ -67,16 +69,15 @@ test("parceiro em analise vira pendencia com link para o detalhe", () => {
   );
 });
 
-test("utilizacao pendente ha 2 dias ou mais fica urgente", () => {
+test("resgate aguardando validacao mostra a hora em que expira, o mais perto primeiro", () => {
   const itens = grupo(cenario(), "utilizacoes");
   assert.deepEqual(
     itens.map((item) => item.chave),
     ["utilizacao-2", "utilizacao-1"],
   );
-  assert.equal(itens[0].urgente, true);
-  assert.match(itens[0].descricao, /há 5 dias$/);
-  assert.equal(itens[1].urgente, false);
-  assert.match(itens[1].descricao, /pedido hoje$/);
+  assert.match(itens[0].descricao, /expira às 10:00$/);
+  assert.match(itens[1].descricao, /expira às 12:00$/);
+  assert.equal(itens[0].urgente, undefined);
 });
 
 test("beneficio ativo sem parceiro vira pendencia", () => {
