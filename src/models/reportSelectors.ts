@@ -9,7 +9,7 @@ import {
 
 export function usoKey(data: PortalData, uso: Utilizacao): string {
   const item = beneficioDaUtilizacao(data, uso);
-  return `${uso.beneficio_conveniado_id ? "beneficio" : "campanha"}:${item?.id ?? "desconhecido"}`;
+  return `${uso.beneficio_campanha_conveniado_id ? "campanha" : "beneficio"}:${item?.id ?? "desconhecido"}`;
 }
 
 export function buildReport(data: PortalData, inicio: string, fim: string): ReportResult {
@@ -78,7 +78,7 @@ export function buildReport(data: PortalData, inicio: string, fim: string): Repo
 
   for (const uso of approved) {
     const item = beneficioDaUtilizacaoIndexed(indexes, uso);
-    const key = `${uso.beneficio_conveniado_id ? "beneficio" : "campanha"}:${item?.id ?? "desconhecido"}`;
+    const key = `${uso.beneficio_campanha_conveniado_id ? "campanha" : "beneficio"}:${item?.id ?? "desconhecido"}`;
     const listaBeneficio = usosPorBeneficioKey.get(key);
     if (listaBeneficio) {
       listaBeneficio.push(uso);

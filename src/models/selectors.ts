@@ -69,6 +69,9 @@ export function beneficioDaUtilizacao(
   data: PortalData,
   uso: Utilizacao,
 ): Beneficio | ItemCampanha | undefined {
+  if (uso.beneficio_id) {
+    return data.beneficios.find((b) => b.id === uso.beneficio_id);
+  }
   if (uso.beneficio_conveniado_id) {
     const oferta = data.ofertas.find((o) => o.id === uso.beneficio_conveniado_id);
     return oferta ? data.beneficios.find((b) => b.id === oferta.beneficio_id) : undefined;
@@ -88,6 +91,9 @@ export function beneficioDaUtilizacaoIndexed(
   indexes: DataIndexes,
   uso: Utilizacao,
 ): Beneficio | ItemCampanha | undefined {
+  if (uso.beneficio_id) {
+    return indexes.beneficios.get(uso.beneficio_id);
+  }
   if (uso.beneficio_conveniado_id) {
     const oferta = indexes.ofertas.get(uso.beneficio_conveniado_id);
     return oferta ? indexes.beneficios.get(oferta.beneficio_id) : undefined;

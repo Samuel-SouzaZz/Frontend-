@@ -59,7 +59,11 @@ export function useBeneficiosVM() {
   function resumir(beneficio: Beneficio): ResumoBeneficio {
     const ofertas = data.ofertas.filter((oferta) => oferta.beneficio_id === beneficio.id);
     const usos = data.utilizacoes
-      .filter((uso) => ofertas.some((oferta) => oferta.id === uso.beneficio_conveniado_id))
+      .filter(
+        (uso) =>
+          uso.beneficio_id === beneficio.id ||
+          ofertas.some((oferta) => oferta.id === uso.beneficio_conveniado_id),
+      )
       .sort((a, b) => b.data_solicitacao.localeCompare(a.data_solicitacao));
     const aprovados = usos.filter((uso) => uso.status === "APROVADA");
     return {
@@ -74,7 +78,7 @@ export function useBeneficiosVM() {
         return {
           id: uso.id,
           quem: colaboradorNome(data, uso.colaborador_id),
-          onde: oferta ? conveniadoNome(data, oferta.conveniado_id) : "",
+          onde: oferta ? conveniadoNome(data, oferta.conveniado_id) : "Aguardando validação",
           quando: uso.data_solicitacao,
           status: uso.status,
         };
