@@ -111,6 +111,21 @@ export function useUtilizacoesVM() {
         semConveniado(uso)
       );
     },
+
+    links: (uso) => {
+      const linha = porId.get(uso.id);
+      const item = linha?.beneficioItem;
+      const beneficio = !item
+        ? undefined
+        : "campanha_id" in item
+          ? `/campanhas?abrir=${item.campanha_id}`
+          : `/beneficios?abrir=${item.id}`;
+      return {
+        colaborador: `/colaboradores/${uso.colaborador_id}`,
+        beneficio,
+        conveniado: linha?.conveniadoId ? `/conveniados/${linha.conveniadoId}` : undefined,
+      };
+    },
   };
 }, [enrichedRows]);
 

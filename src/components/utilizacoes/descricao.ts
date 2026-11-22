@@ -1,9 +1,16 @@
 import type { Utilizacao } from "../../models/types";
 
+export type LinksUtilizacao = {
+  colaborador: string;
+  beneficio?: string;
+  conveniado?: string;
+};
+
 export type DescricaoUtilizacao = {
   colaborador: (uso: Utilizacao) => string;
   beneficio: (uso: Utilizacao) => string | undefined;
   conveniado: (uso: Utilizacao) => string | undefined;
+  links: (uso: Utilizacao) => LinksUtilizacao;
 };
 
 export const referenciaUtilizacao = (id: number) =>

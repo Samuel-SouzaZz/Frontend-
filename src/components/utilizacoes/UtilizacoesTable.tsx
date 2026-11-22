@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { Eye, RotateCcw } from "lucide-react";
 import { Badge, DataTable, IconAction, RowActions } from "../ui";
 import { formatDate, formatMoney } from "../../models/formatters";
@@ -46,7 +47,9 @@ export function UtilizacoesTable<T extends Utilizacao>({
           ordenavel: true,
           label: "Colaborador",
           render: (row) => (
-            <span className="cell-title">{descricao.colaborador(row)}</span>
+            <Link className="cell-title cell-link" to={descricao.links(row).colaborador}>
+              {descricao.colaborador(row)}
+            </Link>
           ),
         },
         {
@@ -55,9 +58,13 @@ export function UtilizacoesTable<T extends Utilizacao>({
           label: "Benefício",
           render: (row) => (
             <>
-              <span className="cell-title">
-                {descricao.beneficio(row) ?? "Benefício não encontrado"}
-              </span>
+              {descricao.links(row).beneficio ? (
+                <Link className="cell-title cell-link" to={descricao.links(row).beneficio ?? ""}>
+                  {descricao.beneficio(row)}
+                </Link>
+              ) : (
+                <span className="cell-title">Benefício não encontrado</span>
+              )}
               <span className="cell-subtitle">
                 {row.beneficio_campanha_conveniado_id
                   ? "Item de campanha"
@@ -70,7 +77,17 @@ export function UtilizacoesTable<T extends Utilizacao>({
           key: "parceiro",
           ordenavel: true,
           label: "Conveniado",
-          render: (row) => descricao.conveniado(row) ?? "Não encontrado",
+          render: (row) => {
+            const para = descricao.links(row).conveniado;
+            const nome = descricao.conveniado(row) ?? "Não encontrado";
+            return para ? (
+              <Link className="cell-link" to={para}>
+                {nome}
+              </Link>
+            ) : (
+              nome
+            );
+          },
         },
         {
           key: "valor",
