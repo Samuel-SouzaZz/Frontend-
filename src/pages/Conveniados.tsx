@@ -6,6 +6,7 @@ import {
   ConfirmModal,
   EmptyState,
   FilterBar,
+  MultiSelect,
   PageHeader,
   Pagination,
   SearchField,
@@ -37,8 +38,8 @@ export default function Conveniados() {
     setSearch,
     status,
     setStatus,
-    category,
-    setCategory,
+    categoriasFiltro,
+    setCategoriasFiltro,
     setPage,
     categories,
     filtered,
@@ -126,20 +127,13 @@ export default function Conveniados() {
             onChange={setStatus}
           />
 
-          <Select
+          <MultiSelect
             aria-label="Filtrar conveniados por categoria"
-            value={category}
-            onChange={setCategory}
-            options={[
-              {
-                value: "",
-                label: "Todas as categorias",
-              },
-              ...categories.map((categoria) => ({
-  value: String(categoria.id),
-  label: categoria.nome,
-})),
-            ]}
+            values={categoriasFiltro}
+            onChange={setCategoriasFiltro}
+            allLabel="Todas as categorias"
+            plural="categorias"
+            options={categories.map((categoria) => ({ value: categoria.id, label: categoria.nome }))}
           />
         </FilterBar>
 

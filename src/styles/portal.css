@@ -2033,3 +2033,63 @@ tbody tr:hover {
 .chip:active {
   transform: scale(.97);
 }
+.multi-select-resumo {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.multi-select-badge {
+  display: inline-grid;
+  place-items: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--primary);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.multi-select-option {
+  justify-content: flex-start;
+}
+.multi-select-caixa {
+  display: inline-grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+  border: 1.5px solid #b9c6d8;
+  border-radius: 5px;
+  background: var(--surface);
+  color: #fff;
+  transition: background var(--motion-fast) var(--motion-ease), border-color var(--motion-fast) var(--motion-ease);
+}
+.multi-select-option.is-selected .multi-select-caixa {
+  border-color: var(--primary);
+  background: var(--primary);
+}
+.multi-select-limpar {
+  display: block;
+  width: 100%;
+  margin-top: 4px;
+  padding: 9px 10px;
+  border: 0;
+  border-top: 1px solid var(--stroke);
+  border-radius: 0;
+  background: transparent;
+  color: var(--primary);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+}
+.multi-select-limpar:hover {
+  text-decoration: underline;
+}

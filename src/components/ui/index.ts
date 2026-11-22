@@ -11,6 +11,7 @@ export { FilterBar } from "./FilterBar";
 export { FormError } from "./FormError";
 export { FormModal } from "./FormModal";
 export { Modal } from "./Modal";
+export { MultiSelect } from "./MultiSelect";
 export { ModalFooter } from "./ModalFooter";
 export { PageHeader } from "./PageHeader";
 export { Pagination } from "./Pagination";

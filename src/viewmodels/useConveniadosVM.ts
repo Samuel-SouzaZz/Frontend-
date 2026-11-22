@@ -52,6 +52,8 @@ export function useConveniadosVM() {
   const setSearch = setter("buscar");
   const setStatus = setter("status");
   const setCategory = setter("categoria");
+  const categoriasFiltro = category ? category.split(",").map(Number).filter((id) => id > 0) : [];
+  const setCategoriasFiltro = (ids: number[]) => setCategory(ids.join(","));
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<Conveniado>();
   const [inactivating, setInactivating] = useState<Conveniado>();
@@ -79,7 +81,7 @@ export function useConveniadosVM() {
 
   return (
     (!status || item.status === status) &&
-    (!category || temCategoria(item, Number(category))) &&
+    (!categoriasFiltro.length || categoriasFiltro.some((id) => temCategoria(item, id))) &&
     text.includes(search.trim().toLocaleLowerCase("pt-BR"))
   );
 });
@@ -215,8 +217,8 @@ if (!form.categorias.length) {
     setSearch,
     status,
     setStatus,
-    category,
-    setCategory,
+    categoriasFiltro,
+    setCategoriasFiltro,
     page: currentPage,
     setPage,
     categories,
