@@ -10,7 +10,6 @@ import {
   PageHeader,
   Pagination,
   SearchField,
-  Select,
   type SelectOption,
 } from "../components/ui";
 
@@ -38,8 +37,8 @@ export default function Conveniados() {
     setSearch,
     status,
     setStatus,
-    categoriasFiltro,
-    setCategoriasFiltro,
+    category,
+    setCategory,
     setPage,
     categories,
     filtered,
@@ -120,20 +119,23 @@ export default function Conveniados() {
             placeholder="Buscar por nome, CNPJ, categoria ou endereço..."
           />
 
-          <Select
+          <MultiSelect
             aria-label="Filtrar conveniados por status"
             value={status}
             options={STATUS_FILTRO}
             onChange={setStatus}
+            plural="status"
           />
 
           <MultiSelect
             aria-label="Filtrar conveniados por categoria"
-            values={categoriasFiltro}
-            onChange={setCategoriasFiltro}
-            allLabel="Todas as categorias"
+            value={category}
+            onChange={setCategory}
             plural="categorias"
-            options={categories.map((categoria) => ({ value: categoria.id, label: categoria.nome }))}
+            options={[
+              { value: "", label: "Todas as categorias" },
+              ...categories.map((categoria) => ({ value: String(categoria.id), label: categoria.nome })),
+            ]}
           />
         </FilterBar>
 

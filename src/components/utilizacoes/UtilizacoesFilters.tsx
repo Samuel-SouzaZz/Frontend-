@@ -1,5 +1,5 @@
 import { RotateCcw } from "lucide-react";
-import { DateField, Field, FilterBar, SearchField, Select, type SelectOption } from "../ui";
+import { DateField, Field, FilterBar, SearchField, MultiSelect, type SelectOption } from "../ui";
 import { statusLabel } from "../../models/formatters";
 
 export type FiltrosUtilizacao = {
@@ -48,7 +48,8 @@ export function UtilizacoesFilters({
           placeholder="Buscar por nome, benefício, parceiro ou número"
         />
         <Field label="Status">
-          <Select
+          <MultiSelect
+            plural="status"
             value={filtros.status}
             options={STATUS}
             onChange={(value) => onChange("status", value)}
@@ -79,21 +80,24 @@ export function UtilizacoesFilters({
       </FilterBar>
       <FilterBar>
         <Field label="Colaborador">
-          <Select
+          <MultiSelect
+            plural="colaboradores"
             value={filtros.colaborador}
             options={[{ value: "", label: "Todos os colaboradores" }, ...colaboradores]}
             onChange={(value) => onChange("colaborador", value)}
           />
         </Field>
         <Field label="Conveniado">
-          <Select
+          <MultiSelect
+            plural="conveniados"
             value={filtros.conveniado}
             options={[{ value: "", label: "Todos os conveniados" }, ...conveniados]}
             onChange={(value) => onChange("conveniado", value)}
           />
         </Field>
         <Field label="Benefício ou item">
-          <Select
+          <MultiSelect
+            plural="benefícios"
             value={filtros.beneficio}
             options={[{ value: "", label: "Todos os benefícios" }, ...beneficios]}
             onChange={(value) => onChange("beneficio", value)}

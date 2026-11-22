@@ -10,6 +10,7 @@ import { useSessionUser } from "../hooks/useSessionUser";
 import { isAdministrador } from "../models/rules";
 import { contaLimpa, erroDaContaNova, type ModoConta } from "../models/contaNova";
 import { nomesCategorias, temCategoria } from "../models/categorias";
+import { passaNoFiltro, valoresFiltro } from "../models/filtros";
 
 const PAGE_SIZE = 8;
 const FILTER_KEYS = ["buscar", "status", "categoria"] as const;
@@ -52,8 +53,6 @@ export function useConveniadosVM() {
   const setSearch = setter("buscar");
   const setStatus = setter("status");
   const setCategory = setter("categoria");
-  const categoriasFiltro = category ? category.split(",").map(Number).filter((id) => id > 0) : [];
-  const setCategoriasFiltro = (ids: number[]) => setCategory(ids.join(","));
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<Conveniado>();
   const [inactivating, setInactivating] = useState<Conveniado>();
@@ -80,8 +79,8 @@ export function useConveniadosVM() {
     );
 
   return (
-    (!status || item.status === status) &&
-    (!categoriasFiltro.length || categoriasFiltro.some((id) => temCategoria(item, id))) &&
+    passaNoFiltro(status, item.status) &&
+    (!category || valoresFiltro(category).some((id) => temCategoria(item, Number(id)))) &&
     text.includes(search.trim().toLocaleLowerCase("pt-BR"))
   );
 });
@@ -217,8 +216,8 @@ if (!form.categorias.length) {
     setSearch,
     status,
     setStatus,
-    categoriasFiltro,
-    setCategoriasFiltro,
+    category,
+    setCategory,
     page: currentPage,
     setPage,
     categories,

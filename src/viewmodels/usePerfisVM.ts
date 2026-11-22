@@ -9,6 +9,7 @@ import { useOrdenacao } from "../hooks/useOrdenacao";
 import { useUrlFilters } from "../hooks/useUrlFilters";
 import { useAsyncAction } from "../hooks/useAsyncAction";
 import { useSessionUser } from "../hooks/useSessionUser";
+import { passaNoFiltro } from "../models/filtros";
 
 const PAGE_SIZE = 8;
 const FILTER_KEYS = ["buscar", "status", "escopo"] as const;
@@ -108,8 +109,8 @@ export function usePerfisVM() {
 
   const filteredProfiles = data.perfis.filter(
     (item) =>
-      (!status || item.status === status) &&
-      (!scope || item.escopo === scope) &&
+      passaNoFiltro(status, item.status) &&
+      passaNoFiltro(scope, item.escopo) &&
       `${item.nome} ${item.descricao ?? ""}`
         .toLocaleLowerCase("pt-BR")
         .includes(search.trim().toLocaleLowerCase("pt-BR")),
@@ -117,8 +118,8 @@ export function usePerfisVM() {
 
   const filteredUsers = data.usuarios.filter(
     (item) =>
-      (!status || item.status === status) &&
-      (!scope || profileFor(item.perfil_id)?.escopo === scope) &&
+      passaNoFiltro(status, item.status) &&
+      passaNoFiltro(scope, profileFor(item.perfil_id)?.escopo) &&
       `${item.nome} ${item.email} ${profileFor(item.perfil_id)?.nome ?? ""}`
         .toLocaleLowerCase("pt-BR")
         .includes(search.trim().toLocaleLowerCase("pt-BR")),

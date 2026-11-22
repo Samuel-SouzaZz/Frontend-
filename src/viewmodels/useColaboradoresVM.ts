@@ -9,6 +9,7 @@ import { useAsyncAction } from "../hooks/useAsyncAction";
 import { useSessionUser } from "../hooks/useSessionUser";
 import { isAdministrador } from "../models/rules";
 import { contaLimpa, erroDaContaNova, type ModoConta } from "../models/contaNova";
+import { passaNoFiltro } from "../models/filtros";
 
 const PAGE_SIZE = 8;
 const FILTER_KEYS = ["buscar", "status", "setor"] as const;
@@ -92,8 +93,8 @@ export function useColaboradoresVM() {
             "pt-BR",
           );
         return (
-          (!status || item.status === status) &&
-          (!setor || item.setor === setor) &&
+          passaNoFiltro(status, item.status) &&
+          passaNoFiltro(setor, item.setor) &&
           text.includes(search.trim().toLocaleLowerCase("pt-BR"))
         );
       }),

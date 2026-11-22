@@ -6,7 +6,7 @@ import {
   PageHeader,
   Pagination,
   SearchField,
-  Select,
+  MultiSelect,
   type SelectOption,
 } from "../components/ui";
 import { AcessoTabs } from "../components/perfis/AcessoTabs";
@@ -149,13 +149,15 @@ export default function Perfis() {
                 : "Buscar por nome, e-mail ou perfil..."
             }
           />
-          <Select
+          <MultiSelect
             aria-label="Filtrar por status"
             value={status}
             options={STATUS_FILTRO}
             onChange={setStatus}
+            plural="status"
           />
-          <Select
+          <MultiSelect
+            plural="escopos"
             aria-label="Filtrar por escopo de acesso"
             value={scope}
             options={ESCOPO_FILTRO}

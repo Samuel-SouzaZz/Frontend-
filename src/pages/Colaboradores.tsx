@@ -8,7 +8,7 @@ import {
   PageHeader,
   Pagination,
   SearchField,
-  Select,
+  MultiSelect,
   type SelectOption,
 } from "../components/ui";
 
@@ -72,14 +72,16 @@ export default function Colaboradores() {
             placeholder="Buscar por nome, matrícula, setor ou cargo..."
           />
 
-          <Select
+          <MultiSelect
             aria-label="Filtrar colaboradores por status"
             value={vm.status}
             options={STATUS_FILTRO}
             onChange={vm.setStatus}
+            plural="status"
           />
 
-          <Select
+          <MultiSelect
+            plural="setores"
             aria-label="Filtrar por setor"
             value={vm.setor}
             onChange={vm.setSetor}

@@ -13,6 +13,7 @@ import {
   beneficioDaUtilizacaoIndexed,
   conveniadoDaUtilizacaoIndexed,
 } from "../models/selectors";
+import { passaNoFiltro } from "../models/filtros";
 
 type Utilizacao = ReturnType<typeof usePortal>["data"]["utilizacoes"][number];
 const PAGE_SIZE = 8;
@@ -132,18 +133,16 @@ export function useUtilizacoesVM() {
   const rows = useMemo(() => {
     if (periodoInvalido) return [];
     const term = search.trim().toLocaleLowerCase("pt-BR");
-    const colabNum = colaborador ? Number(colaborador) : null;
-    const convNum = conveniado ? Number(conveniado) : null;
 
     return enrichedRows.filter((uso) => {
       return (
         (!term || uso.searchTarget.includes(term)) &&
-        (!status || uso.status === status) &&
+        passaNoFiltro(status, uso.status) &&
         (!inicio || uso.dia >= inicio) &&
         (!fim || uso.dia <= fim) &&
-        (!colabNum || uso.colaborador_id === colabNum) &&
-        (!convNum || uso.conveniadoId === convNum) &&
-        (!beneficio || uso.beneficioKey === beneficio)
+        passaNoFiltro(colaborador, uso.colaborador_id) &&
+        passaNoFiltro(conveniado, uso.conveniadoId) &&
+        passaNoFiltro(beneficio, uso.beneficioKey)
       );
     });
   }, [
