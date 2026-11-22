@@ -25,6 +25,8 @@ export function UtilizacoesTable<T extends Utilizacao>({
     <DataTable
       rows={rows}
       getRowKey={(row) => row.id}
+      onRowClick={onView}
+      rowLabel={(row) => `Abrir utilização ${referenciaUtilizacao(row.id)}`}
       ordenacao={ordenacao}
       columns={[
         {
