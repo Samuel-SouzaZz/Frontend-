@@ -140,7 +140,7 @@ export function useRelatoriosVM() {
       100
     : null;
   const statusCounts = Object.fromEntries(
-    ["APROVADA", "PENDENTE", "REPROVADA", "ESTORNADA"].map((status) => [
+    ["APROVADA", "PENDENTE", "REPROVADA", "ESTORNADA", "EXPIRADA", "CANCELADA"].map((status) => [
       status,
       report.filtered.filter((usage) => usage.status === status).length,
     ]),

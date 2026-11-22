@@ -49,6 +49,7 @@ const labels: Record<string, string> = {
   APROVADA: "Aprovada",
   REPROVADA: "Reprovada",
   ESTORNADA: "Estornada",
+  EXPIRADA: "Expirada",
   FCV: "Fundação",
   COLABORADOR: "Colaborador",
   CONVENIADO: "Conveniado",

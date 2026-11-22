@@ -14,7 +14,7 @@ export type FiltrosUtilizacao = {
 
 const STATUS: SelectOption[] = [
   { value: "", label: "Todos os status" },
-  ...["PENDENTE", "APROVADA", "REPROVADA", "ESTORNADA"].map((value) => ({
+  ...["PENDENTE", "APROVADA", "REPROVADA", "ESTORNADA", "EXPIRADA", "CANCELADA"].map((value) => ({
     value,
     label: statusLabel(value),
   })),

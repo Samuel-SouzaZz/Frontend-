@@ -678,6 +678,7 @@ tbody tr:hover {
   border-radius: 50%;
 }
 .badge-estornada,
+.badge-expirada,
 .badge-descontinuado,
 .badge-encerrada {
   background: #eff0f6;

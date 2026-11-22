@@ -90,6 +90,7 @@ const TOM: Record<string, string> = {
   ENCERRADA: "cinza",
   DESCONTINUADO: "cinza",
   ESTORNADA: "cinza",
+  EXPIRADA: "cinza",
   CANCELADA: "vermelho",
   REPROVADA: "vermelho",
 };
